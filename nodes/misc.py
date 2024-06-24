@@ -197,6 +197,6 @@ NODE_CLASS_MAPPINGS = {
     "Signature Ones Like": OnesLike,
     "Signature Zeros Like": ZerosLike,
     "Signature Mask Binary Filter": MaskBinaryFilter,
-    "Signature MaskDistance": MaskDistance,
+    "Signature Mask Distance": MaskDistance,
     "Signature Create Trimap": CreateTrimap,
 }

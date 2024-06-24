@@ -245,4 +245,6 @@ class LoraTraining:
 
 NODE_CLASS_MAPPINGS = {
     "Signature LoRA Stacker": LoraStacker,
+    "Signature LoRA Training": LoraTraining,
+    "Signature Save Lora Captions": SaveLoraCaptions
 }
