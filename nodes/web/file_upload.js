@@ -3,8 +3,8 @@ import { api } from "../../../scripts/api.js";
 
 
 const NODES = {
-    "Load File": "file",
-    "Load Folder": "folder",
+    "Signature Load File": "file",
+    "Signature Load Folder": "folder",
 };
 
 async function uploadFile(file) {

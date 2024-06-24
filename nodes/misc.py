@@ -1,6 +1,5 @@
 from signature_core.img.tensor_image import TensorImage
 from .categories import MISC_CAT
-from .shared import any
 from signature_core.functional.morphology import dilation, erosion
 import torch
 
@@ -119,29 +118,7 @@ class MaskBinaryFilter():
         output = TensorImage(step).get_BWHC()
         return (output,)
 
-class Any2String():
-    @classmethod
-    def INPUT_TYPES(s): # type: ignore
-        return {"required": {
-            "input": (any,),
-            }}
-    RETURN_TYPES = ("STRING",)
-    FUNCTION = "process"
-    CATEGORY = MISC_CAT
-    def process(self, input):
-        return (str(input),)
 
-class Any2Any():
-    @classmethod
-    def INPUT_TYPES(s): # type: ignore
-        return {"required": {
-            "input": (any,),
-            }}
-    RETURN_TYPES = (any,)
-    FUNCTION = "process"
-    CATEGORY = MISC_CAT
-    def process(self, input):
-        return (input,)
 
 class MaskDistance():
     @classmethod
@@ -214,8 +191,6 @@ class CreateTrimap:
 
 
 NODE_CLASS_MAPPINGS = {
-    "Signature Any2Any": Any2Any,
-    "Signature Any2String": Any2String,
     "Signature Bitwise": Bitwise,
     "Signature Ones": Ones,
     "Signature Zeros": Zeros,
