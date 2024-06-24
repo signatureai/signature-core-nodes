@@ -1,5 +1,5 @@
 import torch
-from signature_core.nodes.categories import MORPHOLOGY_CAT
+from .categories import MORPHOLOGY_CAT
 from signature_core.img.tensor_image import TensorImage
 from signature_core.functional.morphology import erosion, dilation
 
@@ -41,6 +41,6 @@ class MaskDilation:
 
 
 NODE_CLASS_MAPPINGS = {
-    "Mask Erosion": MaskErosion,
-    "Mask Dilation": MaskDilation,
+    "Signature Mask Erosion": MaskErosion,
+    "Signature Mask Dilation": MaskDilation,
 }

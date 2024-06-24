@@ -1,5 +1,5 @@
 import torch
-from signature_core.nodes.categories import MODELS_CAT
+from .categories import MODELS_CAT
 from signature_core.img.tensor_image import TensorImage
 from signature_core.models.lama import Lama
 from signature_core.models.salient_object_detection import SalientObjectDetection
@@ -80,7 +80,7 @@ class BackgroundRemoval:
         return (output_cutouts, output_masks,)
 
 NODE_CLASS_MAPPINGS = {
-    "Magic Eraser": MagicEraser,
-    "Background Removal": BackgroundRemoval,
-    "Unblur": Unblur,
+    "Signature Magic Eraser": MagicEraser,
+    "Signature Background Removal": BackgroundRemoval,
+    "Signature Unblur": Unblur,
 }

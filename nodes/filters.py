@@ -1,7 +1,7 @@
 import torch
 from signature_core.img.tensor_image import TensorImage
 from signature_core.functional.filters import gaussian_blur2d, unsharp_mask, image_soft_light
-from signature_core.nodes.categories import FILTER_CAT
+from .categories import FILTER_CAT
 
 class ImageGaussianBlur:
 
@@ -86,8 +86,8 @@ class ImageSoftLight:
 
 
 NODE_CLASS_MAPPINGS = {
-    "Image Gaussian Blur": ImageGaussianBlur,
-    "Image Unsharp Mask": ImageUnsharpMask,
-    "Mask Gaussian Blur": MaskGaussianBlur,
-    "Image Soft Light": ImageSoftLight,
+    "Signature Image Gaussian Blur": ImageGaussianBlur,
+    "Signature Image Unsharp Mask": ImageUnsharpMask,
+    "Signature Mask Gaussian Blur": MaskGaussianBlur,
+    "Signature Image Soft Light": ImageSoftLight,
 }

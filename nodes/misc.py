@@ -1,12 +1,9 @@
 from signature_core.img.tensor_image import TensorImage
-from signature_core.nodes.categories import MISC_CAT
+from .categories import MISC_CAT
+from .shared import any
 from signature_core.functional.morphology import dilation, erosion
 import torch
 
-class AnyType(str):
-  def __ne__(self, __value: object) -> bool:
-    return False
-any = AnyType("*")
 
 class Bitwise():
 
@@ -217,14 +214,14 @@ class CreateTrimap:
 
 
 NODE_CLASS_MAPPINGS = {
-    "Any2Any": Any2Any,
-    "Any2String": Any2String,
-    "Bitwise": Bitwise,
-    "Ones": Ones,
-    "Zeros": Zeros,
-    "Ones Like": OnesLike,
-    "Zeros Like": ZerosLike,
-    "Mask Binary Filter": MaskBinaryFilter,
-    "MaskDistance": MaskDistance,
-    "Create Trimap": CreateTrimap,
+    "Signature Any2Any": Any2Any,
+    "Signature Any2String": Any2String,
+    "Signature Bitwise": Bitwise,
+    "Signature Ones": Ones,
+    "Signature Zeros": Zeros,
+    "Signature Ones Like": OnesLike,
+    "Signature Zeros Like": ZerosLike,
+    "Signature Mask Binary Filter": MaskBinaryFilter,
+    "Signature MaskDistance": MaskDistance,
+    "Signature Create Trimap": CreateTrimap,
 }

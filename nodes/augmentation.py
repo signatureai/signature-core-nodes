@@ -1,6 +1,6 @@
 import torch
 from signature_core.functional.augmentation import random_crop_augmentation, flip_augmentation, compose_augmentation
-from signature_core.nodes.categories import AUGMENTATION_CAT
+from .categories import AUGMENTATION_CAT
 from signature_core.img.tensor_image import TensorImage
 
 
@@ -85,7 +85,7 @@ class ComposeAugmentation:
         return (node_image, node_mask, )
 
 NODE_CLASS_MAPPINGS = {
-    "ComposeAug": ComposeAugmentation,
-    "RandomCropAug": RandomCropAugmentation,
-    "FlipAug": FlipAugmentation,
+    "Signature Compose Augmentation": ComposeAugmentation,
+    "Signature Random Crop Augmentation": RandomCropAugmentation,
+    "Signature Flip Augmentation": FlipAugmentation,
 }

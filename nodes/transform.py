@@ -1,5 +1,5 @@
 import torch
-from signature_core.nodes.categories import TRANSFORM_CAT
+from .categories import TRANSFORM_CAT
 from signature_core.img.tensor_image import TensorImage
 from signature_core.functional.transform import rescale, resize, rotate, auto_crop, cutout
 
@@ -162,9 +162,9 @@ class Cutout:
         return (out_image_rgb, out_image_rgba,)
 
 NODE_CLASS_MAPPINGS = {
-    "Cutout": Cutout,
-    "Rotate": Rotate,
-    "Rescale": Rescale,
-    "Resize": Resize,
-    "Auto Crop": AutoCrop,
+    "Signature Cutout": Cutout,
+    "Signature Rotate": Rotate,
+    "Signature Rescale": Rescale,
+    "Signature Resize": Resize,
+    "Signature Auto Crop": AutoCrop,
 }

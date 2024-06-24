@@ -1,5 +1,5 @@
 import torch
-from signature_core.nodes.categories import ENHANCE_CAT
+from .categories import ENHANCE_CAT
 from signature_core.img.tensor_image import TensorImage
 from signature_core.functional.enhance import adjust_brightness, adjust_saturation, equalize, equalize_clahe
 
@@ -72,8 +72,8 @@ class EqualizeClahe:
 
 
 NODE_CLASS_MAPPINGS = {
-    "Adjust Brightness": AdjustBrightness,
-    "Adjust Saturation": AdjustSaturation,
-    "Equalize": Equalize,
-    "Equalize Clahe": EqualizeClahe,
+    "Signature Adjust Brightness": AdjustBrightness,
+    "Signature Adjust Saturation": AdjustSaturation,
+    "Signature Equalize": Equalize,
+    "Signature Equalize Clahe": EqualizeClahe,
 }
