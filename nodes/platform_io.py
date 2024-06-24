@@ -16,10 +16,10 @@ class PlatformInputImage():
         return {
             "required": {
                 "title": ("STRING", {"default": "Input Image"}),
-                "short_description": ("STRING", {"default": ""}),
                 "subtype": (['image', 'mask'],),
                 "required": ("BOOLEAN", {"default": True}),
                 "value": ("STRING", {"default": ""}),
+                "metadata": ("STRING", {"default": "", "multiline": True}),
                 },
                 "optional": {"fallback": (any,),}
             }
@@ -27,7 +27,7 @@ class PlatformInputImage():
     FUNCTION = "apply"
     CATEGORY = PLATFROM_IO_CAT
 
-    def apply(self, value, title:str, short_description:str, subtype: str, required:str, fallback = None):
+    def apply(self, value, title:str, metadata:str, subtype: str, required:str, fallback = None):
 
         if value != "":
             if value.startswith("data:"):
@@ -54,41 +54,23 @@ class PlatformInputText():
         return {
             "required": {
                 "title": ("STRING", {"default": "Input Text"}),
-                "short_description": ("STRING", {"default": ""}),
                 "subtype": (['string','positive_prompt', 'negative_prompt'],),
                 "required": ("BOOLEAN", {"default": True}),
                 "value": ("STRING", {"multiline": True, "default": ""}),
+                "metadata": ("STRING", {"default": "", "multiline": True}),
                 },
             }
     RETURN_TYPES = ("STRING",)
     FUNCTION = "apply"
     CATEGORY = PLATFROM_IO_CAT
 
-    def apply(self, value:str, title:str, short_description:str, subtype: str, required:str):
+    def apply(self, value:str, title:str, metadata:str, subtype: str, required:str):
 
         if isinstance(value, str):
             return (value,)
         else:
             raise ValueError(f"Unsupported input type: {type(value)}")
 
-class PlatformInputSelector():
-
-    @classmethod
-    def INPUT_TYPES(s): # type: ignore
-        return {
-            "required": {
-                "selected": ("INT", {"default": 0, "min": 0}),
-                "input_0": ("STRING", {"default": ""}),
-                },
-            }
-    RETURN_TYPES = (any,)
-    FUNCTION = "apply"
-    CATEGORY = PLATFROM_IO_CAT
-
-    def apply(self, **kwargs):
-        items = [value for key, value in kwargs.items() if key.startswith("input_")]
-        item = items[kwargs["selected"]]
-        return (item,)
 
 class PlatformInputNumber():
     @classmethod
@@ -96,17 +78,17 @@ class PlatformInputNumber():
         return {
             "required": {
                 "title": ("STRING", {"default": "Input Number"}),
-                "short_description": ("STRING", {"default": ""}),
                 "subtype": (['float','int'],),
                 "required": ("BOOLEAN", {"default": True}),
                 "value": ("FLOAT", {"default": 0}),
+                "metadata": ("STRING", {"default": "", "multiline": True}),
                 },
             }
     RETURN_TYPES = (any,)
     FUNCTION = "apply"
     CATEGORY = PLATFROM_IO_CAT
 
-    def apply(self, value:float, title:str, short_description:str, subtype: str, required:str):
+    def apply(self, value:float, title:str, metadata:str, subtype: str, required:str):
         return (value,)
 
 
@@ -117,7 +99,6 @@ class PlatformOutput():
         return {
             "required": {
                 "title": ("STRING", {"default": "Output Image"}),
-                "short_description": ("STRING", {"default": ""}),
                 "subtype": (['image', 'mask', 'int', 'float', 'string', 'dict'],),
                 "metadata": ("STRING", {"default": "", "multiline": True}),
                 "value": (any,),
@@ -128,7 +109,7 @@ class PlatformOutput():
     FUNCTION = "apply"
     CATEGORY = PLATFROM_IO_CAT
 
-    def apply(self, value, title: str, short_description: str, subtype: str, metadata: str = ''):
+    def apply(self, value, title: str, subtype: str, metadata: str = ''):
         supported_types = ["image", "mask", "int", "float", "string", "dict"]
         if subtype not in supported_types:
             raise ValueError(f"Unsupported output type: {subtype}")
@@ -161,7 +142,6 @@ class PlatformOutput():
                 if image_saved and thumbnail_saved:
                     results.append({
                         "title": title,
-                        "short_description": short_description,
                         "type": subtype,
                         "metadata": metadata,
                         "value": file_name,
@@ -171,7 +151,6 @@ class PlatformOutput():
             value_json = json.dumps(value) if subtype == "dict" else value
             results.append({
                 "title": title,
-                "short_description": short_description,
                 "type": subtype,
                 "metadata": metadata,
                 "value": value_json
@@ -184,7 +163,5 @@ NODE_CLASS_MAPPINGS = {
     "signature_input_image": PlatformInputImage,
     "signature_input_text": PlatformInputText,
     "signature_input_number": PlatformInputNumber,
-    # "signature_input_selector": PlatformInputSelector,
-
     "signature_output": PlatformOutput,
 }
