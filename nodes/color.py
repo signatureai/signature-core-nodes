@@ -46,8 +46,11 @@ class RGBA2RGB:
 
     def process(self, image: torch.Tensor):
         image_tensor = TensorImage.from_BWHC(image)
-        output = rgba_to_rgb(image_tensor).get_BWHC()
+        if image_tensor.shape[1] == 4:
+            image_tensor = rgba_to_rgb(image_tensor)
+        output = image_tensor.get_BWHC()
         return (output,)
+
 
 class ImageAverage:
     @classmethod
