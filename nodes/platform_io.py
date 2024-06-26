@@ -89,6 +89,10 @@ class PlatformInputNumber():
     CATEGORY = PLATFROM_IO_CAT
 
     def apply(self, value:float, title:str, metadata:str, subtype: str, required:str):
+        if subtype == "int":
+            value = int(value)
+        else:
+            value = float(value)
         return (value,)
 
 
