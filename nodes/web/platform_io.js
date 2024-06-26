@@ -1,7 +1,7 @@
 import { app } from "../../../scripts/app.js";
 
 const NODES = {
-    "signature_input_image": "Input Image",
+    "signature_input_image": "Input Image", 
     "signature_input_text": "Input Text",
     "signature_input_number": "Input Number",
     "signature_input_selector": "Input Selector",
@@ -43,8 +43,11 @@ function output(node, widget) {
     for (const w of widgets) {
         if (w.name === "title") {
             if (w.value.startsWith("Output ")) {
-                const modStr = widget.value[0].toUpperCase() + widget.value.slice(1);
-                w.value = "Output " + modStr;
+                data = widget.value[0]
+                if (data != undefined) {
+                    const modStr = data.toUpperCase() + widget.value.slice(1);
+                    w.value = "Output " + modStr;
+                }
             }
             break;
         }
