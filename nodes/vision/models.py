@@ -82,6 +82,7 @@ class BackgroundRemoval(SaveImage):
     def INPUT_TYPES(s): # type: ignore
         return {"required": {
             "model_name": (['rmbg14','isnet_general'],),
+            "preview": (['mask','rgba'],),
             "image": ("IMAGE",),
             },
             "hidden": {"prompt": "PROMPT", "extra_pnginfo": "EXTRA_PNGINFO"},}
@@ -91,18 +92,19 @@ class BackgroundRemoval(SaveImage):
     CATEGORY = MODELS_CAT
 
 
-    def process(self, image: torch.Tensor, model_name: str, filename_prefix="Signature", prompt=None, extra_pnginfo=None):
+    def process(self, image: torch.Tensor, model_name: str, preview:str, filename_prefix="Signature", prompt=None, extra_pnginfo=None):
         if model_name != self.model_name or self.model is None:
             self.model = SalientObjectDetection(model_name=model_name)
             self.model_name = model_name
 
         input_image = TensorImage.from_BWHC(image)
-        output_masks = self.model.forward(input_image)
+        masks = self.model.forward(input_image)
 
-        output_cutouts = torch.cat((input_image, output_masks), dim=1) 
-        output_masks = TensorImage(output_masks).get_BWHC()
+        output_cutouts = torch.cat((input_image, masks), dim=1) 
+        output_masks = TensorImage(masks).get_BWHC()
         output_cutouts = TensorImage(output_cutouts).get_BWHC()
-        result = self.save_images(output_cutouts, filename_prefix, prompt, extra_pnginfo)
+        preview_images = TensorImage(masks).get_rgb_or_rgba().get_BWHC() if preview == "mask" else output_cutouts
+        result = self.save_images(preview_images, filename_prefix, prompt, extra_pnginfo)
         result.update({"result": (output_cutouts, output_masks,)})
         return result
 
