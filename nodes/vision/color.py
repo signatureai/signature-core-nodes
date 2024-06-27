@@ -1,7 +1,7 @@
 import torch
 from signature_core.img.tensor_image import TensorImage
 from signature_core.functional.color import rgb_to_hsv, rgb_to_hls, color_average, rgba_to_rgb
-from .categories import COLOR_CAT
+from ..categories import COLOR_CAT
 
 class RGB2HSV:
 

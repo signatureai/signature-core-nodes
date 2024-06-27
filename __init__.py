@@ -1,8 +1,12 @@
 from signature_core.version import __version__
 
+from .nodes.vision import augmentation, color, enhance, filters, misc, models, morphology, transform
+
+from .nodes import utils
+
 
 try:
-    from .nodes import enhance, transform, filters, models, morphology, misc, augmentation, lora, io, platform_io, types, color
+    from .nodes import lora, io, platform_io
 except:
     print(f"Error importing modules")
 
@@ -13,7 +17,7 @@ except:
         print("Installation failed. Please install the dependencies manually.")
 
     # Retry the import after attempting installation
-    from .nodes import enhance, transform, filters, models, morphology, misc, augmentation, lora, io, platform_io, types, color
+    from .nodes import lora, io, platform_io
 
 NODE_CLASS_MAPPINGS = {
     **models.NODE_CLASS_MAPPINGS,
@@ -26,7 +30,7 @@ NODE_CLASS_MAPPINGS = {
     **lora.NODE_CLASS_MAPPINGS,
     **io.NODE_CLASS_MAPPINGS,
     **platform_io.NODE_CLASS_MAPPINGS,
-    **types.NODE_CLASS_MAPPINGS,
+    **utils.NODE_CLASS_MAPPINGS,
     **color.NODE_CLASS_MAPPINGS
 }
 

@@ -1,7 +1,7 @@
 import torch
 from signature_core.img.tensor_image import TensorImage
 from signature_core.functional.filters import gaussian_blur2d, unsharp_mask, image_soft_light
-from .categories import FILTER_CAT
+from ..categories import FILTER_CAT
 
 class ImageGaussianBlur:
 

@@ -1,5 +1,5 @@
 import torch
-from .categories import TRANSFORM_CAT
+from ..categories import TRANSFORM_CAT
 from signature_core.img.tensor_image import TensorImage
 from signature_core.functional.transform import rescale, resize, rotate, auto_crop, cutout
 

@@ -1,6 +1,6 @@
 import torch
 from signature_core.functional.augmentation import random_crop_augmentation, flip_augmentation, compose_augmentation
-from .categories import AUGMENTATION_CAT
+from ..categories import AUGMENTATION_CAT
 from signature_core.img.tensor_image import TensorImage
 
 

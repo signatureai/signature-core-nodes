@@ -1,5 +1,5 @@
 from signature_core.img.tensor_image import TensorImage
-from .categories import MISC_CAT
+from ..categories import MISC_CAT
 from signature_core.functional.morphology import dilation, erosion
 import torch
 
