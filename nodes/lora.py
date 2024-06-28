@@ -7,15 +7,97 @@ from .categories import LORA_CAT
 from signature_core.img.tensor_image import TensorImage
 
 #comfy related imports
-from comfy import model_management # type: ignore
+from comfy import model_management, sd, utils # type: ignore
 import folder_paths # type: ignore
 
-class LoraStacker:
+class ApplyLoraStack:
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {"required": {"model": ("MODEL",),
+                            "clip": ("CLIP", ),
+                            "lora_stack": ("LORA_STACK", ),
+                            }
+        }
+
+    RETURN_TYPES = ("MODEL", "CLIP",)
+    RETURN_NAMES = ("MODEL", "CLIP",)
+    FUNCTION = "apply"
+    CATEGORY = CATEGORY = LORA_CAT
+
+    def apply(self, model, clip, lora_stack=None,):
+
+        loras = list()
+        if lora_stack is None:
+            return (model, clip, )
+
+        model_lora = model
+        clip_lora = clip
+        loras.extend(lora_stack)
+
+        for lora in loras:
+            lora_name, strength_model, strength_clip = lora
+
+            lora_path = folder_paths.get_full_path("loras", lora_name)
+            lora = utils.load_torch_file(lora_path, safe_load=True)
+
+            model_lora, clip_lora = sd.load_lora_for_models(model_lora, clip_lora, lora, strength_model, strength_clip) 
+
+        return (model_lora, clip_lora,)
+
+class LoraStack:
+
+    @classmethod
+    def INPUT_TYPES(cls):
+
+        loras = ["None"] + folder_paths.get_filename_list("loras")
+
+        return {"required": {
+                    "switch_1": (["Off","On"],),
+                    "lora_name_1": (loras,),
+                    "model_weight_1": ("FLOAT", {"default": 1.0, "min": -10.0, "max": 10.0, "step": 0.01}),
+                    "clip_weight_1": ("FLOAT", {"default": 1.0, "min": -10.0, "max": 10.0, "step": 0.01}),
+                    "switch_2": (["Off","On"],),
+                    "lora_name_2": (loras,),
+                    "model_weight_2": ("FLOAT", {"default": 1.0, "min": -10.0, "max": 10.0, "step": 0.01}),
+                    "clip_weight_2": ("FLOAT", {"default": 1.0, "min": -10.0, "max": 10.0, "step": 0.01}),
+                    "switch_3": (["Off","On"],),
+                    "lora_name_3": (loras,),
+                    "model_weight_3": ("FLOAT", {"default": 1.0, "min": -10.0, "max": 10.0, "step": 0.01}),
+                    "clip_weight_3": ("FLOAT", {"default": 1.0, "min": -10.0, "max": 10.0, "step": 0.01}),
+                },
+                "optional": {"lora_stack": ("LORA_STACK",)
+                },
+        }
+
+    RETURN_TYPES = ("LORA_STACK", )
+    RETURN_NAMES = ("lora_stack", )
+    FUNCTION = "process"
+    CATEGORY = LORA_CAT
+
+    def process(self, lora_name_1, model_weight_1, clip_weight_1, switch_1, lora_name_2, model_weight_2, clip_weight_2, switch_2, lora_name_3, model_weight_3, clip_weight_3, switch_3, lora_stack=None):
+
+        lora_list: list =list()
+        if lora_stack is not None:
+            lora_list.extend([l for l in lora_stack if l[0] != "None"])
+
+        if lora_name_1 != "None" and  switch_1 == "On":
+            lora_list.extend([(lora_name_1, model_weight_1, clip_weight_1)]), # type: ignore
+
+        if lora_name_2 != "None" and  switch_2 == "On":
+            lora_list.extend([(lora_name_2, model_weight_2, clip_weight_2)]), # type: ignore
+
+        if lora_name_3 != "None" and  switch_3 == "On":
+            lora_list.extend([(lora_name_3, model_weight_3, clip_weight_3)]), # type: ignore
+
+        return (lora_list, )
+
+class Dict2LoraStack:
     @classmethod
     def INPUT_TYPES(cls):
         inputs = {
             "required": {
-                "lora_dicts": ("LIST",),
+                "lora dicts": ("LIST",),
             },
             "optional": {
                 "lora_stack": ("LORA_STACK",)
@@ -28,8 +110,8 @@ class LoraStacker:
         return inputs
 
     RETURN_TYPES = ("LORA_STACK",)
-    RETURN_NAMES = ("LORA_STACK",)
-    FUNCTION = "lora_stacker"
+    RETURN_NAMES = ("lora_stack",)
+    FUNCTION = "apply"
     CATEGORY = LORA_CAT
 
     def lora_stacker(self, lora_dicts: list, lora_stack=None):
@@ -244,7 +326,9 @@ class LoraTraining:
 
 
 NODE_CLASS_MAPPINGS = {
-    "Signature LoRA Stacker": LoraStacker,
+    "Signature Apply LoRA Stack": ApplyLoraStack,
+    "Signature LoRA Stack": LoraStack,
+    "Signature Dict to LoRA Stack": Dict2LoraStack,
     "Signature LoRA Training": LoraTraining,
-    "Signature Save Lora Captions": SaveLoraCaptions
+    "Signature Save LoRA Captions": SaveLoraCaptions
 }

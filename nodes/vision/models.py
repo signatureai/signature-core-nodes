@@ -23,6 +23,7 @@ class MagicEraser(SaveImage):
             "required": {
                 "image": ("IMAGE",),
                 "mask": ("MASK",),
+                "preview": (['on', 'off'],),
             },
             "hidden": {"prompt": "PROMPT", "extra_pnginfo": "EXTRA_PNGINFO"},
             }
@@ -30,13 +31,15 @@ class MagicEraser(SaveImage):
     FUNCTION = "process"
     CATEGORY = MODELS_CAT
 
-    def process(self, image: torch.Tensor, mask: torch.Tensor, filename_prefix="Signature", prompt=None, extra_pnginfo=None):
+    def process(self, image: torch.Tensor, mask: torch.Tensor, preview:str, filename_prefix="Signature", prompt=None, extra_pnginfo=None):
         input_image = TensorImage.from_BWHC(image)
         print(mask.shape)
         input_mask = TensorImage.from_BWHC(mask)
 
         highres = TensorImage(self.model.forward(input_image, input_mask, "FIXED"))
         output_images = highres.get_BWHC()
+        if preview == "off":
+            return (output_images,)
         result = self.save_images(output_images, filename_prefix, prompt, extra_pnginfo)
         result.update({"result": (output_images,)})
         return result
@@ -53,18 +56,20 @@ class Unblur(SaveImage):
     def INPUT_TYPES(s): # type: ignore
         return {"required": {
             "image": ("IMAGE",),
-
+            "preview": (['on', 'off'],),
             }, "hidden": {"prompt": "PROMPT", "extra_pnginfo": "EXTRA_PNGINFO"},}
     RETURN_TYPES = ("IMAGE",)
     FUNCTION = "process"
     CATEGORY = MODELS_CAT
 
 
-    def process(self, image: torch.Tensor, filename_prefix="Signature", prompt=None, extra_pnginfo=None):
+    def process(self, image: torch.Tensor, preview:str, filename_prefix="Signature", prompt=None, extra_pnginfo=None):
         input_image = TensorImage.from_BWHC(image)
         output_image = self.model.forward(input_image)
-
         output_images = TensorImage(output_image).get_BWHC()
+
+        if preview == "off":
+            return (output_images,)
         result = self.save_images(output_images, filename_prefix, prompt, extra_pnginfo)
         result.update({"result": (output_images,)})
         return result
@@ -82,7 +87,7 @@ class BackgroundRemoval(SaveImage):
     def INPUT_TYPES(s): # type: ignore
         return {"required": {
             "model_name": (['rmbg14','isnet_general'],),
-            "preview": (['mask','rgba'],),
+            "preview": (['mask','rgba', 'none'],),
             "image": ("IMAGE",),
             },
             "hidden": {"prompt": "PROMPT", "extra_pnginfo": "EXTRA_PNGINFO"},}
@@ -100,9 +105,11 @@ class BackgroundRemoval(SaveImage):
         input_image = TensorImage.from_BWHC(image)
         masks = self.model.forward(input_image)
 
-        output_cutouts = torch.cat((input_image, masks), dim=1) 
+        output_cutouts = torch.cat((input_image, masks), dim=1)
         output_masks = TensorImage(masks).get_BWHC()
         output_cutouts = TensorImage(output_cutouts).get_BWHC()
+        if preview == "none":
+            return (output_cutouts, output_masks,)
         preview_images = TensorImage(masks).get_rgb_or_rgba().get_BWHC() if preview == "mask" else output_cutouts
         result = self.save_images(preview_images, filename_prefix, prompt, extra_pnginfo)
         result.update({"result": (output_cutouts, output_masks,)})

@@ -56,6 +56,7 @@ class String2Case():
         }
     RETURN_TYPES = ("STRING",)
     FUNCTION = "process"
+    CATEGORY = UTILS_CAT
 
 
     def process(self, text:str, case:str):
@@ -68,6 +69,7 @@ class String2Case():
             result = text.capitalize()
         print(result)
         return (result,)
+
 
 class TextPreview():
     @classmethod
@@ -130,6 +132,21 @@ class ConsoleDebug:
         print(f"\033[96m{prefix} {value}\033[0m")
         return (None,)
 
+class ImageSize:
+    @classmethod
+    def INPUT_TYPES(s): # type: ignore
+        return {
+            "required": {
+                "image": ("IMAGE",),
+            },
+        }
+    RETURN_TYPES = ("INT", "INT")
+    RETURN_NAMES = ("width", "height")
+    FUNCTION = "process"
+    CATEGORY = UTILS_CAT
+    def process(self, image):
+        return (image.shape[2], image.shape[1], )
+
 NODE_CLASS_MAPPINGS = {
     "Signature Any2Any": Any2Any,
     "Signature Any2String": Any2String,
@@ -138,4 +155,5 @@ NODE_CLASS_MAPPINGS = {
     "Signature Mask Preview": MaskPreview,
     "Signature Console Debug": ConsoleDebug,
     "Signature Image Batch2List": ImageBatch2List,
+    "Signature Get Image Size": ImageSize,
 }
