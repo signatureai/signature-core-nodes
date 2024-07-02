@@ -1,4 +1,5 @@
 from .categories import NUMBERS_CAT
+import random
 class IntClamp():
     @classmethod
     def INPUT_TYPES(s): # type: ignore
@@ -141,6 +142,26 @@ class FloatMinMax():
             return (max(a, b),)
         raise ValueError(f"Unsupported mode: {mode}")
 
+class RandomNumber():
+    @classmethod
+    def INPUT_TYPES(s): # type: ignore
+        return {"required": {}}
+    RETURN_TYPES = ("INT", "FLOAT", )
+    FUNCTION = "process"
+    CATEGORY = NUMBERS_CAT
+
+    @staticmethod
+    def get_random():
+        result = random.randint(0, 99999999)
+        return (result, float(result), )
+
+    def process(self):
+        return RandomNumber.get_random()
+
+    @classmethod
+    def IS_CHANGED(s): # type: ignore
+        return RandomNumber.get_random()
+
 
 NODE_CLASS_MAPPINGS = {
     "Signature Int2Float": Int2Float,
@@ -151,4 +172,5 @@ NODE_CLASS_MAPPINGS = {
     "Signature FloatMinMax": FloatMinMax,
     "Signature FloatClamp": FloatClamp,
     "Signature FloatOperator": FloatOperator,
+    "Signature RandomNumber": RandomNumber
 }
