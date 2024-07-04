@@ -117,10 +117,20 @@ class LoadFolder():
                 data[i] = item
         return (data,)
 
+
 NODE_CLASS_MAPPINGS = {
-    "Signature Image from Web": ImageFromWeb,
-    "Signature Image from Base64": ImageFromBase64,
-    "Signature Base64 from Image": Base64FromImage,
-    "Signature Load File": LoadFile,
-    "Signature Load Folder": LoadFolder,
+    "signature_image_from_web": ImageFromWeb,
+    "signature_image_from_base64": ImageFromBase64,
+    "signature_base64_from_image": Base64FromImage,
+    "signature_load_file": LoadFile,
+    "signature_load_folder": LoadFolder,
+}
+
+NODE_DISPLAY_NAME_MAPPINGS = {
+    "signature_image_from_web": "SIG Image from Web",
+    "signature_image_from_base64": "SIG Image from Base64",
+    "signature_base64_from_image": "SIG Base64 from Image",
+    "signature_load_file": "SIG Load File",
+    "signature_load_folder": "SIG Load Folder",
+
 }

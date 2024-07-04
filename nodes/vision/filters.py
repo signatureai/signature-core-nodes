@@ -86,8 +86,15 @@ class ImageSoftLight:
 
 
 NODE_CLASS_MAPPINGS = {
-    "Signature Image Gaussian Blur": ImageGaussianBlur,
-    "Signature Image Unsharp Mask": ImageUnsharpMask,
-    "Signature Mask Gaussian Blur": MaskGaussianBlur,
-    "Signature Image Soft Light": ImageSoftLight,
+    "signature_image_gaussian_blur": ImageGaussianBlur,
+    "signature_image_unsharp_mask" : ImageUnsharpMask,
+    "signature_mask_gaussian_blur": MaskGaussianBlur,
+    "signature_image_soft_light": ImageSoftLight,
+}
+
+NODE_DISPLAY_NAME_MAPPINGS = {
+    "signature_image_gaussian_blur": "SIG Image Gaussian Blur",
+    "signature_image_unsharp_mask" : "SIG Image Unsharp Mask",
+    "signature_mask_gaussian_blur": "SIG Mask Gaussian Blur",
+    "signature_image_soft_light": "SIG Image Soft Light",
 }

@@ -81,7 +81,7 @@ class BackgroundRemoval(SaveImage):
         self.model: SalientObjectDetection | None = None
         self.output_dir = folder_paths.get_temp_directory()
         self.type = "temp"
-        self.prefix_append = "_temp_" + ''.join(random.choice("abcdefghijklmnopqrstupvxyz") for x in range(5))
+        self.prefix_append = "_temp_" + ''.join(random.choice("abcdefghijklmnopqrstupvxyz") for _ in range(5))
         self.compress_level = 4
 
     @classmethod
@@ -118,9 +118,14 @@ class BackgroundRemoval(SaveImage):
         result.update({"result": (rgba_output, rgb_output, mask_output,)})
         return result
 
-
 NODE_CLASS_MAPPINGS = {
-    "Signature Magic Eraser": MagicEraser,
-    "Signature Background Removal": BackgroundRemoval,
-    "Signature Unblur": Unblur,
+    "signature_magic_eraser": MagicEraser,
+    "signature_background_removal": BackgroundRemoval,
+    "signature_unblur": Unblur,
+}
+
+NODE_DISPLAY_NAME_MAPPINGS = {
+    "signature_magic_eraser": "SIG Magic Eraser",
+    "signature_background_removal": "SIG Background Removal",
+    "signature_unblur": "SIG Unblur",
 }

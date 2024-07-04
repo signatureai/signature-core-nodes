@@ -2,7 +2,9 @@ import torch
 from ..categories import TRANSFORM_CAT
 from signature_core.img.tensor_image import TensorImage
 from signature_core.functional.transform import rescale, resize, rotate, auto_crop, cutout
-
+import folder_paths # type: ignore
+import comfy # type: ignore
+from comfy_extras.chainner_models import model_loading # type: ignore
 
 class AutoCrop:
 
@@ -78,8 +80,8 @@ class Resize:
             "optional": {
                 "image": ("IMAGE", {"default": None}),
                 "mask": ("MASK", {"default": None}),
-                "width": ("INT", {"default": 512}),
-                "height": ("INT", {"default": 512}),
+                "width": ("INT", {"default": 1024}),
+                "height": ("INT", {"default": 1024}),
                 "keep_aspect_ratio": ("BOOLEAN", {"default": False}),
                 "interpolation": (['nearest', 'linear', 'bilinear', 'bicubic', 'trilinear', 'area'],),
                 "antialias": ("BOOLEAN", {"default": True},),
@@ -92,8 +94,8 @@ class Resize:
     def process(self,
                 image: torch.Tensor | None = None,
                 mask: torch.Tensor | None = None,
-                width:int = 512,
-                height:int=512,
+                width:int = 1024,
+                height:int=1024,
                 keep_aspect_ratio: bool = False,
                 interpolation: str = 'nearest',
                 antialias: bool = True):
@@ -161,10 +163,103 @@ class Cutout:
 
         return (out_image_rgb, out_image_rgba,)
 
+class UpscaleImage:
+
+    @classmethod
+    def INPUT_TYPES(s): # type: ignore
+
+        resampling_methods = ['nearest', 'linear', 'bilinear', 'bicubic', 'trilinear', 'area']
+
+        return {"required":
+                    {"image": ("IMAGE",),
+                     "upscale_model": (folder_paths.get_filename_list("upscale_models"), ),
+                     "mode": (["rescale", "resize"],),
+                     "rescale_factor": ("FLOAT", {"default": 2, "min": 0.01, "max": 16.0, "step": 0.01}),
+                     "resize_size": ("INT", {"default": 1024, "min": 1, "max": 48000, "step": 1}),
+                     "resampling_method": (resampling_methods,),
+                     "tiled_size": ("INT", {"default": 512, "min": 128, "max": 2048, "step": 128}),
+                     }
+                }
+
+    RETURN_TYPES = ("IMAGE", )
+    RETURN_NAMES = ("IMAGE", )
+    FUNCTION = "upscale"
+    CATEGORY = TRANSFORM_CAT
+
+    def load_model(self,model_name):
+        model_path = folder_paths.get_full_path("upscale_models", model_name)
+        sd = comfy.utils.load_torch_file(model_path, safe_load=True)
+        if "module.layers.0.residual_group.blocks.0.norm1.weight" in sd:
+            sd = comfy.utils.state_dict_prefix_replace(sd, {"module.":""})
+        out = model_loading.load_state_dict(sd).eval()
+        return out
+
+    def upscale_with_model(self, upscale_model, image, tiled_size: int = 512):
+        device = comfy.model_management.get_torch_device()
+        upscale_model.to(device)
+        in_img = image.movedim(-1,-3).to(device)
+        _ = comfy.model_management.get_free_memory(device)
+
+        overlap = tiled_size // 16
+        oom = True
+        s = None
+        while oom:
+            try:
+                steps = in_img.shape[0] * comfy.utils.get_tiled_scale_steps(in_img.shape[3], in_img.shape[2], tile_x=tiled_size, tile_y=tiled_size, overlap=overlap)
+                pbar = comfy.utils.ProgressBar(steps)
+                s = comfy.utils.tiled_scale(in_img, lambda a: upscale_model(a), tile_x=tiled_size, tile_y=tiled_size, overlap=overlap, upscale_amount=upscale_model.scale, pbar=pbar)
+                oom = False
+            except comfy.model_management.OOM_EXCEPTION as e:
+                tiled_size //= 2
+                if tiled_size < 128:
+                    raise e
+        #offload model to cpu
+        upscale_model.cpu()
+        if s is None:
+            raise ValueError("Upscale failed")
+        s = torch.clamp(s.movedim(-3,-1), min=0, max=1.0)
+        return s
+
+    def upscale(self, image, upscale_model, mode="rescale", resampling_method="nearest", rescale_factor=2, resize_size=1024, tiled_size=512):
+        # Load upscale model
+        up_model = self.load_model(upscale_model)
+
+        # Upscale with model
+        up_image = self.upscale_with_model(up_model, image, tiled_size)
+        tensor_image = TensorImage.from_BWHC(up_image)
+
+        if mode == "resize":
+            up_image = resize(tensor_image, resize_size, resize_size, True, resampling_method, True).get_BWHC()
+        else:
+            # get the max size of the upscaled image
+            _, _, H, W = tensor_image.shape
+            upscaled_max_size = max(H, W)
+
+            original_image = TensorImage.from_BWHC(image)
+            _, _, ori_H, ori_W = original_image.shape
+            original_max_size = max(ori_H, ori_W)
+
+            # rescale_factor is the factor to multiply the original max size
+            factor = rescale_factor * (original_max_size / upscaled_max_size)
+            up_image = rescale(tensor_image, factor, resampling_method, True).get_BWHC()
+        return (up_image,)
+
+
+
 NODE_CLASS_MAPPINGS = {
-    "Signature Cutout": Cutout,
-    "Signature Rotate": Rotate,
-    "Signature Rescale": Rescale,
-    "Signature Resize": Resize,
-    "Signature Auto Crop": AutoCrop,
+    "signature_cutout": Cutout,
+    "signature_rotate": Rotate,
+    "signature_rescale": Rescale,
+    "signature_resize": Resize,
+    "signature_auto_crop": AutoCrop,
+    "signature_upscale_image": UpscaleImage
+}
+
+NODE_DISPLAY_NAME_MAPPINGS = {
+    "signature_cutout": "SIG Cutout",
+    "signature_rotate": "SIG Rotate",
+    "signature_rescale": "SIG Rescale",
+    "signature_resize": "SIG Resize",
+    "signature_auto_crop": "SIG Auto Crop",
+    "signature_upscale_image": "SIG Upscale Image"
 }

@@ -130,12 +130,24 @@ class BaseColor():
         output = TensorImage(batch_tensor).get_BWHC()
         return (output,)
 
+
 NODE_CLASS_MAPPINGS = {
-    "Signature RGB2HSV": RGB2HSV,
-    "Signature RGBHLS": RGBHLS,
-    "Signature RGBA2RGB": RGBA2RGB,
-    "Signature Image Average": ImageAverage,
-    "Signature Image2Mask": Image2Mask,
-    "Signature Mask2Image": Mask2Image,
-    "Signature BaseColor": BaseColor
+    "signature_rgb2hsv": RGB2HSV,
+    "signature_rgbhls": RGBHLS,
+    "signature_rgba2rgb": RGBA2RGB,
+    "signature_image_average": ImageAverage,
+    "signature_image2mask": Image2Mask,
+    "signature_mask2image": Mask2Image,
+    "signature_base_color": BaseColor
 }
+
+NODE_DISPLAY_NAME_MAPPINGS = {
+    "signature_rgb2hsv": "SIG RGB2HSV",
+    "signature_rgbhls": "SIG RGBHLS",
+    "signature_rgba2rgb": "SIG RGBA2RGB",
+    "signature_image_average": "SIG Image Average",
+    "signature_image2mask": "SIG Image2Mask",
+    "signature_mask2image": "SIG Mask2Image",
+    "signature_base_color": "SIG Base Color"
+}
+

@@ -18,15 +18,31 @@ NODE_CLASS_MAPPINGS = {
     **numbers.NODE_CLASS_MAPPINGS,
 }
 
+NODE_DISPLAY_NAME_MAPPINGS = {
+    **models.NODE_DISPLAY_NAME_MAPPINGS,
+    **transform.NODE_DISPLAY_NAME_MAPPINGS,
+    **enhance.NODE_DISPLAY_NAME_MAPPINGS,
+    **filters.NODE_DISPLAY_NAME_MAPPINGS,
+    **morphology.NODE_DISPLAY_NAME_MAPPINGS,
+    **misc.NODE_DISPLAY_NAME_MAPPINGS,
+    **augmentation.NODE_DISPLAY_NAME_MAPPINGS,
+    **lora.NODE_DISPLAY_NAME_MAPPINGS,
+    **io.NODE_DISPLAY_NAME_MAPPINGS,
+    **platform_io.NODE_DISPLAY_NAME_MAPPINGS,
+    **utils.NODE_DISPLAY_NAME_MAPPINGS,
+    **color.NODE_DISPLAY_NAME_MAPPINGS,
+    **numbers.NODE_DISPLAY_NAME_MAPPINGS,
+}
+
 WEB_DIRECTORY = "./nodes/web"
 NAME = "🔸 Signature Nodes"
 
 
-__all__ = ["NODE_CLASS_MAPPINGS", "MANIFEST"]
+__all__ = ["NODE_CLASS_MAPPINGS", "NODE_DISPLAY_NAME_MAPPINGS", "MANIFEST"]
 
 MANIFEST = {
     "name": NAME,
     "version": __version__,
-    "author": "marcojoao",
-    "description": "Signature Nodes",
+    "author": "Marco, Frederico, Anderson",
+    "description": "SIG Nodes",
 }

@@ -70,10 +70,16 @@ class EqualizeClahe:
         output = equalize_clahe(tensor_image).get_BWHC()
         return (output,)
 
-
 NODE_CLASS_MAPPINGS = {
-    "Signature Adjust Brightness": AdjustBrightness,
-    "Signature Adjust Saturation": AdjustSaturation,
-    "Signature Equalize": Equalize,
-    "Signature Equalize Clahe": EqualizeClahe,
+    "signature_adjust_brightness": AdjustBrightness,
+    "signature_adjust_saturation": AdjustSaturation,
+    "signature_equalize": Equalize,
+    "signature_equalize_clahe": EqualizeClahe
+}
+
+NODE_DISPLAY_NAME_MAPPINGS = {
+    "signature_adjust_brightness": "SIG Adjust Brightness",
+    "signature_adjust_saturation": "SIG Adjust Saturation",
+    "signature_equalize": "SIG Equalize",
+    "signature_equalize_clahe": "SIG Equalize Clahe",
 }

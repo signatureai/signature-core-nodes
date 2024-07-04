@@ -164,13 +164,25 @@ class RandomNumber():
 
 
 NODE_CLASS_MAPPINGS = {
-    "Signature Int2Float": Int2Float,
-    "Signature IntMinMax": IntMinMax,
-    "Signature IntClamp": IntClamp,
-    "Signature IntOperator": IntOperator,
-    "Signature Float2Int": Float2Int,
-    "Signature FloatMinMax": FloatMinMax,
-    "Signature FloatClamp": FloatClamp,
-    "Signature FloatOperator": FloatOperator,
-    "Signature RandomNumber": RandomNumber
+    "signature_int2float": Int2Float,
+    "signature_int_minmax": IntMinMax,
+    "signature_int_clamp": IntClamp,
+    "signature_int_operator": IntOperator,
+    "signature_float2int": Float2Int,
+    "signature_float_minmax": FloatMinMax,
+    "signature_float_clamp": FloatClamp,
+    "signature_float_operator": FloatOperator,
+    "signature_random_number": RandomNumber
+}
+
+NODE_DISPLAY_NAME_MAPPINGS = {
+    "signature_int2float": "SIG Int2Float",
+    "signature_int_minmax": "SIG Int MinMax",
+    "signature_int_clamp": "SIG Int Clamp",
+    "signature_int_operator": "SIG Int Operator",
+    "signature_float2int": "SIG Float2Int",
+    "signature_float_minmax": "SIG Float MinMax",
+    "signature_float_clamp": "SIG Float Clamp",
+    "signature_float_operator": "SIG Float Operator",
+    "signature_random_number": "SIG Random Number"
 }

@@ -169,3 +169,10 @@ NODE_CLASS_MAPPINGS = {
     "signature_input_number": PlatformInputNumber,
     "signature_output": PlatformOutput,
 }
+
+NODE_DISPLAY_NAME_MAPPINGS = {
+    "signature_input_image": "SIG Input Image",
+    "signature_input_text": "SIG Input Text",
+    "signature_input_number": "SIG Input Number",
+    "signature_output": "SIG Output",
+}

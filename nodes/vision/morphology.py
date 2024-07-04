@@ -40,7 +40,13 @@ class MaskDilation:
         return (output,)
 
 
+
 NODE_CLASS_MAPPINGS = {
-    "Signature Mask Erosion": MaskErosion,
-    "Signature Mask Dilation": MaskDilation,
+    "signature_mask_erosion": MaskErosion,
+    "signature_mask_dilation": MaskDilation,
+}
+
+NODE_DISPLAY_NAME_MAPPINGS = {
+    "signature_mask_erosion": "SIG Mask Erosion",
+    "signature_mask_dilation": "SIG Mask Dilation",
 }

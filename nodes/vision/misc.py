@@ -190,13 +190,25 @@ class CreateTrimap:
         return (output_0, output_1,)
 
 
+
 NODE_CLASS_MAPPINGS = {
-    "Signature Bitwise": Bitwise,
-    "Signature Ones": Ones,
-    "Signature Zeros": Zeros,
-    "Signature Ones Like": OnesLike,
-    "Signature Zeros Like": ZerosLike,
-    "Signature Mask Binary Filter": MaskBinaryFilter,
-    "Signature Mask Distance": MaskDistance,
-    "Signature Create Trimap": CreateTrimap,
+    "signature_bitwise": Bitwise,
+    "signature_ones": Ones,
+    "signature_zeros": Zeros,
+    "signature_ones_like": OnesLike,
+    "signature_zeros_like": ZerosLike,
+    "signature_mask_binary_filter": MaskBinaryFilter,
+    "signature_mask_distance": MaskDistance,
+    "signature_create_trimap": CreateTrimap,
+}
+
+NODE_DISPLAY_NAME_MAPPINGS = {
+    "signature_bitwise": "SIG Bitwise",
+    "signature_ones": "SIG Ones",
+    "signature_zeros": "SIG Zeros",
+    "signature_ones_like": "SIG Ones Like",
+    "signature_zeros_like": "SIG Zeros Like",
+    "signature_mask_binary_filter": "SIG Mask Binary Filter",
+    "signature_mask_distance": "SIG Mask Distance",
+    "signature_create_trimap": "SIG Create Trimap",
 }
