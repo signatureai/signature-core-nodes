@@ -326,10 +326,17 @@ class LoraTraining:
 
 
 NODE_CLASS_MAPPINGS = {
-    "SIG Apply LoRA Stack": ApplyLoraStack,
-    "SIG LoRA Stack": LoraStack,
-    "SIG Dict to LoRA Stack": Dict2LoraStack,
-    "SIG LoRA Training": LoraTraining,
-    "SIG Save LoRA Captions": SaveLoraCaptions
+    "signature_apply_lora_stack": ApplyLoraStack,
+    "signature_lora_stack": LoraStack,
+    "signature_dict_to_lora_stack": Dict2LoraStack,
+    "signature_lora_training": LoraTraining,
+    "signature_save_lora_captions": SaveLoraCaptions
 }
 
+NODE_DISPLAY_NAME_MAPPINGS = {
+    "signature_apply_lora_stack": "SIG Apply LoRA Stack",
+    "signature_lora_stack": "SIG LoRA Stack",
+    "signature_dict_to_lora_stack": "SIG Dict to LoRA Stack",
+    "signature_lora_training": "SIG LoRA Training",
+    "signature_save_lora_captions": "SIG Save LoRA Captions"
+}
