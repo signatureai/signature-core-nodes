@@ -171,8 +171,8 @@ NODE_CLASS_MAPPINGS = {
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "signature_input_image": "SIG Input Image",
-    "signature_input_text": "SIG Input Text",
-    "signature_input_number": "SIG Input Number",
-    "signature_output": "SIG Output",
+    "signature_input_image": "Signature Input Image",
+    "signature_input_text": "Signature Input Text",
+    "signature_input_number": "Signature Input Number",
+    "signature_output": "Signature Output",
 }

@@ -1,11 +1,10 @@
 import { app } from "../../../scripts/app.js";
 
 const NODES = {
-    "signature_input_image": "Input Image", 
-    "signature_input_text": "Input Text",
-    "signature_input_number": "Input Number",
-    "signature_input_selector": "Input Selector",
-    "signature_output": "Output",
+    "Signature Input Image": "Input Image", 
+    "Signature Input Text": "Input Text",
+    "Signature Input Number": "Input Number",
+    "Signature Output": "Output",
 };
 
 const COLOR_THEMES = {
