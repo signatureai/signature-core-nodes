@@ -97,7 +97,7 @@ class Dict2LoraStack:
     def INPUT_TYPES(cls):
         inputs = {
             "required": {
-                "lora dicts": ("LIST",),
+                "lora_dicts": ("LIST",),
             },
             "optional": {
                 "lora_stack": ("LORA_STACK",)
@@ -111,10 +111,10 @@ class Dict2LoraStack:
 
     RETURN_TYPES = ("LORA_STACK",)
     RETURN_NAMES = ("lora_stack",)
-    FUNCTION = "apply"
+    FUNCTION = "process"
     CATEGORY = LORA_CAT
 
-    def lora_stacker(self, lora_dicts: list, lora_stack=None):
+    def process(self, lora_dicts: list, lora_stack=None):
         loras = [None for _ in lora_dicts]
 
         for idx, lora_dict in enumerate(lora_dicts):
