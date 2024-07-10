@@ -80,8 +80,8 @@ class Resize:
             "optional": {
                 "image": ("IMAGE", {"default": None}),
                 "mask": ("MASK", {"default": None}),
-                "width": ("INT", {"default": 1024}),
-                "height": ("INT", {"default": 1024}),
+                "width": ("INT", {"default": 1024, "min": 32, "step": 2, "max": 40960}),
+                "height": ("INT", {"default": 1024, "min": 32, "step": 2, "max": 40960}),
                 "keep_aspect_ratio": ("BOOLEAN", {"default": False}),
                 "interpolation": (['nearest', 'linear', 'bilinear', 'bicubic', 'trilinear', 'area'],),
                 "antialias": ("BOOLEAN", {"default": True},),
@@ -154,8 +154,8 @@ class Cutout:
 
     def process(self, image: torch.Tensor, mask: torch.Tensor):
         tensor_image = TensorImage.from_BWHC(image)
-        tensor_mask = TensorImage.from_BWHC(mask)
-
+        tensor_mask = TensorImage.from_BWHC(mask, image.device)
+        
         image_rgb, image_rgba = cutout(tensor_image, tensor_mask)
 
         out_image_rgb = TensorImage(image_rgb).get_BWHC()

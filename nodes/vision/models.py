@@ -38,7 +38,7 @@ class MagicEraser(SaveImage):
         print(mask.shape)
         input_mask = TensorImage.from_BWHC(mask)
         highres = TensorImage(self.model.forward(input_image, input_mask, "FIXED"))
-        output_images = highres.get_BWHC().to(COMFY_DEVICE)
+        output_images = highres.get_BWHC()
         if preview == "off":
             return (output_images,)
         result = self.save_images(output_images, filename_prefix, prompt, extra_pnginfo)
@@ -67,7 +67,7 @@ class Unblur(SaveImage):
     def process(self, image: torch.Tensor, preview:str, filename_prefix="Signature", prompt=None, extra_pnginfo=None):
         input_image = TensorImage.from_BWHC(image)
         output_image = self.model.forward(input_image)
-        output_images = TensorImage(output_image).get_BWHC().to(COMFY_DEVICE)
+        output_images = TensorImage(output_image).get_BWHC()
 
         if preview == "off":
             return (output_images,)
@@ -108,12 +108,12 @@ class BackgroundRemoval(SaveImage):
 
         output_masks = TensorImage(masks)
         rgb, rgba = cutout(input_image, output_masks)
-        rgb_output = TensorImage(rgb).get_BWHC().to(COMFY_DEVICE)
-        rgba_output = TensorImage(rgba).get_BWHC().to(COMFY_DEVICE)
-        mask_output = output_masks.get_BWHC().to(COMFY_DEVICE)
+        rgb_output = TensorImage(rgb).get_BWHC()
+        rgba_output = TensorImage(rgba).get_BWHC()
+        mask_output = output_masks.get_BWHC()
         if preview == "none":
             return (rgba_output, rgb_output, mask_output,)
-        preview_images = output_masks.get_rgb_or_rgba().get_BWHC().to(COMFY_DEVICE) if preview == "mask" else rgba_output
+        preview_images = output_masks.get_rgb_or_rgba().get_BWHC() if preview == "mask" else rgba_output
         result = self.save_images(preview_images, filename_prefix, prompt, extra_pnginfo)
         result.update({"result": (rgba_output, rgb_output, mask_output,)})
         return result
