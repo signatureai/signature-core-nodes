@@ -2,7 +2,7 @@ import torch
 import os
 import subprocess
 import random
-from .shared import BASE_COMFY_DIR, SD_SCRIPTS_DIR
+from .shared import BASE_COMFY_DIR, SD_SCRIPTS_DIR, LORA_OUTPUT_DIR
 from .categories import LORA_CAT
 from signature_core.img.tensor_image import TensorImage
 
@@ -210,13 +210,15 @@ class LoraTraining:
             "train_text_encoder_only": (["false", "true"], ),
             },
         }
-    RETURN_TYPES = ()
+
+    RETURN_TYPES = ('STRING',)
+    RETURN_NAMES = ('lora_path',)
     OUTPUT_NODE = True
     FUNCTION = "process"
     CATEGORY = LORA_CAT
 
     def process(self, ckpt_name, network_type, network_module, network_dimension, network_alpha, training_resolution, data_path, batch_size, max_train_epoches, save_every_n_epochs, keep_tokens, min_SNR_gamma, learning_rate_text, learning_rate_unet, learning_rate_scheduler, lr_restart_cycles, optimizer_type, output_name, algorithm, network_dropout, clip_skip, multi_gpu, lowram, train_unet_only, train_text_encoder_only):
-         #free memory first of all
+        # free memory first of all
         loadedmodels=model_management.current_loaded_models
         unloaded_model = False
         for i in range(len(loadedmodels) -1, -1, -1):
@@ -240,7 +242,6 @@ class LoraTraining:
         dropout = 0.0
         conv_dim = 4
         conv_alpha = 4
-        output_dir = 'models/loras'
 
         # Learning rate
         lr = "1e-4" # learning rate
@@ -317,9 +318,12 @@ class LoraTraining:
         if network_type == "SDXL":
             nodespath = os.path.join(SD_SCRIPTS_DIR, "sdxl_train_network.py")
 
-        command = "python3 -m accelerate.commands.launch " + launchargs + f'--num_cpu_threads_per_process=8 "{nodespath}" --enable_bucket --pretrained_model_name_or_path={pretrained_model} --train_data_dir="{train_data_dir}" --output_dir="{output_dir}" --logging_dir="./logs" --log_prefix={output_name} --resolution={resolution} --network_module={network_module} --max_train_epochs={max_train_epoches} --learning_rate={lr} --unet_lr={unet_lr} --text_encoder_lr={text_encoder_lr} --lr_scheduler={lr_scheduler} --lr_warmup_steps={lr_warmup_steps} --lr_scheduler_num_cycles={lr_restart_cycles} --network_dim={network_dim} --network_alpha={network_alpha} --output_name={output_name} --train_batch_size={batch_size} --save_every_n_epochs={save_every_n_epochs} --mixed_precision="fp16" --save_precision="fp16" --seed={theseed} --cache_latents --prior_loss_weight=1 --max_token_length=225 --caption_extension=".txt" --save_model_as={save_model_as} --min_bucket_reso={min_bucket_reso} --max_bucket_reso={max_bucket_reso} --keep_tokens={keep_tokens} --xformers --shuffle_caption ' + extargs
+        command = "python3 -m accelerate.commands.launch " + launchargs + f'--num_cpu_threads_per_process=8 "{nodespath}" --enable_bucket --pretrained_model_name_or_path={pretrained_model} --train_data_dir="{train_data_dir}" --output_dir="{LORA_OUTPUT_DIR}" --logging_dir="./logs" --log_prefix={output_name} --resolution={resolution} --network_module={network_module} --max_train_epochs={max_train_epoches} --learning_rate={lr} --unet_lr={unet_lr} --text_encoder_lr={text_encoder_lr} --lr_scheduler={lr_scheduler} --lr_warmup_steps={lr_warmup_steps} --lr_scheduler_num_cycles={lr_restart_cycles} --network_dim={network_dim} --network_alpha={network_alpha} --output_name={output_name} --train_batch_size={batch_size} --save_every_n_epochs={save_every_n_epochs} --mixed_precision="fp16" --save_precision="fp16" --seed={theseed} --cache_latents --prior_loss_weight=1 --max_token_length=225 --caption_extension=".txt" --save_model_as={save_model_as} --min_bucket_reso={min_bucket_reso} --max_bucket_reso={max_bucket_reso} --keep_tokens={keep_tokens} --xformers --shuffle_caption ' + extargs
         subprocess.run(command, shell=True)
-        return ()
+
+        lora_path = os.path.join(LORA_OUTPUT_DIR, f'{output_name}.{save_model_as}')
+
+        return (lora_path,)
 
 
 NODE_CLASS_MAPPINGS = {
