@@ -2,7 +2,7 @@ import torch
 import os
 import subprocess
 import random
-from .shared import BASE_COMFY_DIR, SIGNATURE_DIR
+from .shared import BASE_COMFY_DIR, SD_SCRIPTS_DIR
 from .categories import LORA_CAT
 from signature_core.img.tensor_image import TensorImage
 
@@ -313,12 +313,9 @@ class LoraTraining:
         pretrained_model = folder_paths.get_full_path("checkpoints", ckpt_name)
 
         #Looking for the training script.
-        submodules_dir = os.path.join(SIGNATURE_DIR, 'src/signature/submodules')
-        print(submodules_dir)
-        sd_scripts_dir = os.path.join(submodules_dir, "sd-scripts")
-        nodespath = os.path.join(sd_scripts_dir, "train_network.py")
+        nodespath = os.path.join(SD_SCRIPTS_DIR, "train_network.py")
         if network_type == "SDXL":
-            nodespath = os.path.join(sd_scripts_dir, "sdxl_train_network.py")
+            nodespath = os.path.join(SD_SCRIPTS_DIR, "sdxl_train_network.py")
 
         command = "python -m accelerate.commands.launch " + launchargs + f'--num_cpu_threads_per_process=8 "{nodespath}" --enable_bucket --pretrained_model_name_or_path={pretrained_model} --train_data_dir="{train_data_dir}" --output_dir="{output_dir}" --logging_dir="./logs" --log_prefix={output_name} --resolution={resolution} --network_module={network_module} --max_train_epochs={max_train_epoches} --learning_rate={lr} --unet_lr={unet_lr} --text_encoder_lr={text_encoder_lr} --lr_scheduler={lr_scheduler} --lr_warmup_steps={lr_warmup_steps} --lr_scheduler_num_cycles={lr_restart_cycles} --network_dim={network_dim} --network_alpha={network_alpha} --output_name={output_name} --train_batch_size={batch_size} --save_every_n_epochs={save_every_n_epochs} --mixed_precision="fp16" --save_precision="fp16" --seed={theseed} --cache_latents --prior_loss_weight=1 --max_token_length=225 --caption_extension=".txt" --save_model_as={save_model_as} --min_bucket_reso={min_bucket_reso} --max_bucket_reso={max_bucket_reso} --keep_tokens={keep_tokens} --xformers --shuffle_caption ' + extargs
         subprocess.run(command, shell=True)

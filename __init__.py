@@ -1,6 +1,10 @@
 from signature_core.version import __version__
 from .nodes.vision import augmentation, color, enhance, filters, misc, models, morphology, transform
 from .nodes import lora, io, platform_io, utils, numbers
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 NODE_CLASS_MAPPINGS = {
     **models.NODE_CLASS_MAPPINGS,
