@@ -5,6 +5,7 @@ import random
 from .shared import BASE_COMFY_DIR, SD_SCRIPTS_DIR, LORA_OUTPUT_DIR
 from .categories import LORA_CAT
 from signature_core.img.tensor_image import TensorImage
+from pathlib import Path
 
 #comfy related imports
 from comfy import model_management, sd, utils # type: ignore
@@ -211,8 +212,8 @@ class LoraTraining:
             },
         }
 
-    RETURN_TYPES = ('STRING',)
-    RETURN_NAMES = ('lora_path',)
+    RETURN_TYPES = ('STRING', 'BYTES')
+    RETURN_NAMES = ('lora_path', 'lora_bytes')
     OUTPUT_NODE = True
     FUNCTION = "process"
     CATEGORY = LORA_CAT
@@ -322,8 +323,9 @@ class LoraTraining:
         subprocess.run(command, shell=True)
 
         lora_path = os.path.join(LORA_OUTPUT_DIR, f'{output_name}.{save_model_as}')
+        lora_bytes = Path(lora_path).read_bytes()
 
-        return (lora_path,)
+        return (lora_path, lora_bytes)
 
 
 NODE_CLASS_MAPPINGS = {
