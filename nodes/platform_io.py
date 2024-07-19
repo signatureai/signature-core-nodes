@@ -95,6 +95,39 @@ class PlatformInputNumber():
         return (value,)
 
 
+class PlatformInputSlider():
+    @classmethod
+    def INPUT_TYPES(s): # type: ignore
+        return {
+            "required": {
+                "title": ("STRING", {"default": "Input Slider"}),
+                "subtype": (['float','int'],),
+                "required": ("BOOLEAN", {"default": True}),
+                "value": ("FLOAT", {"default": 0}),
+                "min_value": ("FLOAT", {"default": 0}),
+                "max_value": ("FLOAT", {"default": 10}),
+                "metadata": ("STRING", {"default": "", "multiline": True}),
+                },
+            }
+    RETURN_TYPES = (any,)
+    FUNCTION = "apply"
+    CATEGORY = PLATFROM_IO_CAT
+
+    def apply(self,
+              value: float,
+              min_value: float,
+              max_value: float,
+              title: str,
+              metadata: str,
+              subtype: str,
+              required: str):
+        if subtype == "int":
+            value = int(value)
+        else:
+            value = float(value)
+        return (value,)
+
+
 class PlatformOutput():
 
     @classmethod
@@ -166,6 +199,7 @@ NODE_CLASS_MAPPINGS = {
     "signature_input_image": PlatformInputImage,
     "signature_input_text": PlatformInputText,
     "signature_input_number": PlatformInputNumber,
+    "signature_input_slider": PlatformInputSlider,
     "signature_output": PlatformOutput,
 }
 
@@ -173,5 +207,6 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "signature_input_image": "Signature Input Image",
     "signature_input_text": "Signature Input Text",
     "signature_input_number": "Signature Input Number",
+    "signature_input_slider": "Signature Input Slider",
     "signature_output": "Signature Output",
 }
