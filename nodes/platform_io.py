@@ -122,9 +122,9 @@ class PlatformInputSlider():
               subtype: str,
               required: str):
         if subtype == "int":
-            value = int(value)
+            value = max(min(int(max_value), int(value)), int(min_value))
         else:
-            value = float(value)
+            value = max(min(max_value, value), min_value)
         return (value,)
 
 
