@@ -4,6 +4,7 @@ const NODES = {
     "Signature Input Image": "Input Image", 
     "Signature Input Text": "Input Text",
     "Signature Input Number": "Input Number",
+    "Signature Input Slider": "Input Slider",
     "Signature Output": "Output",
 };
 
@@ -126,6 +127,44 @@ function inputNumber(node, widget) {
     }
 }
 
+function inputSlider(node, widget) {
+    setNodeColors(node, COLOR_THEMES['cyan']);
+
+    const widgetType = widget.value.toUpperCase();
+    if (node.inputs !== undefined) {
+        if (node.inputs.length > 0) {
+            if (node.inputs[0].name === 'value') {
+                node.inputs[0].type = widgetType;
+            }
+        }
+    }
+    if (node.outputs !== undefined) {
+        node.outputs[0].type = widgetType;
+        node.outputs[0].name = widget.value;
+    }
+
+    const widgets = node.widgets || []
+    let valueWidget = null;
+    for (const w of widgets) {
+        if (w.name === "value") {
+            valueWidget = w;
+            break;
+        }
+    }
+
+    if (valueWidget !== null) {
+        if (widget.value === "int") {
+            valueWidget.options.precision = 0;
+            valueWidget.options.round = 0;
+            valueWidget.options.step = 1;
+        } else {
+            valueWidget.options.precision = 2;
+            valueWidget.options.round = 0.01;
+            valueWidget.options.step = 0.01;
+        }
+    }
+}
+
 function inputSelector(node, widget) {
     setNodeColors(node, COLOR_THEMES['purple']);
 
@@ -152,6 +191,9 @@ const nodeWidgetHandlers = {
     },
     "signature_input_number": {
         'subtype': inputNumber
+    },
+    "signature_input_slider": {
+        'subtype': inputSlider
     },
     "signature_input_selector": {
         'subtype': inputSelector
