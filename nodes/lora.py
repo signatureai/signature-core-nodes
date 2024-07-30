@@ -212,8 +212,8 @@ class LoraTraining:
             },
         }
 
-    RETURN_TYPES = ('STRING', 'BYTES')
-    RETURN_NAMES = ('lora_path', 'lora_bytes')
+    RETURN_TYPES = ('STRING', 'BYTES', 'STRING', 'STRING')
+    RETURN_NAMES = ('lora_path', 'lora_bytes', 'ckpt_name', 'lora_filename')
     OUTPUT_NODE = True
     FUNCTION = "process"
     CATEGORY = LORA_CAT
@@ -322,10 +322,11 @@ class LoraTraining:
         command = "python3 -m accelerate.commands.launch " + launchargs + f'--num_cpu_threads_per_process=8 "{nodespath}" --enable_bucket --pretrained_model_name_or_path={pretrained_model} --train_data_dir="{train_data_dir}" --output_dir="{LORA_OUTPUT_DIR}" --logging_dir="./logs" --log_prefix={output_name} --resolution={resolution} --network_module={network_module} --max_train_epochs={max_train_epoches} --learning_rate={lr} --unet_lr={unet_lr} --text_encoder_lr={text_encoder_lr} --lr_scheduler={lr_scheduler} --lr_warmup_steps={lr_warmup_steps} --lr_scheduler_num_cycles={lr_restart_cycles} --network_dim={network_dim} --network_alpha={network_alpha} --output_name={output_name} --train_batch_size={batch_size} --save_every_n_epochs={save_every_n_epochs} --mixed_precision="fp16" --save_precision="fp16" --seed={theseed} --cache_latents --prior_loss_weight=1 --max_token_length=225 --caption_extension=".txt" --save_model_as={save_model_as} --min_bucket_reso={min_bucket_reso} --max_bucket_reso={max_bucket_reso} --keep_tokens={keep_tokens} --xformers --shuffle_caption ' + extargs
         subprocess.run(command, shell=True)
 
-        lora_path = os.path.join(LORA_OUTPUT_DIR, f'{output_name}.{save_model_as}')
+        lora_filename = f'{output_name}.{save_model_as}'
+        lora_path = os.path.join(LORA_OUTPUT_DIR, lora_filename)
         lora_bytes = Path(lora_path).read_bytes()
 
-        return (lora_path, lora_bytes)
+        return (lora_path, lora_bytes, ckpt_name, lora_filename)
 
 
 NODE_CLASS_MAPPINGS = {
