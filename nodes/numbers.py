@@ -4,9 +4,9 @@ class IntClamp():
     @classmethod
     def INPUT_TYPES(s): # type: ignore
         return {"required": {
-            "number": ("INT", {"default": 0, "forceInput": True}),
-            "min": ("INT", {"default": 0}),
-            "max": ("INT", {"default": 0}),
+            "number": ("INT", {"default": 0, "forceInput": True, "min": -18446744073709551615, "max": 18446744073709551615}),
+            "min": ("INT", {"default": 0, "min": -18446744073709551615, "max": 18446744073709551615}),
+            "max": ("INT", {"default": 0, "min": -18446744073709551615, "max": 18446744073709551615}),
             }}
     RETURN_TYPES = ("INT",)
     FUNCTION = "process"
@@ -22,9 +22,9 @@ class FloatClamp():
     @classmethod
     def INPUT_TYPES(s): # type: ignore
         return {"required": {
-            "number": ("FLOAT", {"default": 0, "forceInput": True}),
-            "min": ("FLOAT", {"default": 0}),
-            "max": ("FLOAT", {"default": 0}),
+            "number": ("FLOAT", {"default": 0, "forceInput": True, "min": -18446744073709551615, "max": 18446744073709551615}),
+            "min": ("FLOAT", {"default": 0, "min": -18446744073709551615, "max": 18446744073709551615}),
+            "max": ("FLOAT", {"default": 0, "min": -18446744073709551615, "max": 18446744073709551615}),
             }}
     RETURN_TYPES = ("FLOAT",)
     FUNCTION = "process"

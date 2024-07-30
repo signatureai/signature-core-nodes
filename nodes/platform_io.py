@@ -155,7 +155,7 @@ class PlatformOutput():
         results = []
         thumbnail_size = 768
         if subtype in ["image", "mask"]:
-            tensor_images = TensorImage.from_BWHC(value)
+            tensor_images = TensorImage.from_BWHC(value.to('cpu'))
             for img in tensor_images:
                 random_str = str(torch.randint(0, 100000, (1,)).item())
                 file_name = f"signature_{current_time_str}_{random_str}.png"
@@ -204,9 +204,9 @@ NODE_CLASS_MAPPINGS = {
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "signature_input_image": "Signature Input Image",
-    "signature_input_text": "Signature Input Text",
-    "signature_input_number": "Signature Input Number",
-    "signature_input_slider": "Signature Input Slider",
-    "signature_output": "Signature Output",
+    "signature_input_image": "SIG Input Image",
+    "signature_input_text": "SIG Input Text",
+    "signature_input_number": "SIG Input Number",
+    "signature_input_slider": "SIG Input Slider",
+    "signature_output": "SIG Output",
 }

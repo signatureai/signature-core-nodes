@@ -3,9 +3,9 @@ import { ComfyWidgets } from "../../../scripts/widgets.js";
 
 // Displays input text on a node
 app.registerExtension({
-	name: "pysssss.ShowText",
+	name: "signature.TextPreview",
 	async beforeRegisterNodeDef(nodeType, nodeData, app) {
-		if (nodeData.name === "SIG Text Preview") {
+		if (nodeData.name === "signature_text_preview") {
 			function populate(text) {
 				if (this.widgets) {
 					for (let i = 1; i < this.widgets.length; i++) {

@@ -117,6 +117,47 @@ class LoadFolder():
                 data[i] = item
         return (data,)
 
+class FiletoImageList():
+    @classmethod
+    def INPUT_TYPES(s): # type: ignore
+        return {
+            "required": {
+                "files": ('FILE', {'default': ''}),
+            },
+    }
+
+    RETURN_TYPES = ("IMAGE",)
+    FUNCTION = "process"
+    CATEGORY = IO_CAT
+    OUTPUT_IS_LIST = (True,)
+
+    def process(self, files: list):
+        images_list = []
+        for file in files:
+            mimetype = file['type']
+            extension = file['name'].lower().split('.')[-1]
+            possible_extensions = ['png', 'jpg', 'jpeg', 'tiff', 'tif', 'bmp']
+            if mimetype.startswith('image') and extension in possible_extensions:
+                images_list.append(TensorImage.from_local(file['name']).get_BWHC())
+
+        return (images_list,)
+
+class FileToList():
+    @classmethod
+    def INPUT_TYPES(s): # type: ignore
+        return {
+            "required": {
+                "files": ('FILE', {'default': ''}),
+            },
+    }
+
+    RETURN_TYPES = ("LIST",)
+    FUNCTION = "process"
+    CATEGORY = IO_CAT
+
+    def process(self, files: list):
+        return files
+
 
 NODE_CLASS_MAPPINGS = {
     "signature_image_from_web": ImageFromWeb,
@@ -124,6 +165,8 @@ NODE_CLASS_MAPPINGS = {
     "signature_base64_from_image": Base64FromImage,
     "signature_load_file": LoadFile,
     "signature_load_folder": LoadFolder,
+    "signature_file_to_image_list": FiletoImageList,
+    "signature_file_to_list": FileToList
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -132,5 +175,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "signature_base64_from_image": "SIG Base64 from Image",
     "signature_load_file": "SIG Load File",
     "signature_load_folder": "SIG Load Folder",
+    "signature_file_to_image_list": "SIG File2ImageList",
+    "signature_file_to_list": "SIG File2List"
 
 }

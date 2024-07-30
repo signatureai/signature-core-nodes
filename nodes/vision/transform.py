@@ -4,7 +4,8 @@ from signature_core.img.tensor_image import TensorImage
 from signature_core.functional.transform import rescale, resize, rotate, auto_crop, cutout
 import folder_paths # type: ignore
 import comfy # type: ignore
-from comfy_extras.chainner_models import model_loading # type: ignore
+from spandrel import ModelLoader, ImageModelDescriptor # type: ignore
+from comfy import model_management # type: ignore
 
 class AutoCrop:
 
@@ -174,7 +175,7 @@ class UpscaleImage:
                     {"image": ("IMAGE",),
                      "upscale_model": (folder_paths.get_filename_list("upscale_models"), ),
                      "mode": (["rescale", "resize"],),
-                     "rescale_factor": ("FLOAT", {"default": 2, "min": 0.01, "max": 16.0, "step": 0.01}),
+                     "rescale_factor": ("FLOAT", {"default": 2, "min": 0.01, "max": 100.0, "step": 0.01}),
                      "resize_size": ("INT", {"default": 1024, "min": 1, "max": 48000, "step": 1}),
                      "resampling_method": (resampling_methods,),
                      "tiled_size": ("INT", {"default": 512, "min": 128, "max": 2048, "step": 128}),
@@ -186,48 +187,71 @@ class UpscaleImage:
     FUNCTION = "upscale"
     CATEGORY = TRANSFORM_CAT
 
-    def load_model(self,model_name):
+
+    def load_model(self, model_name):
         model_path = folder_paths.get_full_path("upscale_models", model_name)
         sd = comfy.utils.load_torch_file(model_path, safe_load=True)
         if "module.layers.0.residual_group.blocks.0.norm1.weight" in sd:
             sd = comfy.utils.state_dict_prefix_replace(sd, {"module.":""})
-        out = model_loading.load_state_dict(sd).eval()
+        out = ModelLoader().load_from_state_dict(sd).eval()
+
+        if not isinstance(out, ImageModelDescriptor):
+            raise Exception("Upscale model must be a single-image model.")
+
         return out
 
-    def upscale_with_model(self, upscale_model, image, tiled_size: int = 512):
-        device = comfy.model_management.get_torch_device()
-        upscale_model.to(device)
-        in_img = image.movedim(-1,-3).to(device)
-        _ = comfy.model_management.get_free_memory(device)
 
-        overlap = tiled_size // 16
-        oom = True
+
+    def upscale_with_model(self, upscale_model, image, device, tile: int = 512, overlap=32) -> torch.Tensor:
+        
+
+        memory_required = model_management.module_size(upscale_model.model)
+        memory_required += (tile * tile * 3) * image.element_size() * max(upscale_model.scale, 1.0) * 384.0
+        memory_required += image.nelement() * image.element_size()
+        model_management.free_memory(memory_required, device)
+        in_img = image.movedim(-1,-3).to(device)
+
         s = None
+        oom = True
         while oom:
             try:
-                steps = in_img.shape[0] * comfy.utils.get_tiled_scale_steps(in_img.shape[3], in_img.shape[2], tile_x=tiled_size, tile_y=tiled_size, overlap=overlap)
+                steps = in_img.shape[0] * comfy.utils.get_tiled_scale_steps(in_img.shape[3], in_img.shape[2], tile_x=tile, tile_y=tile, overlap=overlap)
                 pbar = comfy.utils.ProgressBar(steps)
-                s = comfy.utils.tiled_scale(in_img, lambda a: upscale_model(a), tile_x=tiled_size, tile_y=tiled_size, overlap=overlap, upscale_amount=upscale_model.scale, pbar=pbar)
+                s = comfy.utils.tiled_scale(in_img, lambda a: upscale_model(a), tile_x=tile, tile_y=tile, overlap=overlap, upscale_amount=upscale_model.scale, pbar=pbar)
                 oom = False
-            except comfy.model_management.OOM_EXCEPTION as e:
-                tiled_size //= 2
-                if tiled_size < 128:
+            except model_management.OOM_EXCEPTION as e:
+                tile //= 2
+                if tile < 128:
                     raise e
-        #offload model to cpu
-        upscale_model.cpu()
-        if s is None:
-            raise ValueError("Upscale failed")
-        s = torch.clamp(s.movedim(-3,-1), min=0, max=1.0)
+
+        if not isinstance(s, torch.Tensor):
+            raise ValueError("Upscaling failed")
+        s = torch.clamp(s.movedim(-3,-1), min=0, max=1.0) # type: ignore
         return s
 
     def upscale(self, image, upscale_model, mode="rescale", resampling_method="nearest", rescale_factor=2, resize_size=1024, tiled_size=512):
         # Load upscale model
         up_model = self.load_model(upscale_model)
+        device = model_management.get_torch_device()
+        up_model.to(device)
 
-        # Upscale with model
-        up_image = self.upscale_with_model(up_model, image, tiled_size)
+        # target size
+        _, H, W, _ = image.shape
+        target_size = resize_size if  mode == "resize" else max(H, W) * rescale_factor
+        print(f"Target size: {target_size}")
+        current_size = max(H, W)
+        up_image = image
+        while current_size < target_size:
+            step = self.upscale_with_model(up_model, up_image, device=device, tile=tiled_size)
+            del up_image
+            up_image = step.to("cpu")
+            _, H, W, _ = up_image.shape
+            current_size = max(H, W)
+            print(f"Current size: {current_size}")
+
+        up_model.to("cpu")
         tensor_image = TensorImage.from_BWHC(up_image)
-
+        print(f"Final mode: {mode}")
         if mode == "resize":
             up_image = resize(tensor_image, resize_size, resize_size, True, resampling_method, True).get_BWHC()
         else:
@@ -240,8 +264,13 @@ class UpscaleImage:
             original_max_size = max(ori_H, ori_W)
 
             # rescale_factor is the factor to multiply the original max size
-            factor = rescale_factor * (original_max_size / upscaled_max_size)
-            up_image = rescale(tensor_image, factor, resampling_method, True).get_BWHC()
+            original_target_size = rescale_factor * original_max_size
+            scale_factor = original_target_size / upscaled_max_size
+ 
+            print(f"Rescale factor: {scale_factor}")
+            up_image = rescale(tensor_image, scale_factor, resampling_method, True).get_BWHC()
+
+
         return (up_image,)
 
 

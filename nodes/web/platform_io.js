@@ -1,11 +1,11 @@
 import { app } from "../../../scripts/app.js";
 
 const NODES = {
-    "Signature Input Image": "Input Image", 
-    "Signature Input Text": "Input Text",
-    "Signature Input Number": "Input Number",
-    "Signature Input Slider": "Input Slider",
-    "Signature Output": "Output",
+    "signature_input_image": "Input Image", 
+    "signature_input_text": "Input Text",
+    "signature_input_number": "Input Number",
+    "signature_input_slider": "Input Slider",
+    "signature_output": "Output",
 };
 
 const COLOR_THEMES = {
@@ -216,9 +216,9 @@ const ext = {
     name: "signature.platform_io",
 
     nodeCreated(node) {
-        const title = node.getTitle();
+        const title = node.comfyClass;
         if (NODES.hasOwnProperty(title)) {
-            node.title = NODES[title];
+            // node.title = NODES[title];
 
             node.validateLinks = function() {
                 if (node.outputs !== undefined) {
@@ -233,30 +233,6 @@ const ext = {
                 }
             };
 
-
-            // node.update = function() {
-
-            //     if (node.graph === undefined) {
-            //         return;
-            //     }
-
-            //     if (!node.graph) {
-            //         return;
-            //     }
-
-            //     if (node.inputs !== undefined) {
-            //         const getters = graph._nodes.filter(x => x.type === node.type);
-            //         getters.forEach(getter => {
-            //             if (getter !== undefined && getter.inputs !== undefined) {
-            //                 const nodeType = node.inputs[0].type;
-            //                 getter.outputs[0].type = nodeType;
-            //                 getter.outputs[0].name = nodeType;
-            //                 getter.validateLinks();
-            //             }
-            //         });
-            //     }
-
-            // }
 
             for (const w of node.widgets || []) {
                 let widgetValue = w.value;
@@ -281,7 +257,6 @@ const ext = {
                         }
 
                         widgetLogic(node, w);
-                        // node.update();
                     }
                 });
             }

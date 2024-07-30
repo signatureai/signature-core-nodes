@@ -135,7 +135,7 @@ class ConsoleDebug:
         print(f"\033[96m{prefix} {value}\033[0m")
         return (None,)
 
-class ImageSize:
+class ImageShape:
     @classmethod
     def INPUT_TYPES(s): # type: ignore
         return {
@@ -143,12 +143,12 @@ class ImageSize:
                 "image": ("IMAGE",),
             },
         }
-    RETURN_TYPES = ("INT", "INT")
-    RETURN_NAMES = ("width", "height")
+    RETURN_TYPES = ("INT", "INT", "INT", "INT")
+    RETURN_NAMES = ("batch", "width", "height", "channels")
     FUNCTION = "process"
     CATEGORY = UTILS_CAT
     def process(self, image):
-        return (image.shape[2], image.shape[1], )
+        return (image.shape[0], image.shape[2], image.shape[1], image.shape[3], )
 
 class UnloadCheckpoint:
     @classmethod
@@ -222,7 +222,7 @@ NODE_CLASS_MAPPINGS = {
     "signature_mask_preview": MaskPreview,
     "signature_console_debug": ConsoleDebug,
     "signature_image_batch2list": ImageBatch2List,
-    "signature_get_image_size": ImageSize,
+    "signature_get_image_size": ImageShape,
     "signature_unload_checkpoint": UnloadCheckpoint,
     "signature_cached_checkpoint_loader": CachedCheckpointLoader
 }
@@ -235,7 +235,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "signature_mask_preview": "SIG Mask Preview",
     "signature_console_debug": "SIG Console Debug",
     "signature_image_batch2list": "SIG Image Batch2List",
-    "signature_get_image_size": "SIG Get Image Size",
+    "signature_get_image_size": "SIG Get Image Shape",
     "signature_unload_checkpoint": "SIG Unload Checkpoint (TEST)",
     "signature_cached_checkpoint_loader": "SIG Cached Checkpoint Loader (TEST)"
 }
