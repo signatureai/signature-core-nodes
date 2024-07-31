@@ -26,7 +26,7 @@ class PlatformInputImage():
     FUNCTION = "apply"
     CATEGORY = PLATFROM_IO_CAT
 
-    def apply(self, value, title:str, metadata:str, subtype: str, required:str, fallback = None):
+    def apply(self, value, title:str, metadata:str, subtype: str, required:bool, fallback = None):
 
         if value != "":
             if value.startswith("data:"):
@@ -63,12 +63,9 @@ class PlatformInputText():
     FUNCTION = "apply"
     CATEGORY = PLATFROM_IO_CAT
 
-    def apply(self, value:str, title:str, metadata:str, subtype: str, required:str):
+    def apply(self, value:str, title:str, metadata:str, subtype: str, required:bool):
+        return (value,)
 
-        if isinstance(value, str):
-            return (value,)
-        else:
-            raise ValueError(f"Unsupported input type: {type(value)}")
 
 
 class PlatformInputNumber():
@@ -87,13 +84,31 @@ class PlatformInputNumber():
     FUNCTION = "apply"
     CATEGORY = PLATFROM_IO_CAT
 
-    def apply(self, value:float, title:str, metadata:str, subtype: str, required:str):
+    def apply(self, value:float, title:str, metadata:str, subtype: str, required:bool):
         if subtype == "int":
             value = int(value)
         else:
             value = float(value)
         return (value,)
 
+class PlatformInputBoolean:
+    @classmethod
+    def INPUT_TYPES(s): # type: ignore
+        return {
+            "required": {
+                "title": ("STRING", {"default": "Input Boolean"}),
+                "subtype": (['boolean'],),
+                "required": ("BOOLEAN", {"default": True}),
+                "value": ("BOOLEAN", {"default": False}),
+                "metadata": ("STRING", {"default": "", "multiline": True}),
+                }
+            }
+    RETURN_TYPES = ("BOOLEAN",)
+    RETURN_NAMES = ("boolean",)
+    FUNCTION = "apply"
+    CATEGORY = PLATFROM_IO_CAT
+    def apply(self, value:bool, title:str, subtype: str, metadata:str, required:bool):
+        return (value, )
 
 class PlatformInputSlider():
     @classmethod
@@ -195,10 +210,12 @@ class PlatformOutput():
         return {"ui": {"signature_output": results}}
 
 
+
 NODE_CLASS_MAPPINGS = {
     "signature_input_image": PlatformInputImage,
     "signature_input_text": PlatformInputText,
     "signature_input_number": PlatformInputNumber,
+    "signature_input_boolean": PlatformInputBoolean,
     "signature_input_slider": PlatformInputSlider,
     "signature_output": PlatformOutput,
 }
@@ -207,6 +224,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "signature_input_image": "SIG Input Image",
     "signature_input_text": "SIG Input Text",
     "signature_input_number": "SIG Input Number",
+    "signature_input_boolean": "SIG Input Boolean",
     "signature_input_slider": "SIG Input Slider",
     "signature_output": "SIG Output",
 }

@@ -1,10 +1,11 @@
 import { app } from "../../../scripts/app.js";
 
 const NODES = {
-    "signature_input_image": "Input Image", 
+    "signature_input_image": "Input Image",
     "signature_input_text": "Input Text",
     "signature_input_number": "Input Number",
     "signature_input_slider": "Input Slider",
+    "signature_input_boolean": "Input Boolean",
     "signature_output": "Output",
 };
 
@@ -16,6 +17,7 @@ const COLOR_THEMES = {
     cyan: { nodeColor: "#223333", nodeBgColor: "#335555" },
     purple: { nodeColor: "#332233", nodeBgColor: "#553355" },
     yellow: { nodeColor: "#443322", nodeBgColor: "#665533" },
+    orange: { nodeColor: "#663322", nodeBgColor: "#995533" },
     none: { nodeColor: null, nodeBgColor: null } // no color
 };
 
@@ -89,6 +91,10 @@ function inputText(node, widget) {
     }
 }
 
+function inputBoolean(node, widget) {
+    setNodeColors(node, COLOR_THEMES['orange']);
+}
+
 function inputNumber(node, widget) {
     setNodeColors(node, COLOR_THEMES['cyan']);
 
@@ -127,43 +133,6 @@ function inputNumber(node, widget) {
     }
 }
 
-function inputSlider(node, widget) {
-    setNodeColors(node, COLOR_THEMES['cyan']);
-
-    const widgetType = widget.value.toUpperCase();
-    if (node.inputs !== undefined) {
-        if (node.inputs.length > 0) {
-            if (node.inputs[0].name === 'value') {
-                node.inputs[0].type = widgetType;
-            }
-        }
-    }
-    if (node.outputs !== undefined) {
-        node.outputs[0].type = widgetType;
-        node.outputs[0].name = widget.value;
-    }
-
-    const widgets = node.widgets || []
-    let valueWidget = null;
-    for (const w of widgets) {
-        if (w.name === "value") {
-            valueWidget = w;
-            break;
-        }
-    }
-
-    if (valueWidget !== null) {
-        if (widget.value === "int") {
-            valueWidget.options.precision = 0;
-            valueWidget.options.round = 0;
-            valueWidget.options.step = 1;
-        } else {
-            valueWidget.options.precision = 2;
-            valueWidget.options.round = 0.01;
-            valueWidget.options.step = 0.01;
-        }
-    }
-}
 
 function inputSelector(node, widget) {
     setNodeColors(node, COLOR_THEMES['purple']);
@@ -193,10 +162,13 @@ const nodeWidgetHandlers = {
         'subtype': inputNumber
     },
     "signature_input_slider": {
-        'subtype': inputSlider
+        'subtype': inputNumber
     },
     "signature_input_selector": {
         'subtype': inputSelector
+    },
+    "signature_input_boolean": {
+        'subtype': inputBoolean
     },
     "signature_output": {
         'subtype': output
