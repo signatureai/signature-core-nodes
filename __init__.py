@@ -1,6 +1,6 @@
 from signature_core.version import __version__
 from .nodes.vision import augmentation, color, enhance, filters, misc, models, morphology, transform
-from .nodes import lora, io, platform_io, utils, numbers
+from .nodes import lora, io, platform_io, utils, numbers, primitives
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -20,6 +20,7 @@ NODE_CLASS_MAPPINGS = {
     **utils.NODE_CLASS_MAPPINGS,
     **color.NODE_CLASS_MAPPINGS,
     **numbers.NODE_CLASS_MAPPINGS,
+    **primitives.NODE_CLASS_MAPPINGS,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -36,6 +37,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     **utils.NODE_DISPLAY_NAME_MAPPINGS,
     **color.NODE_DISPLAY_NAME_MAPPINGS,
     **numbers.NODE_DISPLAY_NAME_MAPPINGS,
+    **primitives.NODE_DISPLAY_NAME_MAPPINGS,
 }
 
 WEB_DIRECTORY = "./nodes/web"
