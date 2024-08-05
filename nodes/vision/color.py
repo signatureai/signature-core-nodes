@@ -89,6 +89,26 @@ class Image2Mask():
             image_tensor = image_tensor[:, 3, :, :].unsqueeze(1)
         output = TensorImage(image_tensor).get_BWHC()
         return (output,)
+    
+    
+
+class ImageSubtract():
+    @classmethod
+    def INPUT_TYPES(s): # type: ignore
+        return {"required": {
+            "image_0": ("IMAGE",),
+            "image_1": ("IMAGE",),
+            }}
+    RETURN_TYPES = ('IMAGE',)
+    FUNCTION = "process"
+    CATEGORY = COLOR_CAT
+    def process(self, image_0: torch.Tensor, image_1: torch.Tensor):
+        image_0_tensor = TensorImage.from_BWHC(image_0)
+        image_1_tensor = TensorImage.from_BWHC(image_1)
+        image_tensor = torch.abs(image_0_tensor - image_1_tensor)
+        output = TensorImage(image_tensor).get_BWHC()
+        return (output,)
+
 class Mask2Image():
     @classmethod
     def INPUT_TYPES(s): # type: ignore
@@ -138,7 +158,8 @@ NODE_CLASS_MAPPINGS = {
     "signature_image_average": ImageAverage,
     "signature_image2mask": Image2Mask,
     "signature_mask2image": Mask2Image,
-    "signature_base_color": BaseColor
+    "signature_base_color": BaseColor,
+    "signature_image_subtract": ImageSubtract,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -148,6 +169,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "signature_image_average": "SIG Image Average",
     "signature_image2mask": "SIG Image2Mask",
     "signature_mask2image": "SIG Mask2Image",
-    "signature_base_color": "SIG Base Color"
+    "signature_base_color": "SIG Base Color",
+    "signature_image_subtract": "SIG Image Subtract",
 }
 
