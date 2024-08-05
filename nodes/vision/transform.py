@@ -14,7 +14,11 @@ class AutoCrop:
         return {"required": {
             "image": ("IMAGE",),
             "mask": ("MASK",),
-            "padding": ("INT", {"default": 0}),
+            "mask_threshold": ("FLOAT", {"default": 0.01, "min": 0.00, "max": 1.00, "step": 0.01}),
+            "left_padding": ("INT", {"default": 0}),
+            "right_padding": ("INT", {"default": 0}),
+            "top_padding": ("INT", {"default": 0}),
+            "bottom_padding": ("INT", {"default": 0}),
             }}
 
     RETURN_TYPES = ("IMAGE", "MASK", "INT", "INT", "INT", "INT")
@@ -25,11 +29,17 @@ class AutoCrop:
     def process(self,
                 image: torch.Tensor,
                 mask: torch.Tensor,
-                padding: int):
+                mask_threshold: float,
+                left_padding: int,
+                right_padding: int,
+                top_padding: int,
+                bottom_padding: int):
 
         img_tensor = TensorImage.from_BWHC(image)
         mask_tensor = TensorImage.from_BWHC(mask)
-        img_result, mask_result, min_x, min_y, width, height = auto_crop(img_tensor, mask_tensor, padding=padding)
+        mask_tensor[mask_tensor > mask_threshold] = 1.0
+        mask_tensor[mask_tensor <= mask_threshold] = 0.0
+        img_result, mask_result, min_x, min_y, width, height = auto_crop(img_tensor, mask_tensor, padding=(left_padding, right_padding, top_padding, bottom_padding))
         output_img = TensorImage(img_result).get_BWHC()
         output_mask = TensorImage(mask_result).get_BWHC()
 
@@ -48,7 +58,7 @@ class Rescale:
                 "image": ("IMAGE", {"default": None}),
                 "mask": ("MASK", {"default": None}),
                 "factor": ("FLOAT", {"default": 2.0, "min": 0.001, "max": 100.0, "step": 0.01}),
-                "interpolation": (['nearest', 'linear', 'bilinear', 'bicubic', 'trilinear', 'area'],),
+                "interpolation": (['nearest', 'nearest-exact', 'bilinear', 'bicubic', 'box', 'hamming', 'lanczos'],),
                 "antialias": ("BOOLEAN", {"default": True}),
                 },
             }
@@ -84,7 +94,7 @@ class Resize:
                 "width": ("INT", {"default": 1024, "min": 32, "step": 2, "max": 40960}),
                 "height": ("INT", {"default": 1024, "min": 32, "step": 2, "max": 40960}),
                 "keep_aspect_ratio": ("BOOLEAN", {"default": False}),
-                "interpolation": (['nearest', 'linear', 'bilinear', 'bicubic', 'trilinear', 'area'],),
+                "interpolation": (['nearest', 'nearest-exact', 'bilinear', 'bicubic', 'box', 'hamming', 'lanczos'],),
                 "antialias": ("BOOLEAN", {"default": True},),
             },
         }
@@ -238,7 +248,6 @@ class UpscaleImage:
         # target size
         _, H, W, _ = image.shape
         target_size = resize_size if  mode == "resize" else max(H, W) * rescale_factor
-        print(f"Target size: {target_size}")
         current_size = max(H, W)
         up_image = image
         while current_size < target_size:
@@ -247,11 +256,10 @@ class UpscaleImage:
             up_image = step.to("cpu")
             _, H, W, _ = up_image.shape
             current_size = max(H, W)
-            print(f"Current size: {current_size}")
 
         up_model.to("cpu")
         tensor_image = TensorImage.from_BWHC(up_image)
-        print(f"Final mode: {mode}")
+
         if mode == "resize":
             up_image = resize(tensor_image, resize_size, resize_size, True, resampling_method, True).get_BWHC()
         else:
@@ -266,8 +274,7 @@ class UpscaleImage:
             # rescale_factor is the factor to multiply the original max size
             original_target_size = rescale_factor * original_max_size
             scale_factor = original_target_size / upscaled_max_size
- 
-            print(f"Rescale factor: {scale_factor}")
+
             up_image = rescale(tensor_image, scale_factor, resampling_method, True).get_BWHC()
 
 
