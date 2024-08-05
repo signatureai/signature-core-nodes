@@ -156,7 +156,7 @@ class FileToList():
     CATEGORY = IO_CAT
 
     def process(self, files: list):
-        return files
+        return (files,)
 
 
 NODE_CLASS_MAPPINGS = {
