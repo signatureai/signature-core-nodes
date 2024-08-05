@@ -61,7 +61,8 @@ async function loadFile(file, pathValueWidget) {
         // Upload failed and file cannot be added to options
         return;
     }
-    const result = {'name': file.name, 'type': file.type};
+    const result = {'name': file.webkitRelativePath === ''? file.name : file.webkitRelativePath,
+                                       'type': file.type};
     const resultString = JSON.stringify(result);
     const value = pathValueWidget.value;
     if (value == '') {
