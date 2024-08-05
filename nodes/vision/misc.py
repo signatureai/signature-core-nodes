@@ -107,18 +107,32 @@ class MaskBinaryFilter():
     def INPUT_TYPES(s): # type: ignore
         return {"required": {
             "mask": ("MASK",),
+            "threshold": ("FLOAT", {"default": 0.01, "min": 0.00, "max": 1.00, "step": 0.01}),
+            }}
+    RETURN_TYPES = ("MASK",)
+    FUNCTION = "process"
+    CATEGORY = MISC_CAT
+    def process(self, mask: torch.Tensor, threshold: float):
+        step = TensorImage.from_BWHC(mask)
+        step[step > threshold] = 1.0
+        step[step <= threshold] = 0.0
+        output = TensorImage(step).get_BWHC()
+        return (output,)
+
+class MaskInvert():
+    @classmethod
+    def INPUT_TYPES(s): # type: ignore
+        return {"required": {
+            "mask": ("MASK",),
             }}
     RETURN_TYPES = ("MASK",)
     FUNCTION = "process"
     CATEGORY = MISC_CAT
     def process(self, mask: torch.Tensor):
         step = TensorImage.from_BWHC(mask)
-        step[step > 0.01] = 1.0
-        step[step <= 0.01] = 0.0
+        step = 1.0 - step
         output = TensorImage(step).get_BWHC()
         return (output,)
-
-
 
 class MaskDistance():
     @classmethod
@@ -186,7 +200,6 @@ class CreateTrimap:
         output_0 = TensorImage(trimap_im).get_BWHC()
         output_1 = trimap.permute(0, 2, 3, 1)
 
-        print(output_1.shape)
         return (output_0, output_1,)
 
 
@@ -197,6 +210,7 @@ NODE_CLASS_MAPPINGS = {
     "signature_zeros": Zeros,
     "signature_ones_like": OnesLike,
     "signature_zeros_like": ZerosLike,
+    "signature_mask_invert": MaskInvert,
     "signature_mask_binary_filter": MaskBinaryFilter,
     "signature_mask_distance": MaskDistance,
     "signature_create_trimap": CreateTrimap,
@@ -208,6 +222,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "signature_zeros": "SIG Zeros",
     "signature_ones_like": "SIG Ones Like",
     "signature_zeros_like": "SIG Zeros Like",
+    "signature_mask_invert": "SIG Mask Invert",
     "signature_mask_binary_filter": "SIG Mask Binary Filter",
     "signature_mask_distance": "SIG Mask Distance",
     "signature_create_trimap": "SIG Create Trimap",
