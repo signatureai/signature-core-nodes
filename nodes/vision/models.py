@@ -1,7 +1,6 @@
 
 import torch
 from ..categories import MODELS_CAT
-from ..shared import COMFY_DEVICE
 from signature_core.img.tensor_image import TensorImage
 from signature_core.models.lama import Lama
 from signature_core.models.salient_object_detection import SalientObjectDetection
@@ -35,7 +34,6 @@ class MagicEraser(SaveImage):
 
     def process(self, image: torch.Tensor, mask: torch.Tensor, preview:str, filename_prefix="Signature", prompt=None, extra_pnginfo=None):
         input_image = TensorImage.from_BWHC(image)
-        print(mask.shape)
         input_mask = TensorImage.from_BWHC(mask)
         highres = TensorImage(self.model.forward(input_image, input_mask, "FIXED"))
         output_images = highres.get_BWHC()

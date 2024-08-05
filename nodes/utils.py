@@ -21,20 +21,6 @@ class Any2String():
     def process(self, input):
         return (str(input),)
 
-class ImageBatch2List():
-    @classmethod
-    def INPUT_TYPES(s): # type: ignore
-        return {"required": {
-            "batch": ("IMAGE",),
-            }}
-    RETURN_TYPES = ('LIST',)
-    FUNCTION = "process"
-    CATEGORY = UTILS_CAT
-    def process(self, batch: torch.Tensor):
-        image_list = []
-        for image in batch:
-            image_list.append(image.unsqueeze(0))
-        return (image_list,)
 
 class Any2Any():
     @classmethod
@@ -70,7 +56,7 @@ class String2Case():
             result = text.upper()
         if case == "capitalize":
             result = text.capitalize()
-        print(result)
+
         return (result,)
 
 
@@ -79,7 +65,7 @@ class TextPreview():
     def INPUT_TYPES(s):  # type: ignore
         return {
             "required": {
-                "text": ("STRING", {"forceInput": True}),
+                "text": (any,),
             },
         }
     INPUT_IS_LIST = True
@@ -90,7 +76,13 @@ class TextPreview():
 
     CATEGORY = UTILS_CAT
     def process(self, text):
-        return {"ui": {"text": text}, "result": (text,)}
+        print(len(text))
+        text_string = []
+        for t in text:
+            text_string.append(str(t))
+
+
+        return {"ui": {"text": text_string}, "result": (text_string,)}
 
 class MaskPreview(SaveImage):
     def __init__(self):
@@ -143,12 +135,29 @@ class ImageShape:
                 "image": ("IMAGE",),
             },
         }
-    RETURN_TYPES = ("INT", "INT", "INT", "INT")
-    RETURN_NAMES = ("batch", "width", "height", "channels")
+    RETURN_TYPES = ("INT", "INT", "INT", "INT", "STRING")
+    RETURN_NAMES = ("batch", "width", "height", "channels", "debug")
     FUNCTION = "process"
     CATEGORY = UTILS_CAT
     def process(self, image):
-        return (image.shape[0], image.shape[2], image.shape[1], image.shape[3], )
+        return (image.shape[0], image.shape[2], image.shape[1], image.shape[3], str(image.shape))
+
+class MaskShape:
+    @classmethod
+    def INPUT_TYPES(s): # type: ignore
+        return {
+            "required": {
+                "mask": ("MASK",),
+            },
+        }
+    RETURN_TYPES = ("INT", "INT", "INT", "INT", "STRING")
+    RETURN_NAMES = ("batch", "width", "height", "channels", "debug")
+    FUNCTION = "process"
+    CATEGORY = UTILS_CAT
+    def process(self, mask):
+        if len(mask.shape) == 3:
+            return (mask.shape[0], mask.shape[2], mask.shape[1], 1, str(mask.shape))
+        return (mask.shape[0], mask.shape[2], mask.shape[1], mask.shape[3], str(mask.shape))
 
 class UnloadCheckpoint:
     @classmethod
@@ -167,7 +176,7 @@ class UnloadCheckpoint:
         model.model_patches_to("cpu")
         model_management.free_memory(1e300, model_management.get_torch_device())
         _ = model_management.get_free_memory()
-        print(f"======> {model_management.loaded_models()}")
+
         model_management.soft_empty_cache()
         model_management.unload_all_models()
         del model
@@ -186,7 +195,6 @@ class CachedCheckpointLoader:
 
     def free_vram(self):
         _ = model_management.get_free_memory()
-        print(f"======> {model_management.loaded_models()}")
         model_management.soft_empty_cache()
         model_management.unload_all_models()
         gc.collect()
@@ -200,7 +208,6 @@ class CachedCheckpointLoader:
         cached_models = {}
         for model in models_list:
             ckpt = self.load_checkpoint(model)[0]
-            print(ckpt)
             if ckpt is None:
                 continue
             ckpt.model_patches_to("cpu")
@@ -221,8 +228,8 @@ NODE_CLASS_MAPPINGS = {
     "signature_text_preview": TextPreview,
     "signature_mask_preview": MaskPreview,
     "signature_console_debug": ConsoleDebug,
-    "signature_image_batch2list": ImageBatch2List,
     "signature_get_image_size": ImageShape,
+    "signature_get_mask_size": MaskShape,
     "signature_unload_checkpoint": UnloadCheckpoint,
     "signature_cached_checkpoint_loader": CachedCheckpointLoader
 }
@@ -234,8 +241,8 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "signature_text_preview": "SIG Text Preview",
     "signature_mask_preview": "SIG Mask Preview",
     "signature_console_debug": "SIG Console Debug",
-    "signature_image_batch2list": "SIG Image Batch2List",
     "signature_get_image_size": "SIG Get Image Shape",
+    "signature_get_mask_size": "SIG Get Mask Shape",
     "signature_unload_checkpoint": "SIG Unload Checkpoint (TEST)",
     "signature_cached_checkpoint_loader": "SIG Cached Checkpoint Loader (TEST)"
 }
