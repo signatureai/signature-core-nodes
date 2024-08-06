@@ -1,122 +1,187 @@
-from .categories import NUMBERS_CAT
 import random
-class IntClamp():
+
+from .categories import NUMBERS_CAT
+
+
+class IntClamp:
     @classmethod
-    def INPUT_TYPES(s): # type: ignore
-        return {"required": {
-            "number": ("INT", {"default": 0, "forceInput": True, "min": -18446744073709551615, "max": 18446744073709551615}),
-            "min": ("INT", {"default": 0, "min": -18446744073709551615, "max": 18446744073709551615}),
-            "max": ("INT", {"default": 0, "min": -18446744073709551615, "max": 18446744073709551615}),
-            }}
+    def INPUT_TYPES(cls):  # type: ignore
+        return {
+            "required": {
+                "number": (
+                    "INT",
+                    {
+                        "default": 0,
+                        "forceInput": True,
+                        "min": -18446744073709551615,
+                        "max": 18446744073709551615,
+                    },
+                ),
+                "min_value": (
+                    "INT",
+                    {"default": 0, "min": -18446744073709551615, "max": 18446744073709551615},
+                ),
+                "max_value": (
+                    "INT",
+                    {"default": 0, "min": -18446744073709551615, "max": 18446744073709551615},
+                ),
+            }
+        }
+
     RETURN_TYPES = ("INT",)
     FUNCTION = "process"
     CATEGORY = NUMBERS_CAT
-    def process(self, number: int, min: int, max: int):
-        if number < min:
-            return (min,)
-        if number > max:
-            return (max,)
+
+    def process(self, number: int, min_value: int, max_value: int):
+        if number < min_value:
+            return (min_value,)
+        if number > max_value:
+            return (max_value,)
         return (number,)
 
-class FloatClamp():
+
+class FloatClamp:
     @classmethod
-    def INPUT_TYPES(s): # type: ignore
-        return {"required": {
-            "number": ("FLOAT", {"default": 0, "forceInput": True, "min": -18446744073709551615, "max": 18446744073709551615}),
-            "min": ("FLOAT", {"default": 0, "min": -18446744073709551615, "max": 18446744073709551615}),
-            "max": ("FLOAT", {"default": 0, "min": -18446744073709551615, "max": 18446744073709551615}),
-            }}
+    def INPUT_TYPES(cls):  # type: ignore
+        return {
+            "required": {
+                "number": (
+                    "FLOAT",
+                    {
+                        "default": 0,
+                        "forceInput": True,
+                        "min": -18446744073709551615,
+                        "max": 18446744073709551615,
+                    },
+                ),
+                "min_value": (
+                    "FLOAT",
+                    {"default": 0, "min": -18446744073709551615, "max": 18446744073709551615},
+                ),
+                "max_value": (
+                    "FLOAT",
+                    {"default": 0, "min": -18446744073709551615, "max": 18446744073709551615},
+                ),
+            }
+        }
+
     RETURN_TYPES = ("FLOAT",)
     FUNCTION = "process"
     CATEGORY = NUMBERS_CAT
-    def process(self, number: float, min: float, max: float):
-        if number < min:
-            return (min,)
-        if number > max:
-            return (max,)
+
+    def process(self, number: float, min_value: float, max_value: float):
+        if number < min_value:
+            return (min_value,)
+        if number > max_value:
+            return (max_value,)
         return (number,)
 
-class Float2Int():
+
+class Float2Int:
     @classmethod
-    def INPUT_TYPES(s): # type: ignore
-        return {"required": {
-            "number": ("FLOAT", {"default": 0, "forceInput": True}),
-            }}
+    def INPUT_TYPES(cls):  # type: ignore
+        return {
+            "required": {
+                "number": ("FLOAT", {"default": 0, "forceInput": True}),
+            }
+        }
+
     RETURN_TYPES = ("INT",)
     FUNCTION = "process"
     CATEGORY = NUMBERS_CAT
+
     def process(self, number: float):
         return (int(number),)
 
-class Int2Float():
+
+class Int2Float:
     @classmethod
-    def INPUT_TYPES(s): # type: ignore
-        return {"required": {
-            "number": ("INT", {"default": 0, "forceInput": True}),
-            }}
+    def INPUT_TYPES(cls):  # type: ignore
+        return {
+            "required": {
+                "number": ("INT", {"default": 0, "forceInput": True}),
+            }
+        }
+
     RETURN_TYPES = ("FLOAT",)
     FUNCTION = "process"
     CATEGORY = NUMBERS_CAT
+
     def process(self, number: int):
         return (float(number),)
 
-class IntOperator():
+
+class IntOperator:
     @classmethod
-    def INPUT_TYPES(s): # type: ignore
-        return {"required": {
-            "left": ("INT", {"default": 0}),
-            "right": ("INT", {"default": 0}),
-            "operator": (['+', '-', '*', '/'],),
-            }}
+    def INPUT_TYPES(cls):  # type: ignore
+        return {
+            "required": {
+                "left": ("INT", {"default": 0}),
+                "right": ("INT", {"default": 0}),
+                "operator": (["+", "-", "*", "/"],),
+            }
+        }
+
     RETURN_TYPES = ("INT",)
     FUNCTION = "process"
     CATEGORY = NUMBERS_CAT
+
     def process(self, left: int, right: int, operator: str):
         if operator == "+":
             return (left + right,)
-        elif operator == "-":
+        if operator == "-":
             return (left - right,)
-        elif operator == "*":
+        if operator == "*":
             return (left * right,)
-        elif operator == "/":
+        if operator == "/":
             return (left / right,)
 
         raise ValueError(f"Unsupported operator: {operator}")
 
-class FloatOperator():
+
+class FloatOperator:
     @classmethod
-    def INPUT_TYPES(s): # type: ignore
-        return {"required": {
-            "left": ("FLOAT", {"default": 0}),
-            "right": ("FLOAT", {"default": 0}),
-            "operator": (['+', '-', '*', '/'],),
-            }}
+    def INPUT_TYPES(cls):  # type: ignore
+        return {
+            "required": {
+                "left": ("FLOAT", {"default": 0}),
+                "right": ("FLOAT", {"default": 0}),
+                "operator": (["+", "-", "*", "/"],),
+            }
+        }
+
     RETURN_TYPES = ("FLOAT",)
     FUNCTION = "process"
     CATEGORY = NUMBERS_CAT
+
     def process(self, left: float, right: float, operator: str):
         if operator == "+":
             return (left + right,)
-        elif operator == "-":
+        if operator == "-":
             return (left - right,)
-        elif operator == "*":
+        if operator == "*":
             return (left * right,)
-        elif operator == "/":
+        if operator == "/":
             return (left / right,)
 
         raise ValueError(f"Unsupported operator: {operator}")
 
-class IntMinMax():
+
+class IntMinMax:
     @classmethod
-    def INPUT_TYPES(s): # type: ignore
-        return {"required": {
-            "a": ("INT", {"default": 0, "forceInput": True}),
-            "b": ("INT", {"default": 0, "forceInput": True}),
-            "mode": (['min', 'max'],),
-            }}
+    def INPUT_TYPES(cls):  # type: ignore
+        return {
+            "required": {
+                "a": ("INT", {"default": 0, "forceInput": True}),
+                "b": ("INT", {"default": 0, "forceInput": True}),
+                "mode": (["min", "max"],),
+            }
+        }
+
     RETURN_TYPES = ("INT",)
     FUNCTION = "process"
     CATEGORY = NUMBERS_CAT
+
     def process(self, a: int, b: int, mode: str):
         if mode == "min":
             return (min(a, b),)
@@ -124,17 +189,22 @@ class IntMinMax():
             return (max(a, b),)
         raise ValueError(f"Unsupported mode: {mode}")
 
-class FloatMinMax():
+
+class FloatMinMax:
     @classmethod
-    def INPUT_TYPES(s): # type: ignore
-        return {"required": {
-            "a": ("FLOAT", {"default": 0, "forceInput": True}),
-            "b": ("FLOAT", {"default": 0, "forceInput": True}),
-            "mode": (['min', 'max'],),
-            }}
+    def INPUT_TYPES(cls):  # type: ignore
+        return {
+            "required": {
+                "a": ("FLOAT", {"default": 0, "forceInput": True}),
+                "b": ("FLOAT", {"default": 0, "forceInput": True}),
+                "mode": (["min", "max"],),
+            }
+        }
+
     RETURN_TYPES = ("FLOAT",)
     FUNCTION = "process"
     CATEGORY = NUMBERS_CAT
+
     def process(self, a: float, b: float, mode: str):
         if mode == "min":
             return (min(a, b),)
@@ -142,24 +212,32 @@ class FloatMinMax():
             return (max(a, b),)
         raise ValueError(f"Unsupported mode: {mode}")
 
-class RandomNumber():
+
+class RandomNumber:
     @classmethod
-    def INPUT_TYPES(s): # type: ignore
+    def INPUT_TYPES(cls):  # type: ignore
         return {"required": {}}
-    RETURN_TYPES = ("INT", "FLOAT", )
+
+    RETURN_TYPES = (
+        "INT",
+        "FLOAT",
+    )
     FUNCTION = "process"
     CATEGORY = NUMBERS_CAT
 
     @staticmethod
     def get_random():
         result = random.randint(0, 99999999)
-        return (result, float(result), )
+        return (
+            result,
+            float(result),
+        )
 
     def process(self):
         return RandomNumber.get_random()
 
     @classmethod
-    def IS_CHANGED(s): # type: ignore
+    def IS_CHANGED(cls):  # type: ignore
         return RandomNumber.get_random()
 
 
@@ -172,7 +250,7 @@ NODE_CLASS_MAPPINGS = {
     "signature_float_minmax": FloatMinMax,
     "signature_float_clamp": FloatClamp,
     "signature_float_operator": FloatOperator,
-    "signature_random_number": RandomNumber
+    "signature_random_number": RandomNumber,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -184,5 +262,5 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "signature_float_minmax": "SIG Float MinMax",
     "signature_float_clamp": "SIG Float Clamp",
     "signature_float_operator": "SIG Float Operator",
-    "signature_random_number": "SIG Random Number"
+    "signature_random_number": "SIG Random Number",
 }

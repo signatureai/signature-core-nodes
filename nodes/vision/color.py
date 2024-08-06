@@ -1,15 +1,24 @@
 import torch
+from signature_core.functional.color import (
+    color_average,
+    rgb_to_hls,
+    rgb_to_hsv,
+    rgba_to_rgb,
+)
 from signature_core.img.tensor_image import TensorImage
-from signature_core.functional.color import rgb_to_hsv, rgb_to_hls, color_average, rgba_to_rgb
+
 from ..categories import COLOR_CAT
 
-class RGB2HSV:
 
+class RGB2HSV:
     @classmethod
-    def INPUT_TYPES(s): # type: ignore
-        return {"required": {"image": ("IMAGE",),
-                             }
-                }
+    def INPUT_TYPES(cls):  # type: ignore
+        return {
+            "required": {
+                "image": ("IMAGE",),
+            }
+        }
+
     RETURN_TYPES = ("IMAGE",)
     FUNCTION = "process"
     CATEGORY = COLOR_CAT
@@ -19,12 +28,16 @@ class RGB2HSV:
         output = rgb_to_hsv(image_tensor).get_BWHC()
         return (output,)
 
+
 class RGBHLS:
     @classmethod
-    def INPUT_TYPES(s): # type: ignore
-        return {"required": {"image": ("IMAGE",),
-                             }
-                }
+    def INPUT_TYPES(cls):  # type: ignore
+        return {
+            "required": {
+                "image": ("IMAGE",),
+            }
+        }
+
     RETURN_TYPES = ("IMAGE",)
     FUNCTION = "process"
     CATEGORY = COLOR_CAT
@@ -34,12 +47,16 @@ class RGBHLS:
         output = rgb_to_hls(image_tensor).get_BWHC()
         return (output,)
 
+
 class RGBA2RGB:
     @classmethod
-    def INPUT_TYPES(s): # type: ignore
-        return {"required": {"image": ("IMAGE",),
-                             }
-                }
+    def INPUT_TYPES(cls):  # type: ignore
+        return {
+            "required": {
+                "image": ("IMAGE",),
+            }
+        }
+
     RETURN_TYPES = ("IMAGE",)
     FUNCTION = "process"
     CATEGORY = COLOR_CAT
@@ -54,10 +71,13 @@ class RGBA2RGB:
 
 class ImageAverage:
     @classmethod
-    def INPUT_TYPES(s): # type: ignore
-        return {"required": {"image": ("IMAGE",),
-                             }
-                }
+    def INPUT_TYPES(cls):  # type: ignore
+        return {
+            "required": {
+                "image": ("IMAGE",),
+            }
+        }
+
     RETURN_TYPES = ("IMAGE",)
     FUNCTION = "process"
     CATEGORY = COLOR_CAT
@@ -67,16 +87,16 @@ class ImageAverage:
         output = color_average(step).get_BWHC()
         return (output,)
 
-class Image2Mask():
+
+class Image2Mask:
     @classmethod
-    def INPUT_TYPES(s): # type: ignore
-        return {"required": {
-            "image": ("IMAGE",),
-            "channel": (['red', 'green', 'blue', 'alpha'],)
-            }}
-    RETURN_TYPES = ('MASK',)
+    def INPUT_TYPES(cls):  # type: ignore
+        return {"required": {"image": ("IMAGE",), "channel": (["red", "green", "blue", "alpha"],)}}
+
+    RETURN_TYPES = ("MASK",)
     FUNCTION = "process"
     CATEGORY = COLOR_CAT
+
     def process(self, image: torch.Tensor, channel: str):
         image_tensor = TensorImage.from_BWHC(image)
         if channel == "red":
@@ -89,19 +109,22 @@ class Image2Mask():
             image_tensor = image_tensor[:, 3, :, :].unsqueeze(1)
         output = TensorImage(image_tensor).get_BWHC()
         return (output,)
-    
-    
 
-class ImageSubtract():
+
+class ImageSubtract:
     @classmethod
-    def INPUT_TYPES(s): # type: ignore
-        return {"required": {
-            "image_0": ("IMAGE",),
-            "image_1": ("IMAGE",),
-            }}
-    RETURN_TYPES = ('IMAGE',)
+    def INPUT_TYPES(cls):  # type: ignore
+        return {
+            "required": {
+                "image_0": ("IMAGE",),
+                "image_1": ("IMAGE",),
+            }
+        }
+
+    RETURN_TYPES = ("IMAGE",)
     FUNCTION = "process"
     CATEGORY = COLOR_CAT
+
     def process(self, image_0: torch.Tensor, image_1: torch.Tensor):
         image_0_tensor = TensorImage.from_BWHC(image_0)
         image_1_tensor = TensorImage.from_BWHC(image_1)
@@ -109,34 +132,45 @@ class ImageSubtract():
         output = TensorImage(image_tensor).get_BWHC()
         return (output,)
 
-class Mask2Image():
+
+class Mask2Image:
     @classmethod
-    def INPUT_TYPES(s): # type: ignore
-        return {"required": {
-            "mask": ("MASK",),
-            }}
-    RETURN_TYPES = ('IMAGE',)
+    def INPUT_TYPES(cls):  # type: ignore
+        return {
+            "required": {
+                "mask": ("MASK",),
+            }
+        }
+
+    RETURN_TYPES = ("IMAGE",)
     FUNCTION = "process"
     CATEGORY = COLOR_CAT
+
     def process(self, mask: torch.Tensor):
         mask_tensor = TensorImage.from_BWHC(mask)
         output = mask_tensor.repeat(1, 3, 1, 1)
         output = TensorImage(output).get_BWHC()
         return (output,)
-class BaseColor():
+
+
+class BaseColor:
     @classmethod
-    def INPUT_TYPES(s): # type: ignore
-        return {"required": {
+    def INPUT_TYPES(cls):  # type: ignore
+        return {
+            "required": {
                 "hex_color": ("STRING", {"default": "#FFFFFF"}),
                 "width": ("INT", {"default": 1024}),
                 "height": ("INT", {"default": 1024}),
-            }}
-    RETURN_TYPES = ('IMAGE',)
+            }
+        }
+
+    RETURN_TYPES = ("IMAGE",)
     FUNCTION = "process"
     CATEGORY = COLOR_CAT
+
     def process(self, hex_color: str, width: int, height: int):
-        hex_color = hex_color.lstrip('#')
-        r, g, b = tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
+        hex_color = hex_color.lstrip("#")
+        r, g, b = tuple(int(hex_color[i : i + 2], 16) for i in (0, 2, 4))
 
         # Create a tensor with the specified color
         color_tensor = torch.tensor([r, g, b], dtype=torch.float32) / 255.0
@@ -172,4 +206,3 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "signature_base_color": "SIG Base Color",
     "signature_image_subtract": "SIG Image Subtract",
 }
-

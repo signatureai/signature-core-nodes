@@ -1,4 +1,1 @@
-python-dotenv
-toml
-imagesize
-voluptuous
+pre-commit

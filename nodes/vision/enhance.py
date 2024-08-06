@@ -1,16 +1,25 @@
 import torch
-from ..categories import ENHANCE_CAT
+from signature_core.functional.enhance import (
+    adjust_brightness,
+    adjust_saturation,
+    equalize,
+    equalize_clahe,
+)
 from signature_core.img.tensor_image import TensorImage
-from signature_core.functional.enhance import adjust_brightness, adjust_saturation, equalize, equalize_clahe
+
+from ..categories import ENHANCE_CAT
+
 
 class AdjustBrightness:
-
     @classmethod
-    def INPUT_TYPES(s): # type: ignore
-        return {"required": {"image": ("IMAGE",),
-                             "factor": ("FLOAT", {"default": 0.5, "min": 0.0, "max": 1.0, "step": 0.01}),
-                            }
-                }
+    def INPUT_TYPES(cls):  # type: ignore
+        return {
+            "required": {
+                "image": ("IMAGE",),
+                "factor": ("FLOAT", {"default": 0.5, "min": 0.0, "max": 1.0, "step": 0.01}),
+            }
+        }
+
     RETURN_TYPES = ("IMAGE",)
     FUNCTION = "process"
     CATEGORY = ENHANCE_CAT
@@ -22,13 +31,15 @@ class AdjustBrightness:
 
 
 class AdjustSaturation:
-
     @classmethod
-    def INPUT_TYPES(s): # type: ignore
-        return {"required": {"image": ("IMAGE",),
-                             "factor": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 2.0, "step": 0.01}),
-                            }
-                }
+    def INPUT_TYPES(cls):  # type: ignore
+        return {
+            "required": {
+                "image": ("IMAGE",),
+                "factor": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 2.0, "step": 0.01}),
+            }
+        }
+
     RETURN_TYPES = ("IMAGE",)
     FUNCTION = "process"
     CATEGORY = ENHANCE_CAT
@@ -38,13 +49,16 @@ class AdjustSaturation:
         output = adjust_saturation(tensor_image, factor).get_BWHC()
         return (output,)
 
-class Equalize:
 
+class Equalize:
     @classmethod
-    def INPUT_TYPES(s): # type: ignore
-        return {"required": {"image": ("IMAGE",),
-                            }
-                }
+    def INPUT_TYPES(cls):  # type: ignore
+        return {
+            "required": {
+                "image": ("IMAGE",),
+            }
+        }
+
     RETURN_TYPES = ("IMAGE",)
     FUNCTION = "process"
     CATEGORY = ENHANCE_CAT
@@ -56,11 +70,10 @@ class Equalize:
 
 
 class EqualizeClahe:
-
     @classmethod
-    def INPUT_TYPES(s): # type: ignore
-        return {"required": {"image": ("IMAGE",)}
-                }
+    def INPUT_TYPES(cls):  # type: ignore
+        return {"required": {"image": ("IMAGE",)}}
+
     RETURN_TYPES = ("IMAGE",)
     FUNCTION = "process"
     CATEGORY = ENHANCE_CAT
@@ -70,11 +83,12 @@ class EqualizeClahe:
         output = equalize_clahe(tensor_image).get_BWHC()
         return (output,)
 
+
 NODE_CLASS_MAPPINGS = {
     "signature_adjust_brightness": AdjustBrightness,
     "signature_adjust_saturation": AdjustSaturation,
     "signature_equalize": Equalize,
-    "signature_equalize_clahe": EqualizeClahe
+    "signature_equalize_clahe": EqualizeClahe,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {

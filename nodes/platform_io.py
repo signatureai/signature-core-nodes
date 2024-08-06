@@ -1,33 +1,35 @@
-
-from .categories import PLATFROM_IO_CAT
-from .shared import BASE_COMFY_DIR, any
-from signature_core.img.tensor_image import TensorImage
-import torch
+import json
 import os
 from datetime import datetime
-import json
+
+import torch
+from signature_core.img.tensor_image import TensorImage
+
+from .categories import PLATFROM_IO_CAT
+from .shared import BASE_COMFY_DIR, any_type
 
 
-class PlatformInputImage():
-
+class PlatformInputImage:
     @classmethod
-    def INPUT_TYPES(s): # type: ignore
+    def INPUT_TYPES(cls):  # type: ignore
         return {
             "required": {
                 "title": ("STRING", {"default": "Input Image"}),
-                "subtype": (['image', 'mask'],),
+                "subtype": (["image", "mask"],),
                 "required": ("BOOLEAN", {"default": True}),
                 "value": ("STRING", {"default": ""}),
                 "metadata": ("STRING", {"default": "", "multiline": True}),
-                },
-                "optional": {"fallback": (any,),}
-            }
-    RETURN_TYPES = (any,)
+            },
+            "optional": {
+                "fallback": (any_type,),
+            },
+        }
+
+    RETURN_TYPES = (any_type,)
     FUNCTION = "apply"
     CATEGORY = PLATFROM_IO_CAT
 
-    def apply(self, value, title:str, metadata:str, subtype: str, required:bool, fallback = None):
-
+    def apply(self, value, title: str, metadata: str, subtype: str, required: bool, fallback=None):
         if value != "":
             if value.startswith("data:"):
                 output = TensorImage.from_base64(value)
@@ -46,96 +48,104 @@ class PlatformInputImage():
 
         raise ValueError(f"Unsupported fallback type: {type(fallback)}")
 
-class PlatformInputText():
 
+class PlatformInputText:
     @classmethod
-    def INPUT_TYPES(s): # type: ignore
+    def INPUT_TYPES(cls):  # type: ignore
         return {
             "required": {
                 "title": ("STRING", {"default": "Input Text"}),
-                "subtype": (['string','positive_prompt', 'negative_prompt'],),
+                "subtype": (["string", "positive_prompt", "negative_prompt"],),
                 "required": ("BOOLEAN", {"default": True}),
                 "value": ("STRING", {"multiline": True, "default": ""}),
                 "metadata": ("STRING", {"default": "", "multiline": True}),
-                },
-            }
+            },
+        }
+
     RETURN_TYPES = ("STRING",)
     FUNCTION = "apply"
     CATEGORY = PLATFROM_IO_CAT
 
-    def apply(self, value:str, title:str, metadata:str, subtype: str, required:bool):
+    def apply(self, value: str, title: str, metadata: str, subtype: str, required: bool):
         return (value,)
 
 
-
-class PlatformInputNumber():
+class PlatformInputNumber:
     @classmethod
-    def INPUT_TYPES(s): # type: ignore
+    def INPUT_TYPES(cls):  # type: ignore
         return {
             "required": {
                 "title": ("STRING", {"default": "Input Number"}),
-                "subtype": (['float','int'],),
+                "subtype": (["float", "int"],),
                 "required": ("BOOLEAN", {"default": True}),
                 "value": ("FLOAT", {"default": 0}),
                 "metadata": ("STRING", {"default": "", "multiline": True}),
-                },
-            }
-    RETURN_TYPES = (any,)
+            },
+        }
+
+    RETURN_TYPES = (any_type,)
     FUNCTION = "apply"
     CATEGORY = PLATFROM_IO_CAT
 
-    def apply(self, value:float, title:str, metadata:str, subtype: str, required:bool):
+    def apply(self, value: float, title: str, metadata: str, subtype: str, required: bool):
         if subtype == "int":
             value = int(value)
         else:
             value = float(value)
         return (value,)
 
+
 class PlatformInputBoolean:
     @classmethod
-    def INPUT_TYPES(s): # type: ignore
+    def INPUT_TYPES(cls):  # type: ignore
         return {
             "required": {
                 "title": ("STRING", {"default": "Input Boolean"}),
-                "subtype": (['boolean'],),
+                "subtype": (["boolean"],),
                 "required": ("BOOLEAN", {"default": True}),
                 "value": ("BOOLEAN", {"default": False}),
                 "metadata": ("STRING", {"default": "", "multiline": True}),
-                }
             }
+        }
+
     RETURN_TYPES = ("BOOLEAN",)
     RETURN_NAMES = ("boolean",)
     FUNCTION = "apply"
     CATEGORY = PLATFROM_IO_CAT
-    def apply(self, value:bool, title:str, subtype: str, metadata:str, required:bool):
-        return (value, )
 
-class PlatformInputSlider():
+    def apply(self, value: bool, title: str, subtype: str, metadata: str, required: bool):
+        return (value,)
+
+
+class PlatformInputSlider:
     @classmethod
-    def INPUT_TYPES(s): # type: ignore
+    def INPUT_TYPES(cls):  # type: ignore
         return {
             "required": {
                 "title": ("STRING", {"default": "Input Slider"}),
-                "subtype": (['float','int'],),
+                "subtype": (["float", "int"],),
                 "required": ("BOOLEAN", {"default": True}),
                 "value": ("FLOAT", {"default": 0}),
                 "min_value": ("FLOAT", {"default": 0}),
                 "max_value": ("FLOAT", {"default": 10}),
                 "metadata": ("STRING", {"default": "", "multiline": True}),
-                },
-            }
-    RETURN_TYPES = (any,)
+            },
+        }
+
+    RETURN_TYPES = (any_type,)
     FUNCTION = "apply"
     CATEGORY = PLATFROM_IO_CAT
 
-    def apply(self,
-              value: float,
-              min_value: float,
-              max_value: float,
-              title: str,
-              metadata: str,
-              subtype: str,
-              required: str):
+    def apply(
+        self,
+        value: float,
+        min_value: float,
+        max_value: float,
+        title: str,
+        metadata: str,
+        subtype: str,
+        required: str,
+    ):
         if subtype == "int":
             value = max(min(int(max_value), int(value)), int(min_value))
         else:
@@ -143,34 +153,34 @@ class PlatformInputSlider():
         return (value,)
 
 
-class PlatformOutput():
-
+class PlatformOutput:
     @classmethod
-    def INPUT_TYPES(s): # type: ignore
+    def INPUT_TYPES(cls):  # type: ignore
         return {
             "required": {
                 "title": ("STRING", {"default": "Output Image"}),
-                "subtype": (['image', 'mask', 'int', 'float', 'string', 'dict'],),
+                "subtype": (["image", "mask", "int", "float", "string", "dict"],),
                 "metadata": ("STRING", {"default": "", "multiline": True}),
-                "value": (any,),
-                },
-            }
+                "value": (any_type,),
+            },
+        }
+
     RETURN_TYPES = ()
     OUTPUT_NODE = True
     FUNCTION = "apply"
     CATEGORY = PLATFROM_IO_CAT
 
-    def apply(self, value, title: str, subtype: str, metadata: str = ''):
+    def apply(self, value, title: str, subtype: str, metadata: str = ""):
         supported_types = ["image", "mask", "int", "float", "string", "dict"]
         if subtype not in supported_types:
             raise ValueError(f"Unsupported output type: {subtype}")
 
-        output_dir = os.path.join(BASE_COMFY_DIR, 'output')
+        output_dir = os.path.join(BASE_COMFY_DIR, "output")
         current_time_str = datetime.now().strftime("%Y%m%d_%H%M%S")
         results = []
         thumbnail_size = 768
         if subtype in ["image", "mask"]:
-            tensor_images = TensorImage.from_BWHC(value.to('cpu'))
+            tensor_images = TensorImage.from_BWHC(value.to("cpu"))
             for img in tensor_images:
                 random_str = str(torch.randint(0, 100000, (1,)).item())
                 file_name = f"signature_{current_time_str}_{random_str}.png"
@@ -191,24 +201,20 @@ class PlatformOutput():
                 image_saved = output_img.save(save_path)
 
                 if image_saved and thumbnail_saved:
-                    results.append({
-                        "title": title,
-                        "type": subtype,
-                        "metadata": metadata,
-                        "value": file_name,
-                        "thumbnail": thumbnail_path if thumbnail_saved else None
-                    })
+                    results.append(
+                        {
+                            "title": title,
+                            "type": subtype,
+                            "metadata": metadata,
+                            "value": file_name,
+                            "thumbnail": thumbnail_path if thumbnail_saved else None,
+                        }
+                    )
         else:
             value_json = json.dumps(value) if subtype == "dict" else value
-            results.append({
-                "title": title,
-                "type": subtype,
-                "metadata": metadata,
-                "value": value_json
-            })
+            results.append({"title": title, "type": subtype, "metadata": metadata, "value": value_json})
 
         return {"ui": {"signature_output": results}}
-
 
 
 NODE_CLASS_MAPPINGS = {

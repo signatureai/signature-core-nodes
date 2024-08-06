@@ -1,27 +1,29 @@
-import torch
-import os
 import json
+import os
+
+import torch
+from signature_core.img.tensor_image import TensorImage
+
 from .categories import IO_CAT
 from .shared import BASE_COMFY_DIR
-from signature_core.img.tensor_image import TensorImage
 
 
 def image_array_to_tensor(x: TensorImage):
     image = x.get_BWHC()
-    mask = torch.ones((x.shape[0],
-                       1,
-                       x.shape[2],
-                       x.shape[3]),
-                      dtype=torch.float32)
+    mask = torch.ones((x.shape[0], 1, x.shape[2], x.shape[3]), dtype=torch.float32)
     if x.shape[1] == 4:
         mask = image[:, :, :, -1]
-    return (image, mask, )
+    return (
+        image,
+        mask,
+    )
 
-class ImageFromWeb():
 
+class ImageFromWeb:
     @classmethod
-    def INPUT_TYPES(s): # type: ignore
+    def INPUT_TYPES(cls):  # type: ignore
         return {"required": {"url": ("STRING", {"default": "URL HERE"})}}
+
     RETURN_TYPES = ("IMAGE", "MASK")
     FUNCTION = "process"
     CATEGORY = IO_CAT
@@ -30,11 +32,12 @@ class ImageFromWeb():
         img_arr = TensorImage.from_web(url)
         return image_array_to_tensor(img_arr)
 
-class ImageFromBase64():
 
+class ImageFromBase64:
     @classmethod
-    def INPUT_TYPES(s): # type: ignore
+    def INPUT_TYPES(cls):  # type: ignore
         return {"required": {"base64": ("STRING", {"default": "BASE64 HERE"})}}
+
     RETURN_TYPES = ("IMAGE", "MASK")
     FUNCTION = "process"
     CATEGORY = IO_CAT
@@ -43,11 +46,12 @@ class ImageFromBase64():
         img_arr = TensorImage.from_base64(base64)
         return image_array_to_tensor(img_arr)
 
-class Base64FromImage():
 
+class Base64FromImage:
     @classmethod
-    def INPUT_TYPES(s): # type: ignore
+    def INPUT_TYPES(cls):  # type: ignore
         return {"required": {"image": ("IMAGE",)}}
+
     RETURN_TYPES = ("STRING",)
     FUNCTION = "process"
     CATEGORY = IO_CAT
@@ -58,73 +62,74 @@ class Base64FromImage():
         output = images.get_base64()
         return (output,)
 
-class LoadFile():
 
+class LoadFile:
     @classmethod
-    def INPUT_TYPES(s): # type: ignore
+    def INPUT_TYPES(cls):  # type: ignore
         return {
             "required": {
-                "value": ('STRING', {'default': ''}),
+                "value": ("STRING", {"default": ""}),
             },
-    }
+        }
 
     RETURN_TYPES = ("FILE",)
     FUNCTION = "process"
     CATEGORY = IO_CAT
 
     def process(self, value: str):
-        data = value.split('&&') if '&&' in value else [value]
+        data = value.split("&&") if "&&" in value else [value]
         input_folder = os.path.join(BASE_COMFY_DIR, "input")
-        for i in range(len(data)):
+        for i, _ in enumerate(data):
             json_str = data[i]
             data[i] = json.loads(json_str)
             item = data[i]
             if isinstance(item, dict):
-                name = item.get('name', None)
+                name = item.get("name", None)
                 if name is None:
                     continue
-                item['name'] = os.path.join(input_folder, name)
+                item["name"] = os.path.join(input_folder, name)
                 data[i] = item
 
         return (data,)
 
-class LoadFolder():
 
+class LoadFolder:
     @classmethod
-    def INPUT_TYPES(s): # type: ignore
+    def INPUT_TYPES(cls):  # type: ignore
         return {
             "required": {
-                "value": ('STRING', {'default': ''}),
+                "value": ("STRING", {"default": ""}),
             },
-    }
+        }
 
     RETURN_TYPES = ("FILE",)
     FUNCTION = "process"
     CATEGORY = IO_CAT
 
     def process(self, value: str):
-        data = value.split('&&') if '&&' in value else [value]
+        data = value.split("&&") if "&&" in value else [value]
         input_folder = os.path.join(BASE_COMFY_DIR, "input")
-        for i in range(len(data)):
+        for i, _ in enumerate(data):
             json_str = data[i]
             data[i] = json.loads(json_str)
             item = data[i]
             if isinstance(item, dict):
-                name = item.get('name', None)
+                name = item.get("name", None)
                 if name is None:
                     continue
-                item['name'] = os.path.join(input_folder, name)
+                item["name"] = os.path.join(input_folder, name)
                 data[i] = item
         return (data,)
 
-class FiletoImageList():
+
+class FiletoImageList:
     @classmethod
-    def INPUT_TYPES(s): # type: ignore
+    def INPUT_TYPES(cls):  # type: ignore
         return {
             "required": {
-                "files": ('FILE', {'default': ''}),
+                "files": ("FILE", {"default": ""}),
             },
-    }
+        }
 
     RETURN_TYPES = ("IMAGE",)
     FUNCTION = "process"
@@ -134,22 +139,23 @@ class FiletoImageList():
     def process(self, files: list):
         images_list = []
         for file in files:
-            mimetype = file['type']
-            extension = file['name'].lower().split('.')[-1]
-            possible_extensions = ['png', 'jpg', 'jpeg', 'tiff', 'tif', 'bmp']
-            if mimetype.startswith('image') and extension in possible_extensions:
-                images_list.append(TensorImage.from_local(file['name']).get_BWHC())
+            mimetype = file["type"]
+            extension = file["name"].lower().split(".")[-1]
+            possible_extensions = ["png", "jpg", "jpeg", "tiff", "tif", "bmp"]
+            if mimetype.startswith("image") and extension in possible_extensions:
+                images_list.append(TensorImage.from_local(file["name"]).get_BWHC())
 
         return (images_list,)
 
-class FileToList():
+
+class FileToList:
     @classmethod
-    def INPUT_TYPES(s): # type: ignore
+    def INPUT_TYPES(cls):  # type: ignore
         return {
             "required": {
-                "files": ('FILE', {'default': ''}),
+                "files": ("FILE", {"default": ""}),
             },
-    }
+        }
 
     RETURN_TYPES = ("LIST",)
     FUNCTION = "process"
@@ -166,7 +172,7 @@ NODE_CLASS_MAPPINGS = {
     "signature_load_file": LoadFile,
     "signature_load_folder": LoadFolder,
     "signature_file_to_image_list": FiletoImageList,
-    "signature_file_to_list": FileToList
+    "signature_file_to_list": FileToList,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -176,6 +182,5 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "signature_load_file": "SIG Load File",
     "signature_load_folder": "SIG Load Folder",
     "signature_file_to_image_list": "SIG File2ImageList",
-    "signature_file_to_list": "SIG File2List"
-
+    "signature_file_to_list": "SIG File2List",
 }
