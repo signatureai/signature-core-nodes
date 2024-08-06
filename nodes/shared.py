@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 COMFY_DEVICE = model_management.get_torch_device()
-BASE_COMFY_DIR = os.getcwd().split("custom_nodes")[0]
+BASE_COMFY_DIR = os.path.dirname(os.path.realpath(__file__)).split("custom_nodes")[0]
 SIGNATURE_DIR = os.path.dirname(os.path.realpath(__file__)).split("src")[0]
 SD_SCRIPTS_DIR = os.getenv("SD_SCRIPTS_DIR")
 LORA_OUTPUT_DIR = os.getenv("LORA_OUTPUT_DIR")
