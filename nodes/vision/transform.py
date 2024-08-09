@@ -120,7 +120,7 @@ class Resize:
                 "width": ("INT", {"default": 1024, "min": 32, "step": 2, "max": 40960}),
                 "height": ("INT", {"default": 1024, "min": 32, "step": 2, "max": 40960}),
                 "mode": (["STRETCH", "FIT", "FILL", "ASPECT"],),
-                "interpolation": (["bilinear", "nearest", "linear", "bicubic", "trilinear", "area"],),
+                "interpolation": (["bilinear", "nearest", "bicubic", "area"],),
                 "antialias": (
                     "BOOLEAN",
                     {"default": True},
