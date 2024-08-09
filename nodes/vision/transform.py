@@ -119,10 +119,8 @@ class Resize:
                 "mask": ("MASK", {"default": None}),
                 "width": ("INT", {"default": 1024, "min": 32, "step": 2, "max": 40960}),
                 "height": ("INT", {"default": 1024, "min": 32, "step": 2, "max": 40960}),
-                "keep_aspect_ratio": ("BOOLEAN", {"default": False}),
-                "interpolation": (
-                    ["nearest", "nearest-exact", "bilinear", "bicubic", "box", "hamming", "lanczos"],
-                ),
+                "mode": (["STRETCH", "FIT", "FILL", "ASPECT"],),
+                "interpolation": (["bilinear", "nearest", "linear", "bicubic", "trilinear", "area"],),
                 "antialias": (
                     "BOOLEAN",
                     {"default": True},
@@ -143,7 +141,7 @@ class Resize:
         mask: torch.Tensor | None = None,
         width: int = 1024,
         height: int = 1024,
-        keep_aspect_ratio: bool = False,
+        mode: str = "default",
         interpolation: str = "nearest",
         antialias: bool = True,
     ):
@@ -157,12 +155,8 @@ class Resize:
             if isinstance(mask, torch.Tensor)
             else TensorImage(torch.zeros((1, 1, 1, 1)))
         )
-        output_image = resize(
-            input_image, width, height, keep_aspect_ratio, interpolation, antialias
-        ).get_BWHC()
-        output_mask = resize(
-            input_mask, width, height, keep_aspect_ratio, interpolation, antialias
-        ).get_BWHC()
+        output_image = resize(input_image, width, height, mode, interpolation, antialias).get_BWHC()
+        output_mask = resize(input_mask, width, height, mode, interpolation, antialias).get_BWHC()
 
         return (
             output_image,
@@ -347,7 +341,7 @@ class UpscaleImage:
 
         if mode == "resize":
             up_image = resize(
-                tensor_image, resize_size, resize_size, True, resampling_method, True
+                tensor_image, resize_size, resize_size, "aspect_ratio", resampling_method, True
             ).get_BWHC()
         else:
             # get the max size of the upscaled image

@@ -6,7 +6,10 @@ class Float:
     def INPUT_TYPES(cls):  # type: ignore
         return {
             "required": {
-                "value": ("FLOAT", {"default": 0, "min": -18446744073709551615, "max": 18446744073709551615}),
+                "value": (
+                    "FLOAT",
+                    {"default": 0, "min": -18446744073709551615, "max": 18446744073709551615, "step": 0.001},
+                ),
             },
         }
 
@@ -24,7 +27,10 @@ class Int:
     def INPUT_TYPES(cls):  # type: ignore
         return {
             "required": {
-                "value": ("INT", {"default": 0, "min": -18446744073709551615, "max": 18446744073709551615}),
+                "value": (
+                    "INT",
+                    {"default": 0, "min": -18446744073709551615, "max": 18446744073709551615, "step": 1},
+                ),
             },
         }
 

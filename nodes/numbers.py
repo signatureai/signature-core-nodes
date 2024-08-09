@@ -19,11 +19,11 @@ class IntClamp:
                 ),
                 "min_value": (
                     "INT",
-                    {"default": 0, "min": -18446744073709551615, "max": 18446744073709551615},
+                    {"default": 0, "min": -18446744073709551615, "max": 18446744073709551615, "step": 1},
                 ),
                 "max_value": (
                     "INT",
-                    {"default": 0, "min": -18446744073709551615, "max": 18446744073709551615},
+                    {"default": 0, "min": -18446744073709551615, "max": 18446744073709551615, "step": 1},
                 ),
             }
         }
@@ -56,11 +56,11 @@ class FloatClamp:
                 ),
                 "min_value": (
                     "FLOAT",
-                    {"default": 0, "min": -18446744073709551615, "max": 18446744073709551615},
+                    {"default": 0, "min": -18446744073709551615, "max": 18446744073709551615, "step": 0.001},
                 ),
                 "max_value": (
                     "FLOAT",
-                    {"default": 0, "min": -18446744073709551615, "max": 18446744073709551615},
+                    {"default": 0, "min": -18446744073709551615, "max": 18446744073709551615, "step": 0.001},
                 ),
             }
         }
@@ -144,8 +144,14 @@ class FloatOperator:
     def INPUT_TYPES(cls):  # type: ignore
         return {
             "required": {
-                "left": ("FLOAT", {"default": 0}),
-                "right": ("FLOAT", {"default": 0}),
+                "left": (
+                    "FLOAT",
+                    {"default": 0, "min": -18446744073709551615, "max": 18446744073709551615, "step": 0.001},
+                ),
+                "right": (
+                    "FLOAT",
+                    {"default": 0, "min": -18446744073709551615, "max": 18446744073709551615, "step": 0.001},
+                ),
                 "operator": (["+", "-", "*", "/"],),
             }
         }
@@ -227,7 +233,7 @@ class RandomNumber:
 
     @staticmethod
     def get_random():
-        result = random.randint(0, 99999999)
+        result = random.randint(0, 18446744073709551615)
         return (
             result,
             float(result),

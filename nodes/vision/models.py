@@ -15,7 +15,6 @@ from ..categories import MODELS_CAT
 
 class MagicEraser(SaveImage):
     def __init__(self):
-        self.model = Lama()
         self.output_dir = folder_paths.get_temp_directory()
         self.type = "temp"
         self.prefix_append = "_temp_" + "".join(random.choice("abcdefghijklmnopqrstupvxyz") for x in range(5))
@@ -45,20 +44,22 @@ class MagicEraser(SaveImage):
         prompt=None,
         extra_pnginfo=None,
     ):
+        model = Lama()
         input_image = TensorImage.from_BWHC(image)
         input_mask = TensorImage.from_BWHC(mask)
-        highres = TensorImage(self.model.forward(input_image, input_mask, "FIXED"))
+        highres = TensorImage(model.forward(input_image, input_mask, "FIXED"))
         output_images = highres.get_BWHC()
         if preview == "off":
             return (output_images,)
         result = self.save_images(output_images, filename_prefix, prompt, extra_pnginfo)
         result.update({"result": (output_images,)})
+        del model
+        model = None
         return result
 
 
 class Unblur(SaveImage):
     def __init__(self):
-        self.model = SeeMore()
         self.output_dir = folder_paths.get_temp_directory()
         self.type = "temp"
         self.prefix_append = "_temp_" + "".join(random.choice("abcdefghijklmnopqrstupvxyz") for x in range(5))
@@ -81,21 +82,22 @@ class Unblur(SaveImage):
     def process(
         self, image: torch.Tensor, preview: str, filename_prefix="Signature", prompt=None, extra_pnginfo=None
     ):
+        model = SeeMore()
         input_image = TensorImage.from_BWHC(image)
-        output_image = self.model.forward(input_image)
+        output_image = model.forward(input_image)
         output_images = TensorImage(output_image).get_BWHC()
 
         if preview == "off":
             return (output_images,)
         result = self.save_images(output_images, filename_prefix, prompt, extra_pnginfo)
         result.update({"result": (output_images,)})
+        del model
+        model = None
         return result
 
 
 class BackgroundRemoval(SaveImage):
     def __init__(self):
-        self.model_name = "isnet"
-        self.model: SalientObjectDetection | None = None
         self.output_dir = folder_paths.get_temp_directory()
         self.type = "temp"
         self.prefix_append = "_temp_" + "".join(random.choice("abcdefghijklmnopqrstupvxyz") for _ in range(5))
@@ -126,12 +128,10 @@ class BackgroundRemoval(SaveImage):
         prompt=None,
         extra_pnginfo=None,
     ):
-        if model_name != self.model_name or self.model is None:
-            self.model = SalientObjectDetection(model_name=model_name)
-            self.model_name = model_name
 
+        model = SalientObjectDetection(model_name=model_name)
         input_image = TensorImage.from_BWHC(image)
-        masks = self.model.forward(input_image)
+        masks = model.forward(input_image)
 
         output_masks = TensorImage(masks)
         rgb, rgba = cutout(input_image, output_masks)
@@ -155,6 +155,8 @@ class BackgroundRemoval(SaveImage):
                 )
             }
         )
+        del model
+        model = None
         return result
 
 
