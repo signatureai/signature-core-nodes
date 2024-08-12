@@ -107,7 +107,7 @@ class BackgroundRemoval(SaveImage):
     def INPUT_TYPES(cls):  # type: ignore
         return {
             "required": {
-                "model_name": (["rmbg14", "isnet_general"],),
+                "model_name": (["inspyrenet", "rmbg14", "isnet_general", "fakepng"],),
                 "preview": (["mask", "rgba", "none"],),
                 "image": ("IMAGE",),
             },
