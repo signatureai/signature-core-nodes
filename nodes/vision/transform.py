@@ -2,6 +2,7 @@ import comfy  # type: ignore
 import folder_paths  # type: ignore
 import torch
 from comfy import model_management  # type: ignore
+from signature_core.functional.color import rgba_to_rgb
 from signature_core.functional.transform import (
     auto_crop,
     cutout,
@@ -48,6 +49,8 @@ class AutoCrop:
     ):
         img_tensor = TensorImage.from_BWHC(image)
         mask_tensor = TensorImage.from_BWHC(mask)
+        if img_tensor.shape[1] != 3:
+            img_tensor = rgba_to_rgb(img_tensor)
         mask_tensor[mask_tensor > mask_threshold] = 1.0
         mask_tensor[mask_tensor <= mask_threshold] = 0.0
         img_result, mask_result, min_x, min_y, width, height = auto_crop(
@@ -148,12 +151,12 @@ class Resize:
         input_image = (
             TensorImage.from_BWHC(image)
             if isinstance(image, torch.Tensor)
-            else TensorImage(torch.zeros((1, 3, 1, 1)))
+            else TensorImage(torch.zeros((1, 3, width, height)))
         )
         input_mask = (
             TensorImage.from_BWHC(mask)
             if isinstance(mask, torch.Tensor)
-            else TensorImage(torch.zeros((1, 1, 1, 1)))
+            else TensorImage(torch.zeros((1, 1, width, height)))
         )
         output_image = resize(input_image, width, height, mode, interpolation, antialias).get_BWHC()
         output_mask = resize(input_mask, width, height, mode, interpolation, antialias).get_BWHC()
@@ -243,7 +246,7 @@ class Cutout:
 class UpscaleImage:
     @classmethod
     def INPUT_TYPES(cls):  # type: ignore
-        resampling_methods = ["nearest", "linear", "bilinear", "bicubic", "trilinear", "area"]
+        resampling_methods = ["bilinear", "nearest", "bicubic", "area"]
 
         return {
             "required": {
@@ -314,7 +317,7 @@ class UpscaleImage:
         image,
         upscale_model,
         mode="rescale",
-        resampling_method="nearest",
+        resampling_method="bilinear",
         rescale_factor=2,
         resize_size=1024,
         tiled_size=512,
@@ -341,7 +344,7 @@ class UpscaleImage:
 
         if mode == "resize":
             up_image = resize(
-                tensor_image, resize_size, resize_size, "aspect_ratio", resampling_method, True
+                tensor_image, resize_size, resize_size, "ASPECT", resampling_method, True
             ).get_BWHC()
         else:
             # get the max size of the upscaled image
