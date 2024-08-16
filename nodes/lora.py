@@ -228,7 +228,8 @@ class LoraTraining:
                 "output_name": ("STRING", {"default": "NewLoraModel"}),
                 "ckpt_name": (folder_paths.get_filename_list("checkpoints"),),
                 "network_type": (["SD1.5", "SDXL"],),
-                "training_resolution": ("INT", {"default": 512, "step": 8}),
+                "image_width": ("INT", {"default": 1024, "step": 8}),
+                "image_height": ("INT", {"default": 1024, "step": 8}),
                 "network_module": (["networks.lora", "lycoris.kohya"],),
                 "network_dimension": ("INT", {"default": 32, "min": 0}),
                 "network_alpha": ("INT", {"default": 32, "min": 0}),
@@ -280,7 +281,8 @@ class LoraTraining:
         network_module,
         network_dimension,
         network_alpha,
-        training_resolution,
+        image_width,
+        image_height,
         data_path,
         batch_size,
         max_train_epoches,
@@ -340,7 +342,7 @@ class LoraTraining:
         save_model_as = "safetensors"  # model save ext ckpt, pt, safetensors
 
         network_dim = network_dimension
-        resolution = f"{training_resolution},{training_resolution}"
+        resolution = f"{image_height},{image_width}"
 
         formatted_value = str(format(learning_rate_text, "e")).rstrip("0").rstrip()
         text_encoder_lr = "".join(c for c in formatted_value if not (c == "0"))
