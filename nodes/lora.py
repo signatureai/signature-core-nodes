@@ -336,8 +336,8 @@ class LoraTraining:
         # "polynomial", "constant", "constant_with_warmup"
         lr_warmup_steps = 0  # warmup steps
 
-        min_bucket_reso = 256  # arb min resolution
-        max_bucket_reso = 1584  # arb max resolution
+        min_bucket_reso = min(image_width, image_height)  # arb min resolution
+        max_bucket_reso = max(image_width, image_height)  # arb max resolution
 
         save_model_as = "safetensors"  # model save ext ckpt, pt, safetensors
 
