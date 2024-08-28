@@ -268,8 +268,8 @@ class LoraTraining:
             },
         }
 
-    RETURN_TYPES = ("STRING", "BYTES", "STRING", "STRING")
-    RETURN_NAMES = ("lora_path", "lora_bytes", "ckpt_name", "lora_filename")
+    RETURN_TYPES = ("STRING", "STRING", "STRING")
+    RETURN_NAMES = ("lora_path", "ckpt_name", "lora_filename")
     OUTPUT_NODE = True
     FUNCTION = "process"
     CATEGORY = LORA_CAT
@@ -431,9 +431,8 @@ class LoraTraining:
             if LORA_OUTPUT_DIR is None:
                 raise ValueError("LORA_OUTPUT_DIR is not set.")
             lora_path = os.path.join(LORA_OUTPUT_DIR, lora_filename)
-            lora_bytes = Path(lora_path).read_bytes()
 
-            return (lora_path, lora_bytes, ckpt_name, lora_filename)
+            return (lora_path, ckpt_name, lora_filename)
 
 
 NODE_CLASS_MAPPINGS = {
