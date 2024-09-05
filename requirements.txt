@@ -1,1 +1,2 @@
 pre-commit
+uuid7 >= 0.1.0

@@ -1,8 +1,7 @@
 import os
 import random
-import subprocess
-import time
-
+import subproces
+from uuid_extensions import  uuid7str
 import folder_paths  # type: ignore
 import torch
 
@@ -197,8 +196,8 @@ class SaveLoraCaptions:
         if not os.path.exists(root_folder):
             os.mkdir(root_folder)
 
-        timestamp = int(time.time())
-        dataset_folder = os.path.join(root_folder, f"{dataset_name}_{timestamp}")
+        uuid = uuid7str()
+        dataset_folder = os.path.join(root_folder, f"{dataset_name}_{uuid}")
         if not os.path.exists(dataset_folder):
             os.mkdir(dataset_folder)
         images_folder = os.path.join(dataset_folder, f"{repeats}_{dataset_name}")
