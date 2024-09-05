@@ -1,7 +1,7 @@
 import os
 import random
 import subprocess
-from pathlib import Path
+import time
 
 import folder_paths  # type: ignore
 import torch
@@ -197,21 +197,24 @@ class SaveLoraCaptions:
         if not os.path.exists(root_folder):
             os.mkdir(root_folder)
 
-        dataset_folder = os.path.join(root_folder, dataset_name)
+        timestamp = int(time.time())
+        dataset_folder = os.path.join(root_folder, f"{dataset_name}_{timestamp}")
         if not os.path.exists(dataset_folder):
             os.mkdir(dataset_folder)
-
         images_folder = os.path.join(dataset_folder, f"{repeats}_{dataset_name}")
         if not os.path.exists(images_folder):
             os.mkdir(images_folder)
 
         tensor_images = TensorImage.from_BWHC(images)
         for i, img in enumerate(tensor_images):
+            # timestamp to be added to the image name
+
             TensorImage(img).save(os.path.join(images_folder, f"{dataset_name}_{i}.png"))
             # write txt label with the same name of the image
             with open(os.path.join(images_folder, f"{dataset_name}_{i}.txt"), "w") as f:
                 label = prefix + labels_list[i % len(labels_list)] + suffix
                 f.write(label)
+
         return (dataset_folder,)
 
 
