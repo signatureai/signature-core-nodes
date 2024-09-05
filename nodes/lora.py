@@ -1,6 +1,6 @@
 import os
 import random
-import subproces
+import subprocess
 from uuid_extensions import  uuid7str
 import folder_paths  # type: ignore
 import torch
