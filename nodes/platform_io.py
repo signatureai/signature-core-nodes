@@ -3,6 +3,7 @@ import os
 from datetime import datetime
 
 import torch
+from signature_core.connectors.google_connector import GoogleConnector
 from signature_core.img.tensor_image import TensorImage
 
 from .categories import PLATFROM_IO_CAT
@@ -47,6 +48,34 @@ class PlatformInputImage:
             return (fallback,)
 
         raise ValueError(f"Unsupported fallback type: {type(fallback)}")
+
+
+class PlatformInputConnector:
+    @classmethod
+    def INPUT_TYPES(cls):  # type: ignore
+        return {
+            "required": {
+                "title": ("STRING", {"default": "Input Connector"}),
+                "subtype": (["google_drive"],),
+                "required": ("BOOLEAN", {"default": True}),
+                "token": ("STRING", {"default": ""}),
+                "mime_type": ("STRING", {"default": "image/*"}),
+                "value": ("STRING", {"default": ""}),
+                "metadata": ("STRING", {"default": "", "multiline": True}),
+            },
+        }
+
+    RETURN_TYPES = ("FILE",)
+    FUNCTION = "apply"
+    CATEGORY = PLATFROM_IO_CAT
+
+    def apply(
+        self, value: str, token: str, mime_type: str, title: str, metadata: str, subtype: str, required: bool
+    ):
+        connector = GoogleConnector(token=token)
+        input_folder = os.path.join(BASE_COMFY_DIR, "input")
+        data = connector.download(id=value, mime_type=mime_type, root_path=input_folder)
+        return (data,)
 
 
 class PlatformInputText:
@@ -223,6 +252,7 @@ NODE_CLASS_MAPPINGS = {
     "signature_input_number": PlatformInputNumber,
     "signature_input_boolean": PlatformInputBoolean,
     "signature_input_slider": PlatformInputSlider,
+    "signature_input_connector": PlatformInputConnector,
     "signature_output": PlatformOutput,
 }
 
@@ -232,5 +262,6 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "signature_input_number": "SIG Input Number",
     "signature_input_boolean": "SIG Input Boolean",
     "signature_input_slider": "SIG Input Slider",
+    "signature_input_connector": "SIG Input Connector",
     "signature_output": "SIG Output",
 }
