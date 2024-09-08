@@ -1,6 +1,9 @@
+import gc
 import random
 
+import comfy.model_management as mm  # type: ignore
 import folder_paths  # type: ignore
+import torch
 from signature_core.img.tensor_image import TensorImage
 
 from nodes import SaveImage  # type: ignore
@@ -177,6 +180,39 @@ class MaskShape:
         return (mask.shape[0], mask.shape[2], mask.shape[1], mask.shape[3], str(mask.shape))
 
 
+class PurgeVRAM:
+
+    @classmethod
+    def INPUT_TYPES(cls):  # type: ignore
+        return {
+            "required": {
+                "anything": (any_type, {}),
+                "purge_cache": ("BOOLEAN", {"default": True}),
+                "purge_models": ("BOOLEAN", {"default": True}),
+            },
+            "optional": {},
+        }
+
+    RETURN_TYPES = ()
+    FUNCTION = "apply"
+    CATEGORY = UTILS_CAT
+    OUTPUT_NODE = True
+
+    def apply(self, anything, purge_cache, purge_models):
+
+        if purge_cache:
+
+            gc.collect()
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+                torch.cuda.ipc_collect()
+
+        if purge_models:
+            mm.unload_all_models()
+            mm.soft_empty_cache(True)
+        return (None,)
+
+
 NODE_CLASS_MAPPINGS = {
     "signature_any2any": Any2Any,
     "signature_any2string": Any2String,
@@ -186,6 +222,7 @@ NODE_CLASS_MAPPINGS = {
     "signature_console_debug": ConsoleDebug,
     "signature_get_image_size": ImageShape,
     "signature_get_mask_size": MaskShape,
+    "signature_purge_vram": PurgeVRAM,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -197,4 +234,5 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "signature_console_debug": "SIG Console Debug",
     "signature_get_image_size": "SIG Get Image Shape",
     "signature_get_mask_size": "SIG Get Mask Shape",
+    "signature_purge_vram": "SIG Purge VRAM",
 }

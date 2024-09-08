@@ -58,8 +58,9 @@ class PlatformInputConnector:
                 "title": ("STRING", {"default": "Input Connector"}),
                 "subtype": (["google_drive"],),
                 "required": ("BOOLEAN", {"default": True}),
+                "override": ("BOOLEAN", {"default": False}),
                 "token": ("STRING", {"default": ""}),
-                "mime_type": ("STRING", {"default": "image/*"}),
+                "mime_type": ("STRING", {"default": "image/png"}),
                 "value": ("STRING", {"default": ""}),
                 "metadata": ("STRING", {"default": "", "multiline": True}),
             },
@@ -70,11 +71,19 @@ class PlatformInputConnector:
     CATEGORY = PLATFROM_IO_CAT
 
     def apply(
-        self, value: str, token: str, mime_type: str, title: str, metadata: str, subtype: str, required: bool
+        self,
+        value: str,
+        token: str,
+        mime_type: str,
+        override: bool,
+        title: str,
+        metadata: str,
+        subtype: str,
+        required: bool,
     ):
         connector = GoogleConnector(token=token)
         input_folder = os.path.join(BASE_COMFY_DIR, "input")
-        data = connector.download(id=value, mime_type=mime_type, root_path=input_folder)
+        data = connector.download(id=value, mime_type=mime_type, root_path=input_folder, override=override)
         return (data,)
 
 
