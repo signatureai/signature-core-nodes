@@ -225,16 +225,10 @@ class PlatformOutput:
                 save_path = os.path.join(output_dir, file_name)
 
                 output_img = TensorImage(img)
-                width, height = output_img.size()[-2:]
 
-                # Resize only if either dimension is greater than 768
-                if width > thumbnail_size or height > thumbnail_size:
-                    thumbnail_img = output_img.get_resized(thumbnail_size)
-                    thumbnail_path = save_path.replace(".png", "_thumbnail.jpeg")
-                    thumbnail_saved = thumbnail_img.save(thumbnail_path)
-                else:
-                    thumbnail_path = save_path
-                    thumbnail_saved = True
+                thumbnail_img = output_img.get_resized(thumbnail_size)
+                thumbnail_path = save_path.replace(".png", "_thumbnail.jpeg")
+                thumbnail_saved = thumbnail_img.save(thumbnail_path)
 
                 image_saved = output_img.save(save_path)
 
