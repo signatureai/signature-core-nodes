@@ -29,25 +29,33 @@ class PlatformInputImage:
     RETURN_TYPES = (any_type,)
     FUNCTION = "apply"
     CATEGORY = PLATFROM_IO_CAT
+    OUTPUT_IS_LIST = (True,)
 
     def apply(self, value, title: str, metadata: str, subtype: str, required: bool, fallback=None):
-        if value != "":
-            if value.startswith("data:"):
-                output = TensorImage.from_base64(value)
-            elif value.startswith("http"):
-                output = TensorImage.from_web(value)
-            else:
-                raise ValueError(f"Unsupported input type: {type(value)}")
-            if subtype == "mask":
-                output = output.get_grayscale()
-            else:
-                output = output.get_rgb_or_rgba()
-            return (output.get_BWHC(),)
-
-        if isinstance(fallback, torch.Tensor):
-            return (fallback,)
-
-        raise ValueError(f"Unsupported fallback type: {type(fallback)}")
+        if "," in value:
+            value = value.split(",")
+        else:
+            value = [value]
+        outputs = []
+        for i, _ in enumerate(value):
+            item = value[i]
+            if item != "":
+                if item.startswith("data:"):
+                    output = TensorImage.from_base64(item)
+                elif item.startswith("http"):
+                    output = TensorImage.from_web(item)
+                else:
+                    raise ValueError(f"Unsupported input type: {type(item)}")
+                if subtype == "mask":
+                    output = output.get_grayscale().get_BWHC()
+                else:
+                    output = output.get_rgb_or_rgba().get_BWHC()
+                outputs.append(output)
+        if len(outputs) == 0:
+            if fallback is None:
+                raise ValueError("No input found")
+            outputs.append(fallback)
+        return (outputs,)
 
 
 class PlatformInputConnector:
