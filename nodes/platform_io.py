@@ -40,12 +40,13 @@ class PlatformInputImage:
         for i, _ in enumerate(value):
             item = value[i]
             if item != "":
-                if item.startswith("data:"):
-                    output = TensorImage.from_base64(item)
-                elif item.startswith("http"):
+                if item.startswith("http"):
                     output = TensorImage.from_web(item)
                 else:
-                    raise ValueError(f"Unsupported input type: {type(item)}")
+                    try:
+                        output = TensorImage.from_base64(item)
+                    except:
+                        raise ValueError(f"Unsupported input format: {item}")
                 if subtype == "mask":
                     output = output.get_grayscale().get_BWHC()
                 else:
