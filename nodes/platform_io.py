@@ -106,13 +106,18 @@ class PlatformInputText:
                 "value": ("STRING", {"multiline": True, "default": ""}),
                 "metadata": ("STRING", {"default": "", "multiline": True}),
             },
+            "optional": {
+                "fallback": ("STRING", {"forceInput": True}),
+            },
         }
 
     RETURN_TYPES = ("STRING",)
     FUNCTION = "apply"
     CATEGORY = PLATFROM_IO_CAT
 
-    def apply(self, value: str, title: str, metadata: str, subtype: str, required: bool):
+    def apply(self, value: str, title: str, metadata: str, subtype: str, required: bool, fallback=None):
+        if value == "":
+            value = fallback or ""
         return (value,)
 
 
