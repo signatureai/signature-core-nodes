@@ -4,6 +4,7 @@ from datetime import datetime
 
 import torch
 from signature_core.connectors.google_connector import GoogleConnector
+from signature_core.functional.transform import cutout
 from signature_core.img.tensor_image import TensorImage
 from signature_core.logger import console
 
@@ -19,6 +20,7 @@ class PlatformInputImage:
                 "title": ("STRING", {"default": "Input Image"}),
                 "subtype": (["image", "mask"],),
                 "required": ("BOOLEAN", {"default": True}),
+                "include_alpha": ("BOOLEAN", {"default": False}),
                 "value": ("STRING", {"default": ""}),
                 "metadata": ("STRING", {"default": "{}", "multiline": True}),
             },
@@ -32,31 +34,54 @@ class PlatformInputImage:
     CATEGORY = PLATFROM_IO_CAT
     OUTPUT_IS_LIST = (True,)
 
-    def apply(self, value, title: str, metadata: str, subtype: str, required: bool, fallback=None):
+    def apply(
+        self,
+        value,
+        title: str,
+        metadata: str,
+        subtype: str,
+        required: bool,
+        include_alpha: bool,
+        fallback=None,
+    ):
+        def post_process(output: TensorImage, include_alpha: bool) -> TensorImage:
+            if include_alpha is False and output.shape[1] == 4:
+                # get alpha
+                rgb = TensorImage(output[:, :3, :, :])
+                alpha = TensorImage(output[:, -1, :, :])
+                output, _ = cutout(rgb, alpha)
+            return output
+
         if "," in value:
             value = value.split(",")
         else:
-            value = [value]
-        outputs = []
+            value = [value] if value != "" else []
+        outputs: list[TensorImage | torch.Tensor] = []
         for i, _ in enumerate(value):
             item = value[i]
-            if item != "":
-                if item.startswith("http"):
-                    output = TensorImage.from_web(item)
-                else:
-                    try:
-                        output = TensorImage.from_base64(item)
-                    except:
-                        raise ValueError(f"Unsupported input format: {item}")
-                if subtype == "mask":
-                    output = output.get_grayscale().get_BWHC()
-                else:
-                    output = output.get_rgb_or_rgba().get_BWHC()
-                outputs.append(output)
+            if isinstance(item, str):
+                if item != "":
+                    if item.startswith("http"):
+                        output = TensorImage.from_web(item)
+                    else:
+                        try:
+                            output = TensorImage.from_base64(item)
+                        except:
+                            raise ValueError(f"Unsupported input format: {item}")
+                    outputs.append(output)
         if len(outputs) == 0:
             if fallback is None:
                 raise ValueError("No input found")
-            outputs.append(fallback)
+            tensor_fallback = TensorImage.from_BWHC(fallback)
+            outputs.append(tensor_fallback)
+        for i, _ in enumerate(outputs):
+            output = outputs[i]
+            if isinstance(output, torch.Tensor):
+                output = TensorImage(output)
+            if isinstance(output, TensorImage):
+                if subtype == "mask":
+                    output = output.get_grayscale()
+                outputs[i] = post_process(output, include_alpha).get_BWHC()
         return (outputs,)
 
 
