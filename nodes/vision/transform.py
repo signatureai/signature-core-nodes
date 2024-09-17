@@ -23,7 +23,7 @@ class AutoCrop:
             "required": {
                 "image": ("IMAGE",),
                 "mask": ("MASK",),
-                "mask_threshold": ("FLOAT", {"default": 0.01, "min": 0.00, "max": 1.00, "step": 0.01}),
+                "mask_threshold": ("FLOAT", {"default": 0.1, "min": 0.00, "max": 1.00, "step": 0.01}),
                 "left_padding": ("INT", {"default": 0}),
                 "right_padding": ("INT", {"default": 0}),
                 "top_padding": ("INT", {"default": 0}),
@@ -51,10 +51,10 @@ class AutoCrop:
         mask_tensor = TensorImage.from_BWHC(mask)
         if img_tensor.shape[1] != 3:
             img_tensor = rgba_to_rgb(img_tensor)
-        mask_tensor[mask_tensor > mask_threshold] = 1.0
-        mask_tensor[mask_tensor <= mask_threshold] = 0.0
+
+        padding = (left_padding, right_padding, top_padding, bottom_padding)
         img_result, mask_result, min_x, min_y, width, height = auto_crop(
-            img_tensor, mask_tensor, padding=(left_padding, right_padding, top_padding, bottom_padding)
+            img_tensor, mask_tensor, mask_threshold=mask_threshold, padding=padding
         )
         output_img = TensorImage(img_result).get_BWHC()
         output_mask = TensorImage(mask_result).get_BWHC()
