@@ -1,62 +1,79 @@
 import { app } from "../../../scripts/app.js";
 import { ComfyWidgets } from "../../../scripts/widgets.js";
 
-// Displays input text on a node
 app.registerExtension({
   name: "signature.TextPreview",
   async beforeRegisterNodeDef(nodeType, nodeData, app) {
-    if (nodeData.name === "signature_text_preview") {
-      function populate(text) {
-        if (this.widgets) {
-          for (let i = 1; i < this.widgets.length; i++) {
-            this.widgets[i].onRemove?.();
-          }
-          this.widgets.length = 1;
-        }
+    if (nodeData.name !== "signature_text_preview") return;
 
-        const v = [...text];
-        if (!v[0]) {
-          v.shift();
-        }
-        for (const list of v) {
-          const w = ComfyWidgets["STRING"](
-            this,
-            "text",
-            ["STRING", { multiline: true }],
-            app,
-          ).widget;
-          w.inputEl.readOnly = true;
-          w.inputEl.style.opacity = 0.6;
-          w.value = list;
-        }
+    const resize = function () {
+      // auto resize
+      const sz = this.computeSize();
+      if (this.size[0] < sz[0]) this.size[0] = sz[0];
+      if (this.size[1] < sz[1]) this.size[1] = sz[1];
 
-        requestAnimationFrame(() => {
-          const sz = this.computeSize();
-          if (sz[0] < this.size[0]) {
-            sz[0] = this.size[0];
-          }
-          if (sz[1] < this.size[1]) {
-            sz[1] = this.size[1];
-          }
-          this.onResize?.(sz);
+      requestAnimationFrame(() => {
+        this.onResize?.(this.size);
+        app.graph.setDirtyCanvas(true, false);
+      });
+    };
+
+    const refresh = function (values) {
+      // console.info("node refresh: ", this.type, this.id, values);
+
+      if (values) {
+        console.log("node refresh: ", this?.widgets);
+        const w = this?.widgets?.find(
+          (v) => v.type === "customtext" && v.name === "__preview",
+        );
+        if (w) {
+          let text = "";
+
+          if (typeof values === "text") text = values;
+          else if (Array.isArray(values)) text = values[0];
+
+          w.value = text;
           app.graph.setDirtyCanvas(true, false);
-        });
+        }
       }
 
-      // When the node is executed we will be sent the input text, display this in the widget
-      const onExecuted = nodeType.prototype.onExecuted;
-      nodeType.prototype.onExecuted = function (message) {
-        onExecuted?.apply(this, arguments);
-        populate.call(this, message.text);
-      };
+      // auto resize
+      resize.call(this);
+    };
 
-      const onConfigure = nodeType.prototype.onConfigure;
-      nodeType.prototype.onConfigure = function () {
-        onConfigure?.apply(this, arguments);
-        if (this.widgets_values?.length) {
-          populate.call(this, this.widgets_values);
-        }
-      };
-    }
+    const onNodeCreated = nodeType.prototype.onNodeCreated;
+    nodeType.prototype.onNodeCreated = function () {
+      // add preview widget
+      const previewer = ComfyWidgets.STRING(
+        this,
+        "__preview",
+        [
+          "STRING",
+          {
+            default: "",
+            placeholder: "Output will show here...",
+            multiline: true,
+          },
+        ],
+        app,
+      );
+      previewer.widget.inputEl.readOnly = true;
+      app.graph.setDirtyCanvas(true, false);
+      resize.call(this);
+
+      onNodeCreated?.apply(this, arguments);
+    };
+
+    const onConfigure = nodeType.prototype.onConfigure;
+    nodeType.prototype.onConfigure = function (w) {
+      onConfigure?.apply(this, arguments);
+      if (w?.widgets_values?.length > 0) refresh.call(this, w.widgets_values);
+    };
+
+    const onExecuted = nodeType.prototype.onExecuted;
+    nodeType.prototype.onExecuted = function (output) {
+      onExecuted?.apply(this, arguments);
+      refresh.call(this, output?.text);
+    };
   },
 });
