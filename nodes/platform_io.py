@@ -5,6 +5,7 @@ from datetime import datetime
 import torch
 from signature_core.connectors.google_connector import GoogleConnector
 from signature_core.img.tensor_image import TensorImage
+from signature_core.logger import console
 
 from .categories import PLATFROM_IO_CAT
 from .shared import BASE_COMFY_DIR, any_type
@@ -219,47 +220,71 @@ class PlatformOutput:
 
     RETURN_TYPES = ()
     OUTPUT_NODE = True
+    INPUT_IS_LIST = True
     FUNCTION = "apply"
     CATEGORY = PLATFROM_IO_CAT
 
+    def __save_outputs(
+        self, img, title: str, subtype: str, thumbnail_size: int, output_dir: str, metadata: str = ""
+    ) -> dict | None:
+        random_str = str(torch.randint(0, 100000, (1,)).item())
+        current_time_str = datetime.now().strftime("%Y%m%d_%H%M%S")
+        file_name = f"signature_{current_time_str}_{random_str}.png"
+        save_path = os.path.join(output_dir, file_name)
+
+        output_img = TensorImage(img)
+
+        thumbnail_img = output_img.get_resized(thumbnail_size)
+        thumbnail_path = save_path.replace(".png", "_thumbnail.jpeg")
+        thumbnail_file_name = file_name.replace(".png", "_thumbnail.jpeg")
+        thumbnail_saved = thumbnail_img.save(thumbnail_path)
+
+        image_saved = output_img.save(save_path)
+
+        if image_saved and thumbnail_saved:
+            return {
+                "title": title,
+                "type": subtype,
+                "metadata": metadata,
+                "value": file_name,
+                "thumbnail": thumbnail_file_name if thumbnail_saved else None,
+            }
+
+        return None
+
     def apply(self, value, title: str, subtype: str, metadata: str = ""):
+        if len(subtype) == 0 or len(value) == 0:
+            raise ValueError("No input found")
+        main_subtype = subtype[0]
         supported_types = ["image", "mask", "int", "float", "string", "dict"]
-        if subtype not in supported_types:
+        if main_subtype not in supported_types:
             raise ValueError(f"Unsupported output type: {subtype}")
 
         output_dir = os.path.join(BASE_COMFY_DIR, "output")
-        current_time_str = datetime.now().strftime("%Y%m%d_%H%M%S")
         results = []
-        thumbnail_size = 768
-        if subtype in ["image", "mask"]:
-            tensor_images = TensorImage.from_BWHC(value.to("cpu"))
-            for img in tensor_images:
-                random_str = str(torch.randint(0, 100000, (1,)).item())
-                file_name = f"signature_{current_time_str}_{random_str}.png"
-                save_path = os.path.join(output_dir, file_name)
+        thumbnail_size = 1024
+        console.log(f"Input size {len(value)}")
+        for item in value:
+            if isinstance(item, torch.Tensor):
+                if main_subtype in ["image", "mask"]:
+                    tensor_images = TensorImage.from_BWHC(item.to("cpu"))
+                    for img in tensor_images:
+                        console.log(f"Input tensor shape {img.shape}")
+                        result = self.__save_outputs(
+                            img, title, main_subtype, thumbnail_size, output_dir, metadata
+                        )
+                        if result:
+                            results.append(result)
+                else:
+                    raise ValueError(f"Unsupported output type: {type(item)}")
+            else:
+                value_json = json.dumps(item) if main_subtype == "dict" else item
+                results.append(
+                    {"title": title, "type": main_subtype, "metadata": metadata, "value": value_json}
+                )
 
-                output_img = TensorImage(img)
-
-                thumbnail_img = output_img.get_resized(thumbnail_size)
-                thumbnail_path = save_path.replace(".png", "_thumbnail.jpeg")
-                thumbnail_saved = thumbnail_img.save(thumbnail_path)
-
-                image_saved = output_img.save(save_path)
-
-                if image_saved and thumbnail_saved:
-                    results.append(
-                        {
-                            "title": title,
-                            "type": subtype,
-                            "metadata": metadata,
-                            "value": file_name,
-                            "thumbnail": thumbnail_path if thumbnail_saved else None,
-                        }
-                    )
-        else:
-            value_json = json.dumps(value) if subtype == "dict" else value
-            results.append({"title": title, "type": subtype, "metadata": metadata, "value": value_json})
-
+        console.log(f"Output size {len(results)}")
+        console.log(f"Output {results}")
         return {"ui": {"signature_output": results}}
 
 
