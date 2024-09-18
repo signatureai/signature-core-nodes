@@ -77,10 +77,11 @@ class PlatformInputImage:
             output = outputs[i]
             if isinstance(output, torch.Tensor):
                 output = TensorImage(output)
-            if isinstance(output, TensorImage):
-                if subtype == "mask":
-                    output = output.get_grayscale()
-                outputs[i] = post_process(output, include_alpha).get_BWHC()
+            if subtype == "mask":
+                outputs[i] = output.get_grayscale().get_BWHC()
+            else:
+                if isinstance(output, TensorImage):
+                    outputs[i] = post_process(output, include_alpha).get_BWHC()
         return (outputs,)
 
 
