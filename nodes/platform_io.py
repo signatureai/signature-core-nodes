@@ -19,7 +19,7 @@ class PlatformInputImage:
                 "subtype": (["image", "mask"],),
                 "required": ("BOOLEAN", {"default": True}),
                 "value": ("STRING", {"default": ""}),
-                "metadata": ("STRING", {"default": "", "multiline": True}),
+                "metadata": ("STRING", {"default": "{}", "multiline": True}),
             },
             "optional": {
                 "fallback": (any_type,),
@@ -71,7 +71,7 @@ class PlatformInputConnector:
                 "token": ("STRING", {"default": ""}),
                 "mime_type": ("STRING", {"default": "image/png"}),
                 "value": ("STRING", {"default": ""}),
-                "metadata": ("STRING", {"default": "", "multiline": True}),
+                "metadata": ("STRING", {"default": "{}", "multiline": True}),
             },
         }
 
@@ -105,7 +105,7 @@ class PlatformInputText:
                 "subtype": (["string", "positive_prompt", "negative_prompt"],),
                 "required": ("BOOLEAN", {"default": True}),
                 "value": ("STRING", {"multiline": True, "default": ""}),
-                "metadata": ("STRING", {"default": "", "multiline": True}),
+                "metadata": ("STRING", {"default": "{}", "multiline": True}),
             },
             "optional": {
                 "fallback": ("STRING", {"forceInput": True}),
@@ -131,7 +131,7 @@ class PlatformInputNumber:
                 "subtype": (["float", "int"],),
                 "required": ("BOOLEAN", {"default": True}),
                 "value": ("FLOAT", {"default": 0}),
-                "metadata": ("STRING", {"default": "", "multiline": True}),
+                "metadata": ("STRING", {"default": "{}", "multiline": True}),
             },
         }
 
@@ -156,7 +156,7 @@ class PlatformInputBoolean:
                 "subtype": (["boolean"],),
                 "required": ("BOOLEAN", {"default": True}),
                 "value": ("BOOLEAN", {"default": False}),
-                "metadata": ("STRING", {"default": "", "multiline": True}),
+                "metadata": ("STRING", {"default": "{}", "multiline": True}),
             }
         }
 
@@ -180,7 +180,7 @@ class PlatformInputSlider:
                 "value": ("FLOAT", {"default": 0}),
                 "min_value": ("FLOAT", {"default": 0}),
                 "max_value": ("FLOAT", {"default": 10}),
-                "metadata": ("STRING", {"default": "", "multiline": True}),
+                "metadata": ("STRING", {"default": "{}", "multiline": True}),
             },
         }
 
@@ -212,7 +212,7 @@ class PlatformOutput:
             "required": {
                 "title": ("STRING", {"default": "Output Image"}),
                 "subtype": (["image", "mask", "int", "float", "string", "dict"],),
-                "metadata": ("STRING", {"default": "", "multiline": True}),
+                "metadata": ("STRING", {"default": "{}", "multiline": True}),
                 "value": (any_type,),
             },
         }
@@ -245,6 +245,12 @@ class PlatformOutput:
                 thumbnail_saved = thumbnail_img.save(thumbnail_path)
 
                 image_saved = output_img.save(save_path)
+
+                # Check if metadata is valid JSON
+                try:
+                    json.loads(metadata)
+                except json.JSONDecodeError:
+                    metadata = "{}"
 
                 if image_saved and thumbnail_saved:
                     results.append(
