@@ -90,12 +90,15 @@ class TextPreview:
     CATEGORY = UTILS_CAT
 
     def process(self, text):
-        print(len(text))
-        text_string = []
-        for t in text:
-            text_string.append(str(t))
+        text_string = ""
 
-        return {"ui": {"text": text_string}, "result": (text_string,)}
+        for t in text:
+            if t is None:
+                continue
+            if text_string != "":
+                text_string += "\n"
+            text_string += str(t.shape) if isinstance(t, torch.Tensor) else str(t)
+        return {"ui": {"text": [text_string]}, "result": (text_string,)}
 
 
 class MaskPreview(SaveImage):
