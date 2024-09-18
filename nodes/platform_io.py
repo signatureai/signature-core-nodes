@@ -287,6 +287,7 @@ class PlatformOutput:
 
         output_dir = os.path.join(BASE_COMFY_DIR, "output")
         results = []
+<<<<<<< HEAD
         thumbnail_size = 1024
         console.log(f"Input size {len(value)}")
         for item in value:
@@ -307,6 +308,45 @@ class PlatformOutput:
                 results.append(
                     {"title": title, "type": main_subtype, "metadata": metadata, "value": value_json}
                 )
+=======
+
+        thumbnail_size = 1024
+        if subtype in ["image", "mask"]:
+            tensor_images = TensorImage.from_BWHC(value.to("cpu"))
+            for img in tensor_images:
+                current_time_str = datetime.now().strftime("%Y%m%d_%H%M%S")
+                random_str = str(torch.randint(0, 100000, (1,)).item())
+                file_name = f"signature_{current_time_str}_{random_str}.png"
+                save_path = os.path.join(output_dir, file_name)
+
+                output_img = TensorImage(img)
+
+                thumbnail_img = output_img.get_resized(thumbnail_size)
+                thumbnail_path = save_path.replace(".png", "_thumbnail.jpeg")
+                thumbnail_saved = thumbnail_img.save(thumbnail_path)
+
+                image_saved = output_img.save(save_path)
+
+                # Check if metadata is valid JSON
+                try:
+                    json.loads(metadata)
+                except json.JSONDecodeError:
+                    metadata = "{}"
+
+                if image_saved and thumbnail_saved:
+                    results.append(
+                        {
+                            "title": title,
+                            "type": subtype,
+                            "metadata": metadata,
+                            "value": file_name,
+                            "thumbnail": thumbnail_path if thumbnail_saved else None,
+                        }
+                    )
+        else:
+            value_json = json.dumps(value) if subtype == "dict" else value
+            results.append({"title": title, "type": subtype, "metadata": metadata, "value": value_json})
+>>>>>>> 09b3c9c (add support to list and batches on output)
 
         console.log(f"Output size {len(results)}")
         console.log(f"Output {results}")
