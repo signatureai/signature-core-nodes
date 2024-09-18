@@ -22,7 +22,7 @@ app.registerExtension({
       // console.info("node refresh: ", this.type, this.id, values);
 
       if (values) {
-        console.log("node refresh: ", this?.widgets);
+        //console.log("node refresh: ", this?.widgets);
         const w = this?.widgets?.find(
           (v) => v.type === "customtext" && v.name === "__preview",
         );

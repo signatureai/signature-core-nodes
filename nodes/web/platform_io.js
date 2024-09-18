@@ -47,9 +47,9 @@ function output(node, widget) {
   for (const w of widgets) {
     if (w.name === "title") {
       if (w.value.startsWith("Output ")) {
-        console.log("=======> " + widget.value);
+        // console.log("=======> " + widget.value);
         if (widget.value[0] === undefined) {
-          console.log("=======> undefined $$$");
+          // console.log("=======> undefined $$$");
           break;
         }
         const modStr = widget.value[0].toUpperCase() + widget.value.slice(1);

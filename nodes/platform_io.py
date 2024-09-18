@@ -6,7 +6,6 @@ import torch
 from signature_core.connectors.google_connector import GoogleConnector
 from signature_core.functional.transform import cutout
 from signature_core.img.tensor_image import TensorImage
-from signature_core.logger import console
 
 from .categories import PLATFROM_IO_CAT
 from .shared import BASE_COMFY_DIR, any_type
@@ -238,7 +237,7 @@ class PlatformOutput:
             "required": {
                 "title": ("STRING", {"default": "Output Image"}),
                 "subtype": (["image", "mask", "int", "float", "string", "dict"],),
-                "metadata": ("STRING", {"default": "{}", "multiline": True}),
+                "metadata": ("STRING", {"default": "", "multiline": True}),
                 "value": (any_type,),
             },
         }
@@ -266,11 +265,6 @@ class PlatformOutput:
 
         image_saved = output_img.save(save_path)
 
-        try:
-            metadata = json.loads(metadata)
-        except json.decoder.JSONDecodeError:
-            metadata = "{}"
-
         if image_saved and thumbnail_saved:
             return {
                 "title": title,
@@ -293,13 +287,13 @@ class PlatformOutput:
         output_dir = os.path.join(BASE_COMFY_DIR, "output")
         results = []
         thumbnail_size = 1024
-        console.log(f"Input size {len(value)}")
+        # console.log(f"Input size {len(value)}")
         for item in value:
             if isinstance(item, torch.Tensor):
                 if main_subtype in ["image", "mask"]:
                     tensor_images = TensorImage.from_BWHC(item.to("cpu"))
                     for img in tensor_images:
-                        console.log(f"Input tensor shape {img.shape}")
+                        # console.log(f"Input tensor shape {img.shape}")
                         result = self.__save_outputs(
                             img, title, main_subtype, thumbnail_size, output_dir, metadata
                         )
@@ -313,8 +307,8 @@ class PlatformOutput:
                     {"title": title, "type": main_subtype, "metadata": metadata, "value": value_json}
                 )
 
-        console.log(f"Output size {len(results)}")
-        console.log(f"Output {results}")
+        # console.log(f"Output size {len(results)}")
+        # console.log(f"Output {results}")
         return {"ui": {"signature_output": results}}
 
 
