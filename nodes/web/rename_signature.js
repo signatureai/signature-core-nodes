@@ -6,7 +6,7 @@ const ext = {
   nodeCreated(node) {
     const title = node.getTitle();
     if (title.startsWith("SIG ")) {
-      node.title = title.replace("SIG ", "🔸  ");
+      node.title = title.replace("SIG ", "🔲  ");
     }
   },
 };
