@@ -341,7 +341,7 @@ const ext = {
           break;
         }
       }
-      if (widgets.length === 3) {
+      if (widgets.length === 4) {
         widgets.unshift({
           type: "combo",
           name: "workflow",

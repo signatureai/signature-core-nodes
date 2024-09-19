@@ -478,6 +478,7 @@ class PlatfromWrapper:
         return {
             "required": {
                 "data": ("STRING", {"default": ""}),
+                "host": ("STRING", {"default": ""}),
                 "seed": ("INT", {"default": -1, "min": -1, "max": 10000000000000000}),
             },
         }
@@ -488,6 +489,7 @@ class PlatfromWrapper:
 
     def process(self, **kwargs):
         data = kwargs.get("data")
+        inference_host = kwargs.get("host")
         fallback = (None,) * 20
         if data is None:
             return fallback
@@ -535,7 +537,7 @@ class PlatfromWrapper:
         if not isinstance(updated_workflow_api_string, str):
             return fallback
 
-        job_outputs = self.run_workflow_job(base_url, org_id, updated_workflow_api_string, token)
+        job_outputs = self.run_workflow_job(inference_host, org_id, updated_workflow_api_string, token)
 
         outputs = []
         console.log(f"=====================>>> Node outputs: {node_outputs}")
