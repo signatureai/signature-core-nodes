@@ -3,7 +3,7 @@ import { app } from "../../../scripts/app.js";
 const origin = window.location.search;
 const urlParams = new URLSearchParams(origin);
 const env = urlParams.get("env");
-const token = urlParams.get("token");
+let token = urlParams.get("token");
 let main_url = "https://api.signature.ai/api/v1";
 if (env === "staging") {
   main_url = "https://api-staging.signature.ai/api/v1";
@@ -11,15 +11,14 @@ if (env === "staging") {
 
 const headers = getHeaders(token);
 
-// function getCookie(name) {
-//   const value = `; ${document.cookie}`;
-//   const parts = value.split(`; ${name}=`);
-//   if (parts.length === 2) return parts.pop().split(";").shift();
-// }
-
-// const urlParams = new URLSearchParams(window.location.search);
-
-// const token = getCookie("accessToken");
+if (token == undefined || token == "") {
+  function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(";").shift();
+  }
+  token = getCookie("accessToken");
+}
 
 function getHeaders(token) {
   const headers = new Headers();
