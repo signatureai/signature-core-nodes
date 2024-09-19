@@ -9,8 +9,6 @@ if (env === "staging") {
   main_url = "https://api-staging.signature.ai/api/v1";
 }
 
-const headers = getHeaders(token);
-
 if (token == undefined || token == "") {
   function getCookie(name) {
     const value = `; ${document.cookie}`;
@@ -19,6 +17,8 @@ if (token == undefined || token == "") {
   }
   token = getCookie("accessToken");
 }
+
+const headers = getHeaders(token);
 
 function getHeaders(token) {
   const headers = new Headers();
