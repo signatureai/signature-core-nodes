@@ -1,8 +1,10 @@
 import { app } from "../../../scripts/app.js";
 
-let main_url = "https://api.signature.ai/api/v1";
 const origin = window.location.search;
-if (origin.startsWith("https://staging-platform.signature.ai/")) {
+const urlParams = new URLSearchParams(origin);
+const env = urlParams.get("env");
+let main_url = "https://api.signature.ai/api/v1";
+if (env === "staging") {
   main_url = "https://api-staging.signature.ai/api/v1";
 }
 
