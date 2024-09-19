@@ -3,21 +3,23 @@ import { app } from "../../../scripts/app.js";
 const origin = window.location.search;
 const urlParams = new URLSearchParams(origin);
 const env = urlParams.get("env");
+const token = urlParams.get("token");
 let main_url = "https://api.signature.ai/api/v1";
 if (env === "staging") {
   main_url = "https://api-staging.signature.ai/api/v1";
 }
 
-function getCookie(name) {
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop().split(";").shift();
-}
+const headers = getHeaders(token);
+
+// function getCookie(name) {
+//   const value = `; ${document.cookie}`;
+//   const parts = value.split(`; ${name}=`);
+//   if (parts.length === 2) return parts.pop().split(";").shift();
+// }
 
 // const urlParams = new URLSearchParams(window.location.search);
-// const token = urlParams.get("token");
-const token = getCookie("accessToken");
-const headers = getHeaders(token);
+
+// const token = getCookie("accessToken");
 
 function getHeaders(token) {
   const headers = new Headers();
