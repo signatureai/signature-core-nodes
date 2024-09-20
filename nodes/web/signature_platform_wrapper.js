@@ -259,7 +259,7 @@ function updateInputsOutputs(node, workflowObject, update) {
     node.outputs = [];
   }
   const workflowId = workflowObject._id;
-  const parsedWorkflow = JSON.parse(workflowObject.workflow);
+  const parsedWorkflow = JSON.parse(workflowObject.workflow_api);
   updateWorkflowImage(node, workflowObject);
   let data = {
     origin: main_url,
@@ -267,33 +267,31 @@ function updateInputsOutputs(node, workflowObject, update) {
     workflow_id: workflowId,
   };
 
-  const nodes = parsedWorkflow.nodes;
+  const nodes = Object.keys(parsedWorkflow).map((key) => [key, parsedWorkflow[key]]);
   for (let i = 0; i < nodes.length; i++) {
-    const nodeType = nodes[i].type;
+    const wfNode = nodes[i][1];
+    const nodeType = wfNode.class_type;
     if (nodeType.startsWith("signature_input")) {
-      // console.log("input nodes: ", nodes[i]);
-      let nodeInputs = nodes[i].widgets_values;
-      if (nodeInputs.length > 1) {
-        const required = nodeInputs[2];
-        if (required) {
-          if (nodeType === "signature_input_connector") {
-            const inputName = nodeInputs[0];
-            const inputType = "STRING";
-            const idName = inputName + " Id";
-            const tokenName = inputName + " Token";
-            if (update) {
-              node.addInput(idName, inputType);
-              node.addInput(tokenName, inputType);
-            }
-          } else {
-            const inputName = nodeInputs[0];
-            let inputType = nodeInputs[1].toUpperCase();
-            if (nodeType === "signature_input_text") {
-              inputType = "STRING";
-            }
-            if (update) {
-              node.addInput(inputName, inputType);
-            }
+      const nodeInputs = wfNode.inputs;
+      const required = nodeInputs.required;
+      if (required) {
+        if (nodeType === "signature_input_connector") {
+          const inputName = nodeInputs.title;
+          const inputType = "STRING";
+          const idName = inputName + " Id";
+          const tokenName = inputName + " Token";
+          if (update) {
+            node.addInput(idName, inputType);
+            node.addInput(tokenName, inputType);
+          }
+        } else {
+          const inputName = nodeInputs.title;
+          let inputType = nodeInputs.subtype.toUpperCase();
+          if (nodeType === "signature_input_text") {
+            inputType = "STRING";
+          }
+          if (update) {
+            node.addInput(inputName, inputType);
           }
         }
       }
@@ -301,13 +299,11 @@ function updateInputsOutputs(node, workflowObject, update) {
 
     if (nodeType === "signature_output") {
       // console.log("output nodes: ", nodes[i]);
-      let nodeOutputs = nodes[i].widgets_values;
-      if (nodeOutputs.length > 1) {
-        const name = nodeOutputs[0];
-        const type = nodeOutputs[1].toUpperCase();
-        if (update) {
-          node.addOutput(name, type);
-        }
+      let nodeOutputs = wfNode.inputs;
+      const name = nodeOutputs.title;
+      const type = nodeOutputs.subtype.toUpperCase();
+      if (update) {
+        node.addOutput(name, type);
       }
     }
   }

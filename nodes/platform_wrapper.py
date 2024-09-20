@@ -236,7 +236,7 @@ class PlatfromWrapper:
 
     def process_outputs(self, job_outputs, node_outputs):
 
-        def process_data(node_output: dict, job_output: dict) -> list:
+        def process_data(node_output: dict, job_output: dict):
 
             node_type = node_output.get("type")
             value = job_output.get("value")
@@ -244,9 +244,9 @@ class PlatfromWrapper:
                 return []
             if node_type in ("IMAGE", "MASK"):
                 if not isinstance(job_output, dict):
-                    return []
+                    return None
                 if not isinstance(value, str):
-                    return []
+                    return None
                 if not value.startswith("https://") and not value.startswith("http://"):
                     try:
                         url = "https://admin.signature.ai/view?filename=" + value
@@ -256,14 +256,14 @@ class PlatfromWrapper:
                         output_image = TensorImage.from_web(url)
                 else:
                     output_image = TensorImage.from_web(value)
-                return [output_image.get_BWHC()]
+                return output_image.get_BWHC()
             if node_type == "INT":
-                return [int(value)]
+                return int(value)
             if node_type == "FLOAT":
-                return [float(value)]
+                return float(value)
             if node_type == "BOOLEAN":
-                return [bool(value)]
-            return [str(value)]
+                return bool(value)
+            return str(value)
 
         outputs = []
         for node_output in node_outputs:
@@ -282,7 +282,9 @@ class PlatfromWrapper:
                         if node_name_part != job_name_part:
                             continue
                         data = process_data(node_output, job_output)
-                        outputs.extend(data)
+                        if data is None:
+                            continue
+                        outputs.append(data)
                         break
                 # console.log(f"Added {node_name} {node_type}")
         console.log(f"=====================>>> Node outputs: {len(outputs)}")
