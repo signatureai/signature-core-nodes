@@ -138,7 +138,6 @@ async function displayProjects(node, id) {
 
   if (selectedWidget) {
     let data = await getProjectsData(id);
-    // console.log("project data", data);
     if (data && data.length > 0) {
       let selectedProjects = [];
       for (let i = 0; i < data.length; i++) {
@@ -266,8 +265,6 @@ function updateInputsOutputs(node, workflowObject, update) {
     origin: main_url,
     token: token,
     workflow_id: workflowId,
-    inputs: [],
-    outputs: [],
   };
 
   const nodes = parsedWorkflow.nodes;
@@ -284,8 +281,6 @@ function updateInputsOutputs(node, workflowObject, update) {
             const inputType = "STRING";
             const idName = inputName + " Id";
             const tokenName = inputName + " Token";
-            data.inputs.push({ title: idName, type: inputType });
-            data.inputs.push({ title: tokenName, type: inputType });
             if (update) {
               node.addInput(idName, inputType);
               node.addInput(tokenName, inputType);
@@ -296,7 +291,6 @@ function updateInputsOutputs(node, workflowObject, update) {
             if (nodeType === "signature_input_text") {
               inputType = "STRING";
             }
-            data.inputs.push({ title: inputName, type: inputType });
             if (update) {
               node.addInput(inputName, inputType);
             }
@@ -311,7 +305,6 @@ function updateInputsOutputs(node, workflowObject, update) {
       if (nodeOutputs.length > 1) {
         const name = nodeOutputs[0];
         const type = nodeOutputs[1].toUpperCase();
-        data.outputs.push({ title: name, type: type });
         if (update) {
           node.addOutput(name, type);
         }

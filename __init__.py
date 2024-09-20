@@ -1,7 +1,16 @@
 from dotenv import load_dotenv
 from signature_core.version import __version__
 
-from .nodes import io, lora, numbers, platform_io, primitives, utils
+from .nodes import (
+    dev_tools,
+    io,
+    lora,
+    numbers,
+    platform_io,
+    platform_wrapper,
+    primitives,
+    utils,
+)
 from .nodes.vision import (
     augmentation,
     color,
@@ -31,6 +40,8 @@ NODE_CLASS_MAPPINGS = {
     **color.NODE_CLASS_MAPPINGS,
     **numbers.NODE_CLASS_MAPPINGS,
     **primitives.NODE_CLASS_MAPPINGS,
+    **dev_tools.NODE_CLASS_MAPPINGS,
+    **platform_wrapper.NODE_CLASS_MAPPINGS,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -48,6 +59,8 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     **color.NODE_DISPLAY_NAME_MAPPINGS,
     **numbers.NODE_DISPLAY_NAME_MAPPINGS,
     **primitives.NODE_DISPLAY_NAME_MAPPINGS,
+    **dev_tools.NODE_DISPLAY_NAME_MAPPINGS,
+    **platform_wrapper.NODE_DISPLAY_NAME_MAPPINGS,
 }
 
 WEB_DIRECTORY = "./nodes/web"
