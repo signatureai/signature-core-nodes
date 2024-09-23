@@ -97,6 +97,7 @@ class PlatfromWrapper:
             return None
 
         url = f"{base_url}/generate-signature"
+        queue_url = f"{base_url}/queue"
 
         headers = {
             "accept": "application/json",
@@ -115,13 +116,15 @@ class PlatfromWrapper:
             data = json.dumps(params)
             pbar = ProgressBar(total_steps)  # type: ignore
             with httpx.Client() as client:
-                response = client.post(url, data=data, headers=headers)  # type: ignore
-                prompt_id = response.json()
+                prompt_id = client.post(url, data=data, headers=headers).json()  # type: ignore
+                queue = client.get(queue_url, headers=headers).json()
+                console.log(f"Queue: {queue}")
                 stream_url = f"{url}/{prompt_id}"
                 with client.stream(method="GET", url=stream_url, headers=headers, timeout=9000000) as stream:
                     for chunk in stream.iter_lines():
                         if not chunk:
                             continue
+                        console.log(f"Chunk: {chunk}")
                         result = process_data_chunk(chunk, remaining_ids)
                         if result is None:
                             continue
@@ -336,7 +339,8 @@ class PlatfromWrapper:
         projects = result.get("projects") or []
         if len(projects) == 0:
             return fallback
-        org_id = projects[0].get("organisation") or None
+        # org_id = projects[0].get("organisation") or None
+        org_id = "66f16ff117e9f62c90b83e7f"
         if org_id is None:
             return fallback
 
