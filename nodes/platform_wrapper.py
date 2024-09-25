@@ -74,11 +74,11 @@ class PlatfromWrapper:
                         return None
                     if "signature_output" in output:
                         signature_output = output["signature_output"]
-                        console.log(f"Signature output: {signature_output}")
+                        # console.log(f"Signature output: {signature_output}")
                         for item in signature_output:
                             title = item.get("title")
                             value = item.get("value")
-                            console.log(f"======== Title: {title}, Value: {value}")
+                            # console.log(f"======== Title: {title}, Value: {value}")
                             return {"output": {"title": title, "value": value}}
                 elif data_type == "execution_error":
                     error = data["data"]
@@ -89,7 +89,7 @@ class PlatfromWrapper:
                         queue_remaining = status.get("exec_info", None).get("queue_remaining")
                         return {"queue": max(0, int(queue_remaining) - 1)}
                     # elif status == "finished":
-                    #     console.log("Workflow finished!")
+                    #     # console.log("Workflow finished!")
                     #     return {"finished": True}
 
             except json.JSONDecodeError:
@@ -118,13 +118,13 @@ class PlatfromWrapper:
             with httpx.Client() as client:
                 prompt_id = client.post(url, data=data, headers=headers).json()  # type: ignore
                 queue = client.get(queue_url, headers=headers).json()
-                console.log(f"Queue: {queue}")
+                # console.log(f"Queue: {queue}")
                 stream_url = f"{url}/{prompt_id}"
                 with client.stream(method="GET", url=stream_url, headers=headers, timeout=9000000) as stream:
                     for chunk in stream.iter_lines():
                         if not chunk:
                             continue
-                        console.log(f"Chunk: {chunk}")
+                        # console.log(f"Chunk: {chunk}")
                         result = process_data_chunk(chunk, remaining_ids)
                         if result is None:
                             continue
@@ -202,6 +202,8 @@ class PlatfromWrapper:
                     value_title = value_inputs.get("title")
                     value_type = (value_inputs.get("subtype") or "").upper()
                     if input_title == value_title and input_type == value_type:
+                        # console.log(f"Updating input: {value}")
+                        # console.log(f"data : {data}")
                         value["inputs"]["value"] = data.get("value") or ""
         return json_data
 
@@ -279,7 +281,7 @@ class PlatfromWrapper:
                     node_name = [node_name]
                 if isinstance(job_name, str):
                     job_name = [job_name]
-                console.log(f"Node name: {node_name}, Job name: {job_name}")
+                # console.log(f"Node name: {node_name}, Job name: {job_name}")
                 for node_name_part in node_name:
                     for job_name_part in job_name:
                         if node_name_part != job_name_part:
@@ -290,18 +292,25 @@ class PlatfromWrapper:
                         outputs.append(data)
                         break
                 # console.log(f"Added {node_name} {node_type}")
-        console.log(f"=====================>>> Node outputs: {len(outputs)}")
+        # console.log(f"=====================>>> Node outputs: {len(outputs)}")
         return tuple(outputs)
 
     @classmethod
     def INPUT_TYPES(cls):  # type: ignore
-        return {
+        inputs = {
             "required": {
                 "data": ("STRING", {"default": ""}),
-                "inference_host": ("STRING", {"default": ""}),
-                "seed": ("INT", {"default": -1, "min": -1, "max": 10000000000000000}),
             },
+            "optional": {},
         }
+        for i in range(50):
+            inputs["optional"].update(
+                {
+                    f"genetic_{i}": (any_type),
+                }
+            )
+
+        return inputs
 
     RETURN_TYPES = (any_type,) * 20
     FUNCTION = "process"
@@ -309,6 +318,7 @@ class PlatfromWrapper:
 
     def process(self, **kwargs):
         data = kwargs.get("data")
+        # console.log(f"kwargs: {kwargs}")
 
         fallback = (None,) * 20
         if data is None:
@@ -320,10 +330,12 @@ class PlatfromWrapper:
         workflow_id = json_data.get("workflow_id") or None
         token = json_data.get("token") or None
         inference_host = json_data.get("inference_host") or None
+        widget_inputs = json_data.get("widget_inputs") or []
+        # console.log(f"Widget inputs: {widget_inputs}")
 
         if inference_host is None or inference_host == "":
             inference_host = base_url
-        console.log(f"Origin: {base_url}, Inference host: {inference_host}")
+        # console.log(f"Origin: {base_url}, Inference host: {inference_host}")
         if not isinstance(base_url, str):
             return fallback
         if not isinstance(workflow_id, str):
@@ -346,19 +358,32 @@ class PlatfromWrapper:
 
         json_data = json.loads(wf_api_string)
         node_inputs = self.get_workflow_inputs(json_data)
+        # console.log(f"Node inputs: {node_inputs}")
         node_outputs = self.get_workflow_outputs(json_data)
+        # console.log(f"Node outputs: {node_outputs}")
 
         for node_input in node_inputs:
             node_title = node_input.get("title")
             node_type = node_input.get("type")
+            comfy_value = kwargs.get(node_title)
+            if comfy_value is None:
+                for widget_input in widget_inputs:
+                    if widget_input.get("title") == node_title:
+                        widget_value = widget_input.get("value")
+                        if widget_value is None:
+                            continue
+                        comfy_value = widget_input.get("value")
+                        break
+            if comfy_value is None:
+                continue
             if node_type in ("IMAGE", "MASK"):
-                comfy_image = kwargs.get(node_title)
-                if isinstance(comfy_image, torch.Tensor):
-                    tensor_image = TensorImage.from_BWHC(comfy_image)
+                if isinstance(comfy_value, torch.Tensor):
+                    tensor_image = TensorImage.from_BWHC(comfy_value)
                     uploaded_image = self.upload_image_to_s3(base_url, token, tensor_image)
                     node_input.update({"value": uploaded_image})
             else:
-                node_input.update({"value": kwargs.get(node_title)})
+                # console.log(f"Title: {node_title} Value: {comfy_value} Type: {node_type}")
+                node_input.update({"value": comfy_value})
 
         json_data = self.update_workflow_inputs(json_data, node_inputs)
 

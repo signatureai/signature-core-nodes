@@ -20,6 +20,10 @@ if (token == undefined || token == "") {
 
 const headers = getHeaders(token);
 
+const findWidgetByName = (node, name) => {
+  return node.widgets ? node.widgets.find((w) => w.name === name) : null;
+};
+
 function getHeaders(token) {
   const headers = new Headers();
   headers.append("Content-Type", "application/json");
@@ -59,23 +63,13 @@ async function getWorkflowsData(id) {
 }
 
 async function displayOrganisations(node) {
-  let widgets = node.widgets;
-  let selectedWidget = undefined;
-  for (let i = 0; i < widgets.length; i++) {
-    if (widgets[i].name === "data") {
-      let dataWidget = widgets[i];
-      dataWidget.value = "";
-    }
-    if (widgets[i].name === "organisation") {
-      selectedWidget = widgets[i];
-      selectedWidget.callback = function () {};
-    }
-  }
+  let selectedWidget = findWidgetByName(node, "organisation");
+  let dataWidget = findWidgetByName(node, "data");
+  selectedWidget.callback = function () {};
+  dataWidget.value = "";
 
   if (selectedWidget) {
     let data = await getOrganisationsData();
-    // console.log("organisation data", data);
-
     let selectedOrgs = [];
     if (data && data.length > 0) {
       for (let i = 0; i < data.length; i++) {
@@ -88,6 +82,7 @@ async function displayOrganisations(node) {
         if (selectedOrgs.includes(selectedWidget.value) === false) {
           node.inputs = [];
           node.outputs = [];
+          resetWidgets(node);
           selectedWidget.value = selectedOrgs[0];
           await displayProjects(node, data[0]._id);
         } else {
@@ -122,19 +117,10 @@ async function displayOrganisations(node) {
 }
 
 async function displayProjects(node, id) {
-  let widgets = node.widgets;
-  let selectedWidget = undefined;
-
-  for (let i = 0; i < widgets.length; i++) {
-    if (widgets[i].name === "data") {
-      let dataWidget = widgets[i];
-      dataWidget.value = "";
-    }
-    if (widgets[i].name === "project") {
-      selectedWidget = widgets[i];
-      selectedWidget.callback = function () {};
-    }
-  }
+  let selectedWidget = findWidgetByName(node, "project");
+  selectedWidget.callback = function () {};
+  let dataWidget = findWidgetByName(node, "data");
+  dataWidget.value = "";
 
   if (selectedWidget) {
     let data = await getProjectsData(id);
@@ -148,6 +134,7 @@ async function displayProjects(node, id) {
         if (selectedProjects.includes(selectedWidget.value) === false) {
           node.inputs = [];
           node.outputs = [];
+          resetWidgets(node);
           selectedWidget.value = selectedProjects[0];
           await displayWorkflows(node, id, data[0].name);
         } else {
@@ -182,21 +169,10 @@ async function displayProjects(node, id) {
 }
 
 async function displayWorkflows(node, id, projectName) {
-  let widgets = node.widgets;
-  let selectedWidget = undefined;
-  let dataWidget = undefined;
-
-  for (let i = 0; i < widgets.length; i++) {
-    if (widgets[i].name === "workflow") {
-      selectedWidget = widgets[i];
-      selectedWidget.callback = function () {};
-    }
-
-    if (widgets[i].name === "data") {
-      dataWidget = widgets[i];
-      dataWidget.value = "";
-    }
-  }
+  let selectedWidget = findWidgetByName(node, "workflow");
+  selectedWidget.callback = function () {};
+  let dataWidget = findWidgetByName(node, "data");
+  dataWidget.value = "";
 
   if (selectedWidget) {
     let data = await getWorkflowsData(id);
@@ -222,7 +198,8 @@ async function displayWorkflows(node, id, projectName) {
         }
         for (let i = 0; i < data.length; i++) {
           if (data[i].name === selectedWidget.value) {
-            updateInputsOutputs(node, data[i], cached === false);
+            updateInputsOutputs(node, data[i], true);
+            // updateInputsOutputs(node, data[i], cached === false);
             break;
           }
         }
@@ -244,27 +221,29 @@ async function displayWorkflows(node, id, projectName) {
   }
 }
 
-function updateWorkflowImage(node, workflowData) {
-  if (workflowData && workflowData.cover_image) {
-    const imageWidget = node.widgets.find((w) => w.name === "preview");
-    if (imageWidget) {
-      imageWidget.value = workflowData.cover_image;
-    }
-  }
+function resetWidgets(node) {
+  let widgets = [];
+  widgets.push(findWidgetByName(node, "workflow"));
+  widgets.push(findWidgetByName(node, "project"));
+  widgets.push(findWidgetByName(node, "organisation"));
+  widgets.push(findWidgetByName(node, "data"));
+  node.widgets = widgets;
 }
 
 function updateInputsOutputs(node, workflowObject, update) {
   if (update) {
     node.inputs = [];
     node.outputs = [];
+    resetWidgets(node);
   }
   const workflowId = workflowObject._id;
   const parsedWorkflow = JSON.parse(workflowObject.workflow_api);
-  updateWorkflowImage(node, workflowObject);
+
   let data = {
     origin: main_url,
     token: token,
     workflow_id: workflowId,
+    widget_inputs: [],
   };
 
   const nodes = Object.keys(parsedWorkflow).map((key) => [key, parsedWorkflow[key]]);
@@ -274,25 +253,85 @@ function updateInputsOutputs(node, workflowObject, update) {
     if (nodeType.startsWith("signature_input")) {
       const nodeInputs = wfNode.inputs;
       const required = nodeInputs.required;
-      if (required) {
-        if (nodeType === "signature_input_connector") {
-          const inputName = nodeInputs.title;
-          const inputType = "STRING";
-          const idName = inputName + " Id";
-          const tokenName = inputName + " Token";
-          if (update) {
-            node.addInput(idName, inputType);
-            node.addInput(tokenName, inputType);
+      if (required && update) {
+        const inputName = nodeInputs.title;
+        let inputType = nodeInputs.subtype.toUpperCase();
+        const value = nodeInputs.value;
+        if (nodeType === "signature_input_text") {
+          inputType = "STRING";
+        }
+        if (inputType !== "IMAGE" && inputType !== "MASK") {
+          if (inputType === "INT" || inputType === "FLOAT") {
+            let precision = 1;
+            let step = 1;
+            if (inputType === "FLOAT") {
+              precision = 3;
+              step = 0.01;
+            }
+            data.widget_inputs.push({
+              title: inputName,
+              value: value,
+              type: inputType,
+            });
+            node.addWidget(
+              "number",
+              inputName,
+              value,
+              () => {
+                const widget = findWidgetByName(node, inputName);
+                const newValue = widget.value;
+                const updatedData = getData(node);
+                for (let i = 0; i < updatedData.widget_inputs.length; i++) {
+                  if (updatedData.widget_inputs[i].title === inputName) {
+                    updatedData.widget_inputs[i].value = newValue;
+                    break;
+                  }
+                }
+                updateData(node, updatedData);
+              },
+              { precision: precision, step: step },
+            );
+          } else if (inputType === "BOOLEAN") {
+            data.widget_inputs.push({
+              title: inputName,
+              value: value,
+              type: inputType,
+            });
+            node.addWidget("toggle", inputName, value, () => {
+              const widget = findWidgetByName(node, inputName);
+              const newValue = widget.value;
+              const updatedData = getData(node);
+              for (let i = 0; i < updatedData.widget_inputs.length; i++) {
+                if (updatedData.widget_inputs[i].title === inputName) {
+                  updatedData.widget_inputs[i].value = newValue;
+                  break;
+                }
+              }
+              updateData(node, updatedData);
+            });
+          } else if (inputType === "STRING") {
+            data.widget_inputs.push({
+              title: inputName,
+              value: value,
+              type: inputType,
+            });
+            node.addWidget("text", inputName, value, () => {
+              const widget = findWidgetByName(node, inputName);
+              const newValue = widget.value;
+              const updatedData = getData(node);
+              for (let i = 0; i < updatedData.widget_inputs.length; i++) {
+                if (updatedData.widget_inputs[i].title === inputName) {
+                  updatedData.widget_inputs[i].value = newValue;
+                  break;
+                }
+              }
+              updateData(node, updatedData);
+            });
+          } else {
+            console.log("input type not supported: ", inputType);
           }
         } else {
-          const inputName = nodeInputs.title;
-          let inputType = nodeInputs.subtype.toUpperCase();
-          if (nodeType === "signature_input_text") {
-            inputType = "STRING";
-          }
-          if (update) {
-            node.addInput(inputName, inputType);
-          }
+          node.addInput(inputName, inputType);
         }
       }
     }
@@ -307,7 +346,18 @@ function updateInputsOutputs(node, workflowObject, update) {
       }
     }
   }
+  updateData(node, data);
+}
 
+function getData(node) {
+  for (let i = 0; i < node.widgets.length; i++) {
+    if (node.widgets[i].name === "data") {
+      return JSON.parse(node.widgets[i].value);
+    }
+  }
+}
+
+function updateData(node, data) {
   for (let i = 0; i < node.widgets.length; i++) {
     if (node.widgets[i].name === "data") {
       node.widgets[i].value = JSON.stringify(data);
@@ -329,7 +379,9 @@ const ext = {
           break;
         }
       }
-      if (widgets.length === 4) {
+
+      console.log(widgets);
+      if (widgets.length === 1) {
         widgets.unshift({
           type: "combo",
           name: "workflow",
@@ -351,6 +403,7 @@ const ext = {
 
         node.inputs = [];
         node.outputs = [];
+        resetWidgets(node);
       }
       await displayOrganisations(node);
     }
