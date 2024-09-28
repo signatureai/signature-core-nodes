@@ -72,8 +72,6 @@ class ComposeAugmentation:
         return {
             "required": {
                 "augmentation": ("AUGMENTATION",),
-                "height": ("INT", {"default": 1024, "min": 32, "step": 32}),
-                "width": ("INT", {"default": 1024, "min": 32, "step": 32}),
                 "samples": ("INT", {"default": 1, "min": 1}),
                 "seed": ("INT", {"default": -1, "min": -1, "max": 10000000000000000}),
             },
@@ -89,12 +87,11 @@ class ComposeAugmentation:
     )
     FUNCTION = "process"
     CATEGORY = AUGMENTATION_CAT
+    OUTPUT_IS_LIST = (True,)
 
     def process(
         self,
         augmentation,
-        height: int,
-        width: int,
         samples: int,
         image: torch.Tensor | None = None,
         mask: torch.Tensor | None = None,
@@ -104,12 +101,14 @@ class ComposeAugmentation:
         mask_tensor = TensorImage.from_BWHC(mask) if mask is not None else None
 
         total_images, total_masks = compose_augmentation(
-            augmentation, height, width, samples, image_tensor, mask_tensor, seed
+            augmentation, samples, image_tensor, mask_tensor, seed
         )
-
-        node_image = total_images.get_BWHC() if total_images is not None else None
-        node_mask = total_masks.get_BWHC() if total_masks is not None else None
-
+        if total_images is None:
+            total_images = []
+        if total_masks is None:
+            total_masks = []
+        node_image = [image.get_BWHC() for image in total_images]
+        node_mask = [mask.get_BWHC() for mask in total_masks]
         return (
             node_image,
             node_mask,
