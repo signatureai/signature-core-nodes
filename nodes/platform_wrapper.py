@@ -88,6 +88,8 @@ class PlatfromWrapper:
                     if isinstance(status, dict):
                         queue_remaining = status.get("exec_info", None).get("queue_remaining")
                         return {"queue": max(0, int(queue_remaining) - 1)}
+                else:
+                    return {"waiting": "no communication yet"}
                     # elif status == "finished":
                     #     # console.log("Workflow finished!")
                     #     return {"finished": True}
@@ -97,7 +99,7 @@ class PlatfromWrapper:
             return None
 
         url = f"{base_url}/generate-signature"
-        queue_url = f"{base_url}/queue"
+        # queue_url = f"{base_url}/queue"
 
         headers = {
             "accept": "application/json",
@@ -117,36 +119,47 @@ class PlatfromWrapper:
             pbar = ProgressBar(total_steps)  # type: ignore
             with httpx.Client() as client:
                 prompt_id = client.post(url, data=data, headers=headers).json()  # type: ignore
-                queue = client.get(queue_url, headers=headers).json()
+                # queue = client.get(queue_url, headers=headers).json()
                 # console.log(f"Queue: {queue}")
                 stream_url = f"{url}/{prompt_id}"
+                base_retrys = 20
+                retrys = base_retrys
                 with client.stream(method="GET", url=stream_url, headers=headers, timeout=9000000) as stream:
                     for chunk in stream.iter_lines():
                         if not chunk:
                             continue
-                        # console.log(f"Chunk: {chunk}")
+
                         result = process_data_chunk(chunk, remaining_ids)
                         if result is None:
-                            continue
-                        if "error" in result:
+                            retrys -= 1
+                            console.log(f"Remaining retrys: {retrys}")
+                        elif "error" in result:
                             error = result["error"]
                             raise Exception(error)
-
-                        if "output" in result:
+                        elif "output" in result:
+                            retrys = base_retrys
                             outputs.append(result["output"])
                         elif "remaining_ids" in result:
+                            retrys = base_retrys
                             remaining_ids = result["remaining_ids"]
                             step = total_steps - len(remaining_ids)
                             pbar.update_absolute(step, total_steps)
-                        elif "error" in result:
-                            console.log(f"Error: {result['error']}")
                         elif "queue" in result:
                             queue = result["queue"]
                             console.log(f"Queue: {queue}")
+                        elif "waiting" in result:
+                            retrys -= 1
+                            console.log(f"Remaining retrys: {retrys}")
+                        if retrys <= 0:
+                            raise Exception("Failed to get communication")
                 pbar.update_absolute(total_steps, total_steps)
 
         except httpx.HTTPStatusError as exc:
             console.log(f"HTTP error occurred: {exc}")
+            # raise Exception(exc)
+        except Exception as exc:
+            console.log(f"HTTP error occurred: {exc}")
+            # raise Exception(exc)
         return outputs
 
     def upload_image_to_s3(self, base_url, token: str, image: TensorImage) -> str | None:
@@ -250,11 +263,12 @@ class PlatfromWrapper:
             if node_type in ("IMAGE", "MASK"):
                 if not isinstance(job_output, dict):
                     return None
+                console.log(f"value: {value}")
                 if not isinstance(value, str):
                     return None
                 if not value.startswith("https://") and not value.startswith("http://"):
                     try:
-                        url = "https://admin.signature.ai/view?filename=" + value
+                        url = "https://mango-taskforce.signature.ai/view?filename=" + value
                         output_image = TensorImage.from_web(url)
                     except Exception:
                         url = "https://plugins-platform.signature.ai/view?filename=" + value
@@ -303,12 +317,6 @@ class PlatfromWrapper:
             },
             "optional": {},
         }
-        for i in range(50):
-            inputs["optional"].update(
-                {
-                    f"genetic_{i}": (any_type),
-                }
-            )
 
         return inputs
 

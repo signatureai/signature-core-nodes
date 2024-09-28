@@ -178,7 +178,7 @@ async function displayWorkflows(node, id, projectName) {
     let data = await getWorkflowsData(id);
 
     if (data && data.length > 0) {
-      console.log("workflow data", data);
+      // console.log("workflow data", data);
       let selectedWorkflows = [];
       for (let i = 0; i < data.length; i++) {
         const projects = data[i].projects;
@@ -223,10 +223,10 @@ async function displayWorkflows(node, id, projectName) {
 
 function resetWidgets(node) {
   let widgets = [];
-  widgets.push(findWidgetByName(node, "workflow"));
-  widgets.push(findWidgetByName(node, "project"));
-  widgets.push(findWidgetByName(node, "organisation"));
-  widgets.push(findWidgetByName(node, "data"));
+  widgets.unshift(findWidgetByName(node, "workflow"));
+  widgets.unshift(findWidgetByName(node, "project"));
+  widgets.unshift(findWidgetByName(node, "organisation"));
+  widgets.unshift(findWidgetByName(node, "data"));
   node.widgets = widgets;
 }
 
@@ -328,7 +328,7 @@ function updateInputsOutputs(node, workflowObject, update) {
               updateData(node, updatedData);
             });
           } else {
-            console.log("input type not supported: ", inputType);
+            // console.log("input type not supported: ", inputType);
           }
         } else {
           node.addInput(inputName, inputType);
@@ -380,7 +380,7 @@ const ext = {
         }
       }
 
-      console.log(widgets);
+      // console.log(widgets);
       if (widgets.length === 1) {
         widgets.unshift({
           type: "combo",
@@ -401,8 +401,8 @@ const ext = {
           options: { values: [] },
         });
 
-        node.inputs = [];
-        node.outputs = [];
+        // node.inputs = [];
+        // node.outputs = [];
         resetWidgets(node);
       }
       await displayOrganisations(node);
