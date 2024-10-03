@@ -6,7 +6,6 @@ import torch
 from signature_core.connectors.google_connector import GoogleConnector
 from signature_core.functional.transform import cutout
 from signature_core.img.tensor_image import TensorImage
-from signature_core.logger import console
 
 from .categories import PLATFROM_IO_CAT
 from .shared import BASE_COMFY_DIR, any_type
@@ -120,7 +119,7 @@ class PlatformInputConnector:
         connector = GoogleConnector(token=token)
         input_folder = os.path.join(BASE_COMFY_DIR, "input")
         data = connector.download(
-            file_id=value, mime_type=mime_type, root_path=input_folder, override=override
+            file_id=value, mime_type=mime_type, output_path=input_folder, override=override
         )
         return (data,)
 
@@ -255,7 +254,6 @@ class PlatformOutput:
         output_dir = os.path.join(BASE_COMFY_DIR, "output")
         results = []
         thumbnail_size = 1024
-        # console.log(f"Input size {len(value)}")
         for item in value:
             if isinstance(item, torch.Tensor):
                 if main_subtype in ["image", "mask"]:
@@ -274,9 +272,6 @@ class PlatformOutput:
                 results.append(
                     {"title": title, "type": main_subtype, "metadata": metadata, "value": value_json}
                 )
-
-        console.log(f"Output size {len(results)}")
-        console.log(f"Output {results}")
         return {"ui": {"signature_output": results}}
 
 
