@@ -1,5 +1,9 @@
 from dotenv import load_dotenv
+from signature_core.logger import console
 from signature_core.version import __version__
+
+console.log(f":::> Signature Core version: {__version__}")
+
 
 from .nodes import (
     dev_tools,
