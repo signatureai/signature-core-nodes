@@ -1,23 +1,28 @@
 # Signature Core for ComfyUI
 
-This repository contains the code for the Signature Core Comfy project.
+This repository contains the source code for the **Signature Core** project for ComfyUI.
 
 ## Description
 
-Signature Core for ComfyUI is a custom node collection for the core fuctions of
-signature.
+**Signature Core for ComfyUI** is a custom node collection that provides essential
+functionalities for signature handling and processing within the ComfyUI framework.
 
 ## Installation
 
-To install the Signature Core Comfy, follow these steps:
+To install Signature Core for ComfyUI, follow these steps:
 
-1. Clone the repository:
-2. Install the requirements:
-3. Enjoy
+1. Clone the repository into the custom nodes directory of your ComfyUI installation:
 
-## Usage
+   ```bash
+   git clone <repository-url> ComfyUI/custom_nodes/
 
-To use the Signature Core Comfy, follow these steps:
+   ```
 
-1. fetch the repo with git clone to ComfyUI/custom_nodes/
-2. install using: pip install -e .
+2. Install the required dependencies:
+   ```bash
+   pip install -e .
+   ```
+
+## Enjoy
+
+You're all set! Now you can begin leveraging the power of Signature Core within ComfyUI.
