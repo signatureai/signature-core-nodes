@@ -87,18 +87,23 @@ class ComposeAugmentation:
     )
     FUNCTION = "process"
     CATEGORY = AUGMENTATION_CAT
-    OUTPUT_IS_LIST = (True,)
+    OUTPUT_IS_LIST = (
+        True,
+        True,
+    )
 
     def process(
         self,
-        augmentation,
-        samples: int,
-        image: torch.Tensor | None = None,
-        mask: torch.Tensor | None = None,
-        seed: int = -1,
+        **kwargs,
     ):
-        image_tensor = TensorImage.from_BWHC(image) if image is not None else None
-        mask_tensor = TensorImage.from_BWHC(mask) if mask is not None else None
+        augmentation = kwargs.get("augmentation")
+        samples = kwargs.get("samples") or 1
+        image = kwargs.get("image")
+        mask = kwargs.get("mask")
+        seed = kwargs.get("seed") or -1
+
+        image_tensor = TensorImage.from_BWHC(image) if isinstance(image, torch.Tensor) else None
+        mask_tensor = TensorImage.from_BWHC(mask) if isinstance(mask, torch.Tensor) else None
 
         total_images, total_masks = compose_augmentation(
             augmentation, samples, image_tensor, mask_tensor, seed
