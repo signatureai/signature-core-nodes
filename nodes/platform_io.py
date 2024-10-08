@@ -10,6 +10,8 @@ from signature_core.img.tensor_image import TensorImage
 from .categories import PLATFROM_IO_CAT
 from .shared import BASE_COMFY_DIR, any_type
 
+from uuid_extensions import uuid7str
+
 
 class PlatformInputImage:
     @classmethod
@@ -218,9 +220,7 @@ class PlatformOutput:
     def __save_outputs(
         self, img, title: str, subtype: str, thumbnail_size: int, output_dir: str, metadata: str = ""
     ) -> dict | None:
-        random_str = str(torch.randint(0, 100000, (1,)).item())
-        current_time_str = datetime.now().strftime("%Y%m%d_%H%M%S")
-        file_name = f"signature_{current_time_str}_{random_str}.png"
+        file_name = f"signature_{uuid7str()}.png"
         save_path = os.path.join(output_dir, file_name)
 
         output_img = TensorImage(img)
