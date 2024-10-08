@@ -223,6 +223,9 @@ class PlatformOutput:
         current_time_str = datetime.now().strftime("%Y%m%d_%H%M%S")
         file_name = f"signature_{current_time_str}_{uuid7str()}.png"
         save_path = os.path.join(output_dir, file_name)
+        if os.path.exists(save_path):
+            file_name = f"signature_{current_time_str}_{uuid7str()}_{uuid7str()}.png"
+            save_path = os.path.join(output_dir, file_name)
 
         output_img = TensorImage(img)
 
