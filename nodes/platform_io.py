@@ -220,7 +220,8 @@ class PlatformOutput:
     def __save_outputs(
         self, img, title: str, subtype: str, thumbnail_size: int, output_dir: str, metadata: str = ""
     ) -> dict | None:
-        file_name = f"signature_{uuid7str()}.png"
+        current_time_str = datetime.now().strftime("%Y%m%d_%H%M%S")
+        file_name = f"signature_{current_time_str}_{uuid7str()}.png"
         save_path = os.path.join(output_dir, file_name)
 
         output_img = TensorImage(img)
