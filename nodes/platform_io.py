@@ -209,6 +209,9 @@ class PlatformOutput:
                 "metadata": ("STRING", {"default": "", "multiline": True}),
                 "value": (any_type,),
             },
+            "hidden": {
+                "output_path": ("STRING", {"default": "output"}),
+            }
         }
 
     RETURN_TYPES = ()
@@ -247,15 +250,15 @@ class PlatformOutput:
 
         return None
 
-    def apply(self, value, title: str, subtype: str, metadata: str = ""):
+    def apply(self, value, title: str, subtype: str, metadata: str = "", output_path: str = ["output"]):
         if len(subtype) == 0 or len(value) == 0:
             raise ValueError("No input found")
         main_subtype = subtype[0]
         supported_types = ["image", "mask", "int", "float", "string", "dict"]
         if main_subtype not in supported_types:
             raise ValueError(f"Unsupported output type: {subtype}")
-
-        output_dir = os.path.join(BASE_COMFY_DIR, "output")
+        # ComfyUI passes output_path as a list instead of a string because of INPUT_IS_LIST=True
+        output_dir = os.path.join(BASE_COMFY_DIR, output_path[0])
         results = []
         thumbnail_size = 1024
         for item in value:
