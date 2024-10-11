@@ -50,17 +50,17 @@ class FloatClamp:
                     {
                         "default": 0,
                         "forceInput": True,
-                        "min": -18446744073709551615,
-                        "max": 18446744073709551615,
+                        "min": -18446744073709551615.0,
+                        "max": 18446744073709551615.0,
                     },
                 ),
                 "min_value": (
                     "FLOAT",
-                    {"default": 0, "min": -18446744073709551615, "max": 18446744073709551615, "step": 0.001},
+                    {"default": 0.0, "min": -0184467440737095516150.0, "max": 18446744073709551615.0, "step": 0.01},
                 ),
                 "max_value": (
                     "FLOAT",
-                    {"default": 0, "min": -18446744073709551615, "max": 18446744073709551615, "step": 0.001},
+                    {"default": 0.0, "min": -0184467440737095516150.0, "max": 18446744073709551615.0, "step": 0.01},
                 ),
             }
         }
@@ -116,9 +116,9 @@ class IntOperator:
     def INPUT_TYPES(cls):  # type: ignore
         return {
             "required": {
-                "left": ("INT", {"default": 0}),
-                "right": ("INT", {"default": 0}),
-                "operator": (["+", "-", "*", "/"],),
+                "left": ("FLOAT", {"default": 0.0, "min": -0184467440737095516150.0, "max": 18446744073709551615.0, "step": 0.01},),
+                "right": ("FLOAT", {"default": 0.0, "min": -0184467440737095516150.0, "max": 18446744073709551615.0, "step": 0.01},),
+                "operator": (["+", "-", "*", "/", "%"],),
             }
         }
 
@@ -146,13 +146,13 @@ class FloatOperator:
             "required": {
                 "left": (
                     "FLOAT",
-                    {"default": 0, "min": -18446744073709551615, "max": 18446744073709551615, "step": 0.001},
+                    {"default": 0.0, "min": -0184467440737095516150.0, "max": 18446744073709551615.0, "step": 0.01},
                 ),
                 "right": (
                     "FLOAT",
-                    {"default": 0, "min": -18446744073709551615, "max": 18446744073709551615, "step": 0.001},
+                    {"default": 0.0, "min": -0184467440737095516150.0, "max": 18446744073709551615.0, "step": 0.01},
                 ),
-                "operator": (["+", "-", "*", "/"],),
+                "operator": (["+", "-", "*", "/", "%"],),
             }
         }
 
@@ -201,8 +201,8 @@ class FloatMinMax:
     def INPUT_TYPES(cls):  # type: ignore
         return {
             "required": {
-                "a": ("FLOAT", {"default": 0, "forceInput": True}),
-                "b": ("FLOAT", {"default": 0, "forceInput": True}),
+                "a": ("FLOAT", {"default": 0.0, "forceInput": True}),
+                "b": ("FLOAT", {"default": 0.0, "forceInput": True}),
                 "mode": (["min", "max"],),
             }
         }

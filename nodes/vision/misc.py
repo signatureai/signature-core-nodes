@@ -49,8 +49,8 @@ class Ones:
     def INPUT_TYPES(cls):  # type: ignore
         return {
             "required": {
-                "width": ("INT", {"default": 1024}),
-                "height": ("INT", {"default": 1024}),
+                "width": ("INT", {"default": 1024, "min": 1, "max": 40960}),
+                "height": ("INT", {"default": 1024, "min": 1, "max": 40960}),
                 "channels": ("INT", {"default": 1, "min": 1, "max": 4}),
                 "batch": ("INT", {"default": 1}),
             }
@@ -71,8 +71,8 @@ class Zeros:
     def INPUT_TYPES(cls):  # type: ignore
         return {
             "required": {
-                "width": ("INT", {"default": 1024}),
-                "height": ("INT", {"default": 1024}),
+                "width": ("INT", {"default": 1024, "min": 1, "max": 40960}),
+                "height": ("INT", {"default": 1024, "min": 1, "max": 40960}),
                 "channels": ("INT", {"default": 1}),
                 "batch": ("INT", {"default": 1}),
             }

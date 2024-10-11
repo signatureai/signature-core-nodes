@@ -254,7 +254,7 @@ class UpscaleImage:
                 "upscale_model": (folder_paths.get_filename_list("upscale_models"),),
                 "mode": (["rescale", "resize"],),
                 "rescale_factor": ("FLOAT", {"default": 2, "min": 0.01, "max": 100.0, "step": 0.01}),
-                "resize_size": ("INT", {"default": 1024, "min": 1, "max": 48000, "step": 1}),
+                "resize_size": ("INT", {"default": 1024, "min": 1, "max": 40960, "step": 1}),
                 "resampling_method": (resampling_methods,),
                 "tiled_size": ("INT", {"default": 512, "min": 128, "max": 2048, "step": 128}),
             }
