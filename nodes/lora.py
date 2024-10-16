@@ -1,17 +1,15 @@
 import os
-import random
-import subprocess
 
 import folder_paths  # type: ignore
 import torch
 
 # comfy related imports
-from comfy import model_management, sd, utils  # type: ignore
+from comfy import sd, utils  # type: ignore
 from signature_core.img.tensor_image import TensorImage
 from uuid_extensions import uuid7str
 
 from .categories import LORA_CAT
-from .shared import BASE_COMFY_DIR, LORA_OUTPUT_DIR, SD_SCRIPTS_DIR
+from .shared import BASE_COMFY_DIR
 
 
 class ApplyLoraStack:

@@ -1,8 +1,9 @@
 import os
+import shutil
+
 from dotenv import load_dotenv
 from signature_core.logger import console
 from signature_core.version import __version__
-import shutil
 
 signature_js = "signature.js"
 signature_js_path = "./nodes/web/"
@@ -18,6 +19,7 @@ console.log(f"[green]:::> Signature Core version: {__version__}")
 
 
 from .nodes import (
+    data,
     dev_tools,
     io,
     lora,
@@ -58,6 +60,7 @@ NODE_CLASS_MAPPINGS = {
     **primitives.NODE_CLASS_MAPPINGS,
     **dev_tools.NODE_CLASS_MAPPINGS,
     **platform_wrapper.NODE_CLASS_MAPPINGS,
+    **data.NODE_CLASS_MAPPINGS,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -77,10 +80,11 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     **primitives.NODE_DISPLAY_NAME_MAPPINGS,
     **dev_tools.NODE_DISPLAY_NAME_MAPPINGS,
     **platform_wrapper.NODE_DISPLAY_NAME_MAPPINGS,
+    **data.NODE_DISPLAY_NAME_MAPPINGS,
 }
 
 WEB_DIRECTORY = "./nodes/web"
-NAME = "🔸 Signature Nodes"
+NAME = "🔲 Signature Nodes"
 
 
 __all__ = ["NODE_CLASS_MAPPINGS", "NODE_DISPLAY_NAME_MAPPINGS", "MANIFEST"]
