@@ -8,9 +8,13 @@ from signature_core.version import __version__
 # script folder
 script_folder = os.path.dirname(os.path.realpath(__file__))
 base_comfy_dir = os.path.dirname(os.path.realpath(__file__)).split("custom_nodes")[0]
+console.log(f"[green]:::> Base Comfy Dir: {base_comfy_dir}")
+console.log(f"[green]:::> Signature Core Dir: {script_folder}")
 signature_js = "signature.js"
 signature_js_path = os.path.join(script_folder, "nodes/web/")
-web_extensions = os.path.join(script_folder, "web/scripts/")
+web_extensions = os.path.join(base_comfy_dir, "web/extensions/")
+console.log(f"[green]:::> Web Extensions Dir: {web_extensions}")
+console.log(f"[green]:::> Signature JS Path: {signature_js_path}")
 src = os.path.join(signature_js_path, signature_js)
 dst = os.path.join(web_extensions, signature_js)
 if os.path.exists(web_extensions):
