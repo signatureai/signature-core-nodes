@@ -5,15 +5,18 @@ from dotenv import load_dotenv
 from signature_core.logger import console
 from signature_core.version import __version__
 
-# signature_js = "signature.js"
-# signature_js_path = "./nodes/web/"
-# web_extensions = "../ComfyUI/web/extensions/"
-# src = os.path.join(signature_js_path, signature_js)
-# dst = os.path.join(web_extensions, signature_js)
-# if os.path.exists(web_extensions):
-#     if os.path.exists(dst):
-#         os.remove(dst)
-#     shutil.copyfile(src, dst)
+# script folder
+script_folder = os.path.dirname(os.path.realpath(__file__))
+base_comfy_dir = os.path.dirname(os.path.realpath(__file__)).split("custom_nodes")[0]
+signature_js = "signature.js"
+signature_js_path = os.path.join(script_folder, "nodes/web/")
+web_extensions = os.path.join(script_folder, "web/scripts/")
+src = os.path.join(signature_js_path, signature_js)
+dst = os.path.join(web_extensions, signature_js)
+if os.path.exists(web_extensions):
+    if os.path.exists(dst):
+        os.remove(dst)
+    shutil.copyfile(src, dst)
 
 console.log(f"[green]:::> Signature Core version: {__version__}")
 
