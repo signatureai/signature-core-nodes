@@ -230,21 +230,48 @@ const ext = {
   async setup(app) {
     // await instance.loadGraphData(empty_workflow, true, true);
     await loadWorkflow(app);
+    if (app.menu) {
+      // Ensure the ComfyAppMenu is available
+      if (app.bodyTop) {
+        const menuItems =
+          app.bodyTop.children[0].children[0].children[1].children[0].children[1]
+            .children;
+        for (let i = 0; i < menuItems.length; i++) {
+          const element = menuItems[i];
+          console.log(element.ariaLabel);
+          if (
+            element.ariaLabel === "Save As" ||
+            element.innerText === "Browse Templates"
+          ) {
+            element.parentNode.removeChild(element);
+          }
+          if (element.ariaLabel === "Save") {
+            const link = element.children[0].children[0];
+            const icon = link.children[0];
+            const label = link.children[1];
+            icon.className = "p-menubar-item-icon pi pi-upload";
+            label.textContent = "Deploy";
 
-    // Ensure the ComfyAppMenu is available
-    if (app.menu && app.menu.saveButton) {
-      // Get the current save button
-      const menu = app.menu.saveButton;
-      const saveButton = menu.items[0];
-
-      // Override the action of the save button
-      saveButton.content = "Deploy";
-      saveButton.tooltip = "Deploy Workflow to the Signature Platform";
-      saveButton.action = async function () {
-        await saveWorkflow(app);
-      };
-    } else {
-      console.error("[logging]", "ComfyAppMenu or getSaveButton not found");
+            link.onclick = async function (event) {
+              event.preventDefault(); // Prevent default behavior (like form submission)
+              event.stopPropagation(); // Stop the event from bubbling up to parent elements
+              console.log("save workflow");
+              await saveWorkflow(app);
+            };
+          }
+        }
+      }
+      if (app.bodyLeft) {
+        const menuItems = app.bodyLeft.children[0].children;
+        for (let i = 0; i < menuItems.length; i++) {
+          const element = menuItems[i];
+          console.log(element.ariaLabel);
+          if (element.ariaLabel === "Workflows") {
+            element.parentNode.removeChild(element);
+            break;
+          }
+        }
+      }
     }
   },
 };
