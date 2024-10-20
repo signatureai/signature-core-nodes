@@ -6,11 +6,10 @@ import torch
 from signature_core.connectors.google_connector import GoogleConnector
 from signature_core.functional.transform import cutout
 from signature_core.img.tensor_image import TensorImage
+from uuid_extensions import uuid7str
 
 from .categories import PLATFROM_IO_CAT
 from .shared import BASE_COMFY_DIR, any_type
-
-from uuid_extensions import uuid7str
 
 
 class PlatformInputImage:
@@ -22,6 +21,7 @@ class PlatformInputImage:
                 "subtype": (["image", "mask"],),
                 "required": ("BOOLEAN", {"default": True}),
                 "include_alpha": ("BOOLEAN", {"default": False}),
+                "multiple": ("BOOLEAN", {"default": False}),
                 "value": ("STRING", {"default": ""}),
                 "metadata": ("STRING", {"default": "{}", "multiline": True}),
             },
@@ -37,13 +37,7 @@ class PlatformInputImage:
 
     def apply(
         self,
-        value,
-        title: str,
-        metadata: str,
-        subtype: str,
-        required: bool,
-        include_alpha: bool,
-        fallback=None,
+        **kwargs,
     ):
         def post_process(output: TensorImage, include_alpha: bool) -> TensorImage:
             if include_alpha is False and output.shape[1] == 4:
@@ -53,8 +47,15 @@ class PlatformInputImage:
                 output, _ = cutout(rgb, alpha)
             return output
 
+        value = kwargs.get("value")
+        subtype = kwargs.get("subtype")
+        include_alpha = kwargs.get("include_alpha")
+        multiple = kwargs.get("multiple")
+        fallback = kwargs.get("fallback")
+
         if "," in value:
-            value = value.split(",")
+            splited_value = value.split(",")
+            value = splited_value if multiple else splited_value[0]
         else:
             value = [value] if value != "" else []
         outputs: list[TensorImage | torch.Tensor] = []
@@ -109,15 +110,12 @@ class PlatformInputConnector:
 
     def apply(
         self,
-        value: str,
-        token: str,
-        mime_type: str,
-        override: bool,
-        title: str,
-        metadata: str,
-        subtype: str,
-        required: bool,
+        **kwargs,
     ):
+        value = kwargs.get("value")
+        token = kwargs.get("token")
+        mime_type = kwargs.get("mime_type")
+        override = kwargs.get("override")
         connector = GoogleConnector(token=token)
         input_folder = os.path.join(BASE_COMFY_DIR, "input")
         data = connector.download(
@@ -146,7 +144,9 @@ class PlatformInputText:
     FUNCTION = "apply"
     CATEGORY = PLATFROM_IO_CAT
 
-    def apply(self, value: str, title: str, metadata: str, subtype: str, required: bool, fallback=None):
+    def apply(self, **kwargs):
+        value = kwargs.get("value")
+        fallback = kwargs.get("fallback")
         if value == "":
             value = fallback or ""
         return (value,)
@@ -169,7 +169,9 @@ class PlatformInputNumber:
     FUNCTION = "apply"
     CATEGORY = PLATFROM_IO_CAT
 
-    def apply(self, value: float, title: str, metadata: str, subtype: str, required: bool):
+    def apply(self, **kwargs):
+        value = kwargs.get("value")
+        subtype = kwargs.get("subtype")
         if subtype == "int":
             value = int(value)
         else:
@@ -195,7 +197,8 @@ class PlatformInputBoolean:
     FUNCTION = "apply"
     CATEGORY = PLATFROM_IO_CAT
 
-    def apply(self, value: bool, title: str, subtype: str, metadata: str, required: bool):
+    def apply(self, **kwargs):
+        value = kwargs.get("value")
         return (value,)
 
 
@@ -211,7 +214,7 @@ class PlatformOutput:
             },
             "hidden": {
                 "output_path": ("STRING", {"default": "output"}),
-            }
+            },
         }
 
     RETURN_TYPES = ()
@@ -250,7 +253,12 @@ class PlatformOutput:
 
         return None
 
-    def apply(self, value, title: str, subtype: str, metadata: str = "", output_path: str = ["output"]):
+    def apply(self, **kwargs):
+        title = kwargs.get("title")
+        subtype = kwargs.get("subtype")
+        value = kwargs.get("value")
+        output_path = kwargs.get("output_path")
+        metadata = kwargs.get("metadata")
         if len(subtype) == 0 or len(value) == 0:
             raise ValueError("No input found")
         main_subtype = subtype[0]
@@ -292,10 +300,10 @@ NODE_CLASS_MAPPINGS = {
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "signature_input_image": "SIG Input Image",
-    "signature_input_text": "SIG Input Text",
-    "signature_input_number": "SIG Input Number",
-    "signature_input_boolean": "SIG Input Boolean",
-    "signature_input_connector": "SIG Input Connector",
+    "signature_input_image": "SIG InputImage",
+    "signature_input_text": "SIG InputText",
+    "signature_input_number": "SIG InputNumber",
+    "signature_input_boolean": "SIG InputBoolean",
+    "signature_input_connector": "SIG InputConnector",
     "signature_output": "SIG Output",
 }

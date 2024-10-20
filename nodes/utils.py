@@ -4,6 +4,7 @@ import random
 import comfy.model_management as mm  # type: ignore
 import folder_paths  # type: ignore
 import torch
+from signature_core.functional.color import rgb_to_hls, rgb_to_hsv, rgba_to_rgb
 from signature_core.img.tensor_image import TensorImage
 
 from nodes import SaveImage  # type: ignore
@@ -27,6 +28,25 @@ class Any2String:
 
     def process(self, value):
         return (str(value),)
+
+
+class Any2Image:
+    @classmethod
+    def INPUT_TYPES(cls):  # type: ignore
+        return {
+            "required": {
+                "value": (any_type,),
+            }
+        }
+
+    RETURN_TYPES = ("IMAGE",)
+    FUNCTION = "process"
+    CATEGORY = UTILS_CAT
+
+    def process(self, value):
+        if isinstance(value, torch.Tensor):
+            return (value,)
+        raise ValueError(f"Unsupported type: {type(value)}")
 
 
 class Any2Any:
@@ -70,6 +90,65 @@ class String2Case:
             result = text.capitalize()
 
         return (result,)
+
+
+class RGB2HSV:
+    @classmethod
+    def INPUT_TYPES(cls):  # type: ignore
+        return {
+            "required": {
+                "image": ("IMAGE",),
+            }
+        }
+
+    RETURN_TYPES = ("IMAGE",)
+    FUNCTION = "process"
+    CATEGORY = UTILS_CAT
+
+    def process(self, image: torch.Tensor):
+        image_tensor = TensorImage.from_BWHC(image)
+        output = rgb_to_hsv(image_tensor).get_BWHC()
+        return (output,)
+
+
+class RGBHLS:
+    @classmethod
+    def INPUT_TYPES(cls):  # type: ignore
+        return {
+            "required": {
+                "image": ("IMAGE",),
+            }
+        }
+
+    RETURN_TYPES = ("IMAGE",)
+    FUNCTION = "process"
+    CATEGORY = UTILS_CAT
+
+    def process(self, image: torch.Tensor):
+        image_tensor = TensorImage.from_BWHC(image)
+        output = rgb_to_hls(image_tensor).get_BWHC()
+        return (output,)
+
+
+class RGBA2RGB:
+    @classmethod
+    def INPUT_TYPES(cls):  # type: ignore
+        return {
+            "required": {
+                "image": ("IMAGE",),
+            }
+        }
+
+    RETURN_TYPES = ("IMAGE",)
+    FUNCTION = "process"
+    CATEGORY = UTILS_CAT
+
+    def process(self, image: torch.Tensor):
+        image_tensor = TensorImage.from_BWHC(image)
+        if image_tensor.shape[1] == 4:
+            image_tensor = rgba_to_rgb(image_tensor)
+        output = image_tensor.get_BWHC()
+        return (output,)
 
 
 class TextPreview:
@@ -219,6 +298,7 @@ class PurgeVRAM:
 NODE_CLASS_MAPPINGS = {
     "signature_any2any": Any2Any,
     "signature_any2string": Any2String,
+    "signature_any2image": Any2Image,
     "signature_string2case": String2Case,
     "signature_text_preview": TextPreview,
     "signature_mask_preview": MaskPreview,
@@ -226,16 +306,23 @@ NODE_CLASS_MAPPINGS = {
     "signature_get_image_size": ImageShape,
     "signature_get_mask_size": MaskShape,
     "signature_purge_vram": PurgeVRAM,
+    "signature_rgb2hsv": RGB2HSV,
+    "signature_rgbhls": RGBHLS,
+    "signature_rgba2rgb": RGBA2RGB,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
+    "signature_rgb2hsv": "SIG RGB2HSV",
+    "signature_rgbhls": "SIG RGBHLS",
+    "signature_rgba2rgb": "SIG RGBA2RGB",
     "signature_any2any": "SIG Any2Any",
     "signature_any2string": "SIG Any2String",
+    "signature_any2image": "SIG Any2Image",
     "signature_string2case": "SIG String2Case",
-    "signature_text_preview": "SIG Text Preview",
-    "signature_mask_preview": "SIG Mask Preview",
-    "signature_console_debug": "SIG Console Debug",
-    "signature_get_image_size": "SIG Get Image Shape",
-    "signature_get_mask_size": "SIG Get Mask Shape",
-    "signature_purge_vram": "SIG Purge VRAM",
+    "signature_text_preview": "SIG TextPreview",
+    "signature_mask_preview": "SIG MaskPreview",
+    "signature_console_debug": "SIG ConsoleDebug",
+    "signature_get_image_size": "SIG GetImageShape",
+    "signature_get_mask_size": "SIG GetMaskShape",
+    "signature_purge_vram": "SIG PurgeVRAM",
 }

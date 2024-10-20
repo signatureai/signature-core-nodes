@@ -13,7 +13,7 @@ from signature_core.functional.transform import (
 from signature_core.img.tensor_image import TensorImage
 from spandrel import ImageModelDescriptor, ModelLoader  # type: ignore
 
-from ..categories import TRANSFORM_CAT
+from .categories import TRANSFORM_CAT
 
 
 class AutoCrop:
@@ -378,6 +378,6 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "signature_rotate": "SIG Rotate",
     "signature_rescale": "SIG Rescale",
     "signature_resize": "SIG Resize",
-    "signature_auto_crop": "SIG Auto Crop",
-    "signature_upscale_image": "SIG Upscale Image",
+    "signature_auto_crop": "SIG AutoCrop",
+    "signature_upscale_image": "SIG UpscaleImage",
 }

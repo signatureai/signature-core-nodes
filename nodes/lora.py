@@ -1,7 +1,6 @@
 import os
 
 import folder_paths  # type: ignore
-import torch
 
 # comfy related imports
 from comfy import sd, utils  # type: ignore
@@ -36,10 +35,11 @@ class ApplyLoraStack:
 
     def apply(
         self,
-        model,
-        clip,
-        lora_stack=None,
+        **kwargs,
     ):
+        model = kwargs.get("model")
+        clip = kwargs.get("clip")
+        lora_stack = kwargs.get("lora_stack")
         loras = []
         if lora_stack is None:
             return (
@@ -97,20 +97,22 @@ class LoraStack:
 
     def process(
         self,
-        lora_name_1,
-        model_weight_1,
-        clip_weight_1,
-        switch_1,
-        lora_name_2,
-        model_weight_2,
-        clip_weight_2,
-        switch_2,
-        lora_name_3,
-        model_weight_3,
-        clip_weight_3,
-        switch_3,
-        lora_stack=None,
+        **kwargs,
     ):
+        switch_1 = kwargs.get("switch_1")
+        lora_name_1 = kwargs.get("lora_name_1")
+        model_weight_1 = kwargs.get("model_weight_1")
+        clip_weight_1 = kwargs.get("clip_weight_1")
+        switch_2 = kwargs.get("switch_2")
+        lora_name_2 = kwargs.get("lora_name_2")
+        model_weight_2 = kwargs.get("model_weight_2")
+        clip_weight_2 = kwargs.get("clip_weight_2")
+        switch_3 = kwargs.get("switch_3")
+        lora_name_3 = kwargs.get("lora_name_3")
+        model_weight_3 = kwargs.get("model_weight_3")
+        clip_weight_3 = kwargs.get("clip_weight_3")
+        lora_stack = kwargs.get("lora_stack")
+
         lora_list: list = []
         if lora_stack is not None:
             lora_list.extend([l for l in lora_stack if l[0] != "None"])
@@ -145,7 +147,9 @@ class Dict2LoraStack:
     FUNCTION = "process"
     CATEGORY = LORA_CAT
 
-    def process(self, lora_dicts: list, lora_stack=None):
+    def process(self, **kwargs):
+        lora_dicts = kwargs.get("lora_dicts")
+        lora_stack = kwargs.get("lora_stack")
         loras = [None for _ in lora_dicts]
 
         for idx, lora_dict in enumerate(lora_dicts):
@@ -182,13 +186,15 @@ class SaveLoraCaptions:
 
     def process(
         self,
-        dataset_name: str,
-        repeats: int,
-        images: torch.Tensor,
-        labels: str,
-        prefix: str = "",
-        suffix: str = "",
+        **kwargs,
     ):
+        dataset_name = kwargs.get("dataset_name")
+        repeats = kwargs.get("repeats")
+        images = kwargs.get("images")
+        labels = kwargs.get("labels")
+        prefix = kwargs.get("prefix")
+        suffix = kwargs.get("suffix")
+
         labels_list = labels.split("\n") if "\n" in labels else [labels]
 
         root_folder = os.path.join(BASE_COMFY_DIR, "loras_datasets")
@@ -224,9 +230,8 @@ NODE_CLASS_MAPPINGS = {
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "signature_apply_lora_stack": "SIG Apply LoRA Stack",
-    "signature_lora_stack": "SIG LoRA Stack",
-    "signature_dict_to_lora_stack": "SIG Dict to LoRA Stack",
-    "signature_lora_training": "SIG LoRA Training",
-    "signature_save_lora_captions": "SIG Save LoRA Captions",
+    "signature_apply_lora_stack": "SIG ApplyLoRAStack",
+    "signature_lora_stack": "SIG LoRAStack",
+    "signature_dict_to_lora_stack": "SIG Dict2LoRAStack",
+    "signature_save_lora_captions": "SIG SaveLoRACaptions",
 }

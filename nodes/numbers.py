@@ -1,6 +1,7 @@
 import random
 
 from .categories import NUMBERS_CAT
+from .shared import MAX_FLOAT, MAX_INT
 
 
 class IntClamp:
@@ -13,17 +14,17 @@ class IntClamp:
                     {
                         "default": 0,
                         "forceInput": True,
-                        "min": -18446744073709551615,
-                        "max": 18446744073709551615,
+                        "min": -MAX_INT,
+                        "max": MAX_INT,
                     },
                 ),
                 "min_value": (
                     "INT",
-                    {"default": 0, "min": -18446744073709551615, "max": 18446744073709551615, "step": 1},
+                    {"default": 0, "min": -MAX_INT, "max": MAX_INT, "step": 1},
                 ),
                 "max_value": (
                     "INT",
-                    {"default": 0, "min": -18446744073709551615, "max": 18446744073709551615, "step": 1},
+                    {"default": 0, "min": -MAX_INT, "max": MAX_INT, "step": 1},
                 ),
             }
         }
@@ -32,7 +33,11 @@ class IntClamp:
     FUNCTION = "process"
     CATEGORY = NUMBERS_CAT
 
-    def process(self, number: int, min_value: int, max_value: int):
+    def process(self, **kwargs):
+        number = kwargs.get("number")
+        min_value = kwargs.get("min_value")
+        max_value = kwargs.get("max_value")
+
         if number < min_value:
             return (min_value,)
         if number > max_value:
@@ -50,17 +55,17 @@ class FloatClamp:
                     {
                         "default": 0,
                         "forceInput": True,
-                        "min": -18446744073709551615,
-                        "max": 18446744073709551615,
+                        "min": -MAX_FLOAT,
+                        "max": MAX_FLOAT,
                     },
                 ),
                 "min_value": (
                     "FLOAT",
-                    {"default": 0, "min": -18446744073709551615, "max": 18446744073709551615, "step": 0.001},
+                    {"default": 0, "min": -MAX_FLOAT, "max": MAX_FLOAT, "step": 0.001},
                 ),
                 "max_value": (
                     "FLOAT",
-                    {"default": 0, "min": -18446744073709551615, "max": 18446744073709551615, "step": 0.001},
+                    {"default": 0, "min": -MAX_FLOAT, "max": MAX_FLOAT, "step": 0.001},
                 ),
             }
         }
@@ -69,7 +74,11 @@ class FloatClamp:
     FUNCTION = "process"
     CATEGORY = NUMBERS_CAT
 
-    def process(self, number: float, min_value: float, max_value: float):
+    def process(self, **kwargs):
+        number = kwargs.get("number")
+        min_value = kwargs.get("min_value")
+        max_value = kwargs.get("max_value")
+
         if number < min_value:
             return (min_value,)
         if number > max_value:
@@ -90,7 +99,8 @@ class Float2Int:
     FUNCTION = "process"
     CATEGORY = NUMBERS_CAT
 
-    def process(self, number: float):
+    def process(self, **kwargs):
+        number = kwargs.get("number")
         return (int(number),)
 
 
@@ -107,7 +117,8 @@ class Int2Float:
     FUNCTION = "process"
     CATEGORY = NUMBERS_CAT
 
-    def process(self, number: int):
+    def process(self, **kwargs):
+        number = kwargs.get("number")
         return (float(number),)
 
 
@@ -116,8 +127,14 @@ class IntOperator:
     def INPUT_TYPES(cls):  # type: ignore
         return {
             "required": {
-                "left": ("INT", {"default": 0}),
-                "right": ("INT", {"default": 0}),
+                "left": (
+                    "FLOAT",
+                    {"default": 0, "min": -MAX_FLOAT, "max": MAX_FLOAT, "step": 0.001},
+                ),
+                "right": (
+                    "FLOAT",
+                    {"default": 0, "min": -MAX_FLOAT, "max": MAX_FLOAT, "step": 0.001},
+                ),
                 "operator": (["+", "-", "*", "/"],),
             }
         }
@@ -126,7 +143,10 @@ class IntOperator:
     FUNCTION = "process"
     CATEGORY = NUMBERS_CAT
 
-    def process(self, left: int, right: int, operator: str):
+    def process(self, **kwargs):
+        left = kwargs.get("left")
+        right = kwargs.get("right")
+        operator = kwargs.get("operator")
         if operator == "+":
             return (left + right,)
         if operator == "-":
@@ -146,11 +166,11 @@ class FloatOperator:
             "required": {
                 "left": (
                     "FLOAT",
-                    {"default": 0, "min": -18446744073709551615, "max": 18446744073709551615, "step": 0.001},
+                    {"default": 0, "min": -MAX_FLOAT, "max": MAX_FLOAT, "step": 0.001},
                 ),
                 "right": (
                     "FLOAT",
-                    {"default": 0, "min": -18446744073709551615, "max": 18446744073709551615, "step": 0.001},
+                    {"default": 0, "min": -MAX_FLOAT, "max": MAX_FLOAT, "step": 0.001},
                 ),
                 "operator": (["+", "-", "*", "/"],),
             }
@@ -160,7 +180,10 @@ class FloatOperator:
     FUNCTION = "process"
     CATEGORY = NUMBERS_CAT
 
-    def process(self, left: float, right: float, operator: str):
+    def process(self, **kwargs):
+        left = kwargs.get("left")
+        right = kwargs.get("right")
+        operator = kwargs.get("operator")
         if operator == "+":
             return (left + right,)
         if operator == "-":
@@ -188,7 +211,10 @@ class IntMinMax:
     FUNCTION = "process"
     CATEGORY = NUMBERS_CAT
 
-    def process(self, a: int, b: int, mode: str):
+    def process(self, **kwargs):
+        a = kwargs.get("a")
+        b = kwargs.get("b")
+        mode = kwargs.get("mode")
         if mode == "min":
             return (min(a, b),)
         if mode == "max":
@@ -211,7 +237,10 @@ class FloatMinMax:
     FUNCTION = "process"
     CATEGORY = NUMBERS_CAT
 
-    def process(self, a: float, b: float, mode: str):
+    def process(self, **kwargs):
+        a = kwargs.get("a")
+        b = kwargs.get("b")
+        mode = kwargs.get("mode")
         if mode == "min":
             return (min(a, b),)
         if mode == "max":
@@ -233,7 +262,7 @@ class RandomNumber:
 
     @staticmethod
     def get_random():
-        result = random.randint(0, 18446744073709551615)
+        result = random.randint(0, MAX_INT)
         return (
             result,
             float(result),
@@ -261,12 +290,12 @@ NODE_CLASS_MAPPINGS = {
 
 NODE_DISPLAY_NAME_MAPPINGS = {
     "signature_int2float": "SIG Int2Float",
-    "signature_int_minmax": "SIG Int MinMax",
-    "signature_int_clamp": "SIG Int Clamp",
-    "signature_int_operator": "SIG Int Operator",
+    "signature_int_minmax": "SIG IntMinMax",
+    "signature_int_clamp": "SIG IntClamp",
+    "signature_int_operator": "SIG IntOperator",
     "signature_float2int": "SIG Float2Int",
-    "signature_float_minmax": "SIG Float MinMax",
-    "signature_float_clamp": "SIG Float Clamp",
-    "signature_float_operator": "SIG Float Operator",
-    "signature_random_number": "SIG Random Number",
+    "signature_float_minmax": "SIG FloatMinMax",
+    "signature_float_clamp": "SIG FloatClamp",
+    "signature_float_operator": "SIG FloatOperator",
+    "signature_random_number": "SIG RandomNumber",
 }

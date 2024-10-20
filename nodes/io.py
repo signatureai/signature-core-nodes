@@ -28,7 +28,8 @@ class ImageFromWeb:
     FUNCTION = "process"
     CATEGORY = IO_CAT
 
-    def process(self, url: str):
+    def process(self, **kwargs):
+        url = kwargs.get("url")
         img_arr = TensorImage.from_web(url)
         return image_array_to_tensor(img_arr)
 
@@ -42,7 +43,8 @@ class ImageFromBase64:
     FUNCTION = "process"
     CATEGORY = IO_CAT
 
-    def process(self, base64: str):
+    def process(self, **kwargs):
+        base64 = kwargs.get("base64")
         img_arr = TensorImage.from_base64(base64)
         return image_array_to_tensor(img_arr)
 
@@ -57,7 +59,8 @@ class Base64FromImage:
     CATEGORY = IO_CAT
     OUTPUT_NODE = True
 
-    def process(self, image):
+    def process(self, **kwargs):
+        image = kwargs.get("image")
         images = TensorImage.from_BWHC(image)
         output = images.get_base64()
         return (output,)
@@ -76,7 +79,8 @@ class LoadFile:
     FUNCTION = "process"
     CATEGORY = IO_CAT
 
-    def process(self, value: str):
+    def process(self, **kwargs):
+        value = kwargs.get("value")
         data = value.split("&&") if "&&" in value else [value]
         input_folder = os.path.join(BASE_COMFY_DIR, "input")
         for i, _ in enumerate(data):
@@ -106,7 +110,8 @@ class LoadFolder:
     FUNCTION = "process"
     CATEGORY = IO_CAT
 
-    def process(self, value: str):
+    def process(self, **kwargs):
+        value = kwargs.get("value")
         data = value.split("&&") if "&&" in value else [value]
         input_folder = os.path.join(BASE_COMFY_DIR, "input")
         for i, _ in enumerate(data):
@@ -136,7 +141,8 @@ class FiletoImageList:
     CATEGORY = IO_CAT
     OUTPUT_IS_LIST = (True,)
 
-    def process(self, files: list):
+    def process(self, **kwargs):
+        files = kwargs.get("files")
         images_list = []
         for file in files:
             mimetype = file["type"]
@@ -161,7 +167,8 @@ class FileToList:
     FUNCTION = "process"
     CATEGORY = IO_CAT
 
-    def process(self, files: list):
+    def process(self, **kwargs):
+        files = kwargs.get("files")
         return (files,)
 
 
@@ -176,11 +183,11 @@ NODE_CLASS_MAPPINGS = {
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "signature_image_from_web": "SIG Image from Web",
-    "signature_image_from_base64": "SIG Image from Base64",
-    "signature_base64_from_image": "SIG Base64 from Image",
-    "signature_load_file": "SIG Load File",
-    "signature_load_folder": "SIG Load Folder",
+    "signature_image_from_web": "SIG ImagefromWeb",
+    "signature_image_from_base64": "SIG ImagefromBase64",
+    "signature_base64_from_image": "SIG Base64fromImage",
+    "signature_load_file": "SIG LoadFile",
+    "signature_load_folder": "SIG LoadFolder",
     "signature_file_to_image_list": "SIG File2ImageList",
     "signature_file_to_list": "SIG File2List",
 }

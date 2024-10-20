@@ -109,6 +109,6 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "signature_float": "SIG Float",
     "signature_int": "SIG Int",
     "signature_string": "SIG String",
-    "signature_string_multiline": "SIG String Multiline",
+    "signature_string_multiline": "SIG StringMultiline",
     "signature_boolean": "SIG Boolean",
 }

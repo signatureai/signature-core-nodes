@@ -42,7 +42,33 @@ class DictToJson:
         return (json_str,)
 
 
-class GetListValue:
+class GetImageListItem:
+    @classmethod
+    def INPUT_TYPES(cls):  # type: ignore
+        return {
+            "required": {
+                "images": ("IMAGE",),
+                "index": ("INT", {"default": 0}),
+            },
+        }
+
+    RETURN_TYPES = "IMAGE"
+    RETURN_NAMES = "image"
+    FUNCTION = "process"
+    CATEGORY = DATA_CAT
+
+    def process(self, **kwargs):
+        images = kwargs.get("images")
+        index = kwargs.get("index")
+        if not isinstance(images, list):
+            raise ValueError("Images must be a list")
+        images = images[index]
+        index = kwargs.get("index")
+        image = images[index]
+        return (image,)
+
+
+class GetListItem:
     @classmethod
     def INPUT_TYPES(cls):  # type: ignore
         return {
@@ -92,12 +118,14 @@ NODE_CLASS_MAPPINGS = {
     "signature_json_to_dict": JsonToDict,
     "signature_dict_to_json": DictToJson,
     "signature_get_dict_value": GetDictValue,
-    "signature_get_list_value": GetListValue,
+    "signature_get_list_item": GetListItem,
+    "signature_get_image_list_item": GetImageListItem,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
     "signature_json_to_dict": "SIG Json2Dict",
     "signature_dict_to_json": "SIG Dict2Json",
     "signature_get_dict_value": "SIG Get Dict Value",
-    "signature_get_list_value": "SIG Get List Value",
+    "signature_get_list_item": "SIG Get List Item",
+    "signature_get_image_list_item": "SIG Get Image List Item",
 }

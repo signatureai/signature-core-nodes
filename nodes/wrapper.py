@@ -7,7 +7,7 @@ from signature_core.img.tensor_image import TensorImage
 from signature_core.logger import console
 from uuid_extensions import uuid7str
 
-from .categories import PLATFROM_IO_CAT
+from .categories import UTILS_CAT
 from .shared import any_type
 
 
@@ -322,7 +322,7 @@ class PlatfromWrapper:
 
     RETURN_TYPES = (any_type,) * 20
     FUNCTION = "process"
-    CATEGORY = PLATFROM_IO_CAT
+    CATEGORY = UTILS_CAT
 
     def process(self, **kwargs):
         data = kwargs.get("data")

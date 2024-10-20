@@ -10,7 +10,7 @@ from signature_core.models.seemore import SeeMore
 
 from nodes import SaveImage  # type: ignore
 
-from ..categories import MODELS_CAT
+from .categories import MODELS_CAT
 
 
 class MagicEraser(SaveImage):
@@ -167,7 +167,7 @@ NODE_CLASS_MAPPINGS = {
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "signature_magic_eraser": "SIG Magic Eraser",
-    "signature_background_removal": "SIG Background Removal",
+    "signature_magic_eraser": "SIG MagicEraser",
+    "signature_background_removal": "SIG BackgroundRemoval",
     "signature_unblur": "SIG Unblur",
 }
