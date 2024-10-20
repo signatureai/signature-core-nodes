@@ -1,4 +1,5 @@
 import torch
+from kornia import filters, morphology
 from signature_core.functional.filters import gaussian_blur2d
 from signature_core.functional.morphology import (
     bottom_hat,
@@ -11,8 +12,6 @@ from signature_core.functional.morphology import (
 )
 from signature_core.img.tensor_image import TensorImage
 
-# from kornia import filters
-# from kornia import morphology
 from .categories import MASK_CAT
 from .shared import MAX_INT
 
@@ -289,119 +288,109 @@ class Mask2Image:
         return (output,)
 
 
-# class MaskGrowWithBlur:
-#     @classmethod
-#     def INPUT_TYPES(cls):
-#         return {
-#             "required": {
-#                 "mask": ("MASK",),
-#                 "expand": (
-#                     "INT",
-#                     {
-#                         "default": 0,
-#                         "min": -MAX_INT,
-#                         "max": MAX_INT,
-#                         "step": 1,
-#                     },
-#                 ),
-#                 "incremental_expandrate": (
-#                     "FLOAT",
-#                     {"default": 0.0, "min": 0.0, "max": 100.0, "step": 0.1},
-#                 ),
-#                 "tapered_corners": ("BOOLEAN", {"default": True}),
-#                 "flip_input": ("BOOLEAN", {"default": False}),
-#                 "blur_radius": (
-#                     "FLOAT",
-#                     {"default": 0.0, "min": 0.0, "max": 100, "step": 0.1},
-#                 ),
-#                 "lerp_alpha": (
-#                     "FLOAT",
-#                     {"default": 1.0, "min": 0.0, "max": 1.0, "step": 0.01},
-#                 ),
-#                 "decay_factor": (
-#                     "FLOAT",
-#                     {"default": 1.0, "min": 0.0, "max": 1.0, "step": 0.01},
-#                 ),
-#             },
-#             "optional": {
-#                 "fill_holes": ("BOOLEAN", {"default": False}),
-#             },
-#         }
+class MaskGrowWithBlur:
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "mask": ("MASK",),
+                "expand": (
+                    "INT",
+                    {
+                        "default": 0,
+                        "min": -MAX_INT,
+                        "max": MAX_INT,
+                        "step": 1,
+                    },
+                ),
+                "incremental_expandrate": (
+                    "FLOAT",
+                    {"default": 0.0, "min": 0.0, "max": 100.0, "step": 0.1},
+                ),
+                "tapered_corners": ("BOOLEAN", {"default": True}),
+                "flip_input": ("BOOLEAN", {"default": False}),
+                "blur_radius": (
+                    "FLOAT",
+                    {"default": 0.0, "min": 0.0, "max": 100, "step": 0.1},
+                ),
+                "lerp_alpha": (
+                    "FLOAT",
+                    {"default": 1.0, "min": 0.0, "max": 1.0, "step": 0.01},
+                ),
+                "decay_factor": (
+                    "FLOAT",
+                    {"default": 1.0, "min": 0.0, "max": 1.0, "step": 0.01},
+                ),
+            },
+        }
 
-#     CATEGORY = MASK_CAT
-#     RETURN_TYPES = ("MASK",)
-#     RETURN_NAMES = ("mask",)
-#     FUNCTION = "expand_mask"
+    CATEGORY = MASK_CAT
+    RETURN_TYPES = ("MASK",)
+    RETURN_NAMES = ("mask",)
+    FUNCTION = "expand_mask"
 
-#     def expand_mask(
-#         self,
-#         **kwargs
-#     ):
-#         mask = kwargs.get("mask")
-#         expand = kwargs.get("expand")
-#         incremental_expandrate = kwargs.get("incremental_expandrate")
-#         tapered_corners = kwargs.get("tapered_corners")
-#         flip_input = kwargs.get("flip_input")
-#         blur_radius = kwargs.get("blur_radius")
-#         lerp_alpha = kwargs.get("lerp_alpha")
-#         decay_factor = kwargs.get("decay_factor")
-#         fill_holes = kwargs.get("fill_holes", False)
+    def expand_mask(self, **kwargs):
+        mask = kwargs.get("mask")
+        expand = kwargs.get("expand")
+        incremental_expandrate = kwargs.get("incremental_expandrate")
+        tapered_corners = kwargs.get("tapered_corners")
+        flip_input = kwargs.get("flip_input")
+        blur_radius = kwargs.get("blur_radius")
+        lerp_alpha = kwargs.get("lerp_alpha")
+        decay_factor = kwargs.get("decay_factor")
 
-#         if not isinstance(mask, torch.Tensor):
-#             raise ValueError("Mask must be a tensor")
+        if not isinstance(mask, torch.Tensor):
+            raise ValueError("Mask must be a tensor")
 
-#         mask = TensorImage.from_BWHC(mask)
-#         alpha = lerp_alpha
-#         decay = decay_factor
-#         if flip_input:
-#             mask = 1.0 - mask
-#         c = 0 if tapered_corners else 1
-#         kernel = torch.tensor([[c, 1, c], [1, 1, 1], [c, 1, c]], dtype=torch.float32)
-#         growmask = mask.reshape((-1, mask.shape[-2], mask.shape[-1])).cpu()
-#         out = []
-#         previous_output = None
-#         current_expand = expand
-#         for m in growmask:
-#             m = m.unsqueeze(0).unsqueeze(0)
-#             output = m.clone()
+        mask = TensorImage.from_BWHC(mask)
+        alpha = lerp_alpha
+        decay = decay_factor
+        if flip_input:
+            mask = 1.0 - mask
+        c = 0 if tapered_corners else 1
+        kernel = torch.tensor([[c, 1, c], [1, 1, 1], [c, 1, c]], dtype=torch.float32)
+        growmask = mask.reshape((-1, mask.shape[-2], mask.shape[-1])).cpu()
+        out = []
+        previous_output = None
+        current_expand = expand
+        for m in growmask:
+            m = m.unsqueeze(0).unsqueeze(0)
+            output = m.clone()
 
-#             for _ in range(abs(round(current_expand))):
-#                 if current_expand < 0:
-#                     output = morphology.erosion(output, kernel)
-#                 else:
-#                     output = morphology.dilation(output, kernel)
-#             if current_expand < 0:
-#                 current_expand -= abs(incremental_expandrate)
-#             else:
-#                 current_expand += abs(incremental_expandrate)
+            for _ in range(abs(round(current_expand))):
+                if current_expand < 0:
+                    output = morphology.erosion(output, kernel)
+                else:
+                    output = morphology.dilation(output, kernel)
+            if current_expand < 0:
+                current_expand -= abs(incremental_expandrate)
+            else:
+                current_expand += abs(incremental_expandrate)
 
-#             if fill_holes:
-#                 binary_mask = output > 0
-#                 output = morphology.closing(binary_mask.float(), kernel)
+            output = output.squeeze(0).squeeze(0)
 
-#             output = output.squeeze(0).squeeze(0)
+            if alpha < 1.0 and previous_output is not None:
+                output = alpha * output + (1 - alpha) * previous_output
+            if decay < 1.0 and previous_output is not None:
+                output += decay * previous_output
+                output = output / output.max()
+            previous_output = output
+            out.append(output)
 
-#             if alpha < 1.0 and previous_output is not None:
-#                 output = alpha * output + (1 - alpha) * previous_output
-#             if decay < 1.0 and previous_output is not None:
-#                 output += decay * previous_output
-#                 output = output / output.max()
-#             previous_output = output
-#             out.append(output)
+        if blur_radius != 0:
+            kernel_size = int(4 * round(blur_radius) + 1)
+            blurred = [
+                filters.gaussian_blur2d(
+                    tensor.unsqueeze(0).unsqueeze(0), (kernel_size, kernel_size), (blur_radius, blur_radius)
+                ).squeeze(0)
+                for tensor in out
+            ]
+            blurred = torch.cat(blurred, dim=0)
 
-#         if blur_radius != 0:
-#             kernel_size = int(4 * round(blur_radius) + 1)
-#             blurred = [
-#                 filters.gaussian_blur2d(
-#                     tensor.unsqueeze(0).unsqueeze(0), (kernel_size, kernel_size), (blur_radius, blur_radius)
-#                 ).squeeze(0)
-#                 for tensor in out
-#             ]
-#             blurred = torch.cat(blurred, dim=0)
+            return (TensorImage(blurred).get_BWHC(),)
 
-#             return (TensorImage(blurred).get_BWHC(),)
-#         else:
-#             return (TensorImage(torch.stack(out, dim=0)).get_BWHC(),)
+        return (TensorImage(torch.stack(out, dim=0)).get_BWHC(),)
+
 
 NODE_CLASS_MAPPINGS = {
     "signature_mask_morphology": MaskMorphology,
@@ -411,7 +400,7 @@ NODE_CLASS_MAPPINGS = {
     "signature_mask_binary_filter": MaskBinaryFilter,
     "signature_mask_bitwise": MaskBitwise,
     "signature_mask_gaussian_blur": MaskGaussianBlur,
-    # "signature_mask_grow_blur": MaskGrowWithBlur,
+    "signature_mask_grow_blur": MaskGrowWithBlur,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -422,5 +411,5 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "signature_mask_invert": "SIG MaskInvert",
     "signature_mask_bitwise": "SIG MaskBitwise",
     "signature_mask_gaussian_blur": "SIG MaskGaussianBlur",
-    # "signature_mask_grow_blur": "SIG MaskGrowWithBlur",
+    "signature_mask_grow_blur": "SIG MaskGrowWithBlur",
 }
