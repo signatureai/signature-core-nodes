@@ -314,7 +314,7 @@ class ImageTranspose:
         result = torch.where(alpha > 0.01, overlay_image, base_image)
 
         rgba = TensorImage(result).get_BWHC()
-        rgb = rgba[:, :3, :, :]
+        rgb = rgba[:, :, :, :3]
 
         return (rgb, rgba)
 
