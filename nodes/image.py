@@ -217,7 +217,14 @@ class ImageTranspose:
             },
         }
 
-    RETURN_TYPES = ("IMAGE",)
+    RETURN_TYPES = (
+        "IMAGE",
+        "IMAGE",
+    )
+    RETURN_NAMES = (
+        "rgb",
+        "rgba",
+    )
     FUNCTION = "process"
 
     CATEGORY = IMAGE_CAT
@@ -306,9 +313,10 @@ class ImageTranspose:
         alpha = mask.unsqueeze(1)
         result = torch.where(alpha > 0.01, overlay_image, base_image)
 
-        output = TensorImage(result).get_BWHC()
+        rgba = TensorImage(result).get_BWHC()
+        rgb = rgba[:, :3, :, :]
 
-        return (output,)
+        return (rgb, rgba)
 
 
 NODE_CLASS_MAPPINGS = {
