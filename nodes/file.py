@@ -4,7 +4,7 @@ import os
 import torch
 from signature_core.img.tensor_image import TensorImage
 
-from .categories import IO_CAT
+from .categories import FILE_CAT
 from .shared import BASE_COMFY_DIR
 
 
@@ -26,7 +26,7 @@ class ImageFromWeb:
 
     RETURN_TYPES = ("IMAGE", "MASK")
     FUNCTION = "process"
-    CATEGORY = IO_CAT
+    CATEGORY = FILE_CAT
 
     def process(self, **kwargs):
         url = kwargs.get("url")
@@ -43,7 +43,7 @@ class ImageFromBase64:
 
     RETURN_TYPES = ("IMAGE", "MASK")
     FUNCTION = "process"
-    CATEGORY = IO_CAT
+    CATEGORY = FILE_CAT
 
     def process(self, **kwargs):
         base64 = kwargs.get("base64")
@@ -60,7 +60,7 @@ class Base64FromImage:
 
     RETURN_TYPES = ("STRING",)
     FUNCTION = "process"
-    CATEGORY = IO_CAT
+    CATEGORY = FILE_CAT
     OUTPUT_NODE = True
 
     def process(self, **kwargs):
@@ -72,7 +72,7 @@ class Base64FromImage:
         return (output,)
 
 
-class LoadFile:
+class FileLoader:
     @classmethod
     def INPUT_TYPES(cls):  # type: ignore
         return {
@@ -83,7 +83,7 @@ class LoadFile:
 
     RETURN_TYPES = ("FILE",)
     FUNCTION = "process"
-    CATEGORY = IO_CAT
+    CATEGORY = FILE_CAT
 
     def process(self, **kwargs):
         value = kwargs.get("value")
@@ -105,7 +105,7 @@ class LoadFile:
         return (data,)
 
 
-class LoadFolder:
+class FolderLoader:
     @classmethod
     def INPUT_TYPES(cls):  # type: ignore
         return {
@@ -116,7 +116,7 @@ class LoadFolder:
 
     RETURN_TYPES = ("FILE",)
     FUNCTION = "process"
-    CATEGORY = IO_CAT
+    CATEGORY = FILE_CAT
 
     def process(self, **kwargs):
         value = kwargs.get("value")
@@ -148,7 +148,7 @@ class FiletoImageList:
 
     RETURN_TYPES = ("IMAGE",)
     FUNCTION = "process"
-    CATEGORY = IO_CAT
+    CATEGORY = FILE_CAT
     OUTPUT_IS_LIST = (True,)
 
     def process(self, **kwargs):
@@ -166,7 +166,7 @@ class FiletoImageList:
         return (images_list,)
 
 
-class FileToList:
+class File2List:
     @classmethod
     def INPUT_TYPES(cls):  # type: ignore
         return {
@@ -177,7 +177,7 @@ class FileToList:
 
     RETURN_TYPES = ("LIST",)
     FUNCTION = "process"
-    CATEGORY = IO_CAT
+    CATEGORY = FILE_CAT
 
     def process(self, **kwargs):
         files = kwargs.get("files")
@@ -187,21 +187,15 @@ class FileToList:
 
 
 NODE_CLASS_MAPPINGS = {
-    "signature_image_from_web": ImageFromWeb,
-    "signature_image_from_base64": ImageFromBase64,
-    "signature_base64_from_image": Base64FromImage,
-    "signature_load_file": LoadFile,
-    "signature_load_folder": LoadFolder,
-    "signature_file_to_image_list": FiletoImageList,
-    "signature_file_to_list": FileToList,
+    "signature_load_file": FileLoader,
+    "signature_load_folder": FolderLoader,
+    "signature_file_list": File2List,
+    "signature_file_image_list": FiletoImageList,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "signature_image_from_web": "SIG ImagefromWeb",
-    "signature_image_from_base64": "SIG ImagefromBase64",
-    "signature_base64_from_image": "SIG Base64fromImage",
-    "signature_load_file": "SIG LoadFile",
-    "signature_load_folder": "SIG LoadFolder",
-    "signature_file_to_image_list": "SIG File2ImageList",
-    "signature_file_to_list": "SIG File2List",
+    "signature_load_file": "SIG FileLoader",
+    "signature_load_folder": "SIG FolderLoader",
+    "signature_file_list": "SIG File2List",
+    "signature_file_image_list": "SIG File2ImageList",
 }

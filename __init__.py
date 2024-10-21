@@ -24,8 +24,8 @@ console.log(f"[green]:::> Signature Core version: {__version__}")
 from .nodes import (
     augmentations,
     data,
+    file,
     image,
-    io,
     lora,
     mask,
     models,
@@ -43,6 +43,7 @@ load_dotenv()
 NODE_CLASS_MAPPINGS = {
     **image.NODE_CLASS_MAPPINGS,
     **mask.NODE_CLASS_MAPPINGS,
+    **file.NODE_CLASS_MAPPINGS,
     **transform.NODE_CLASS_MAPPINGS,
     **numbers.NODE_CLASS_MAPPINGS,
     **primitives.NODE_CLASS_MAPPINGS,
@@ -51,7 +52,6 @@ NODE_CLASS_MAPPINGS = {
     **utils.NODE_CLASS_MAPPINGS,
     **data.NODE_CLASS_MAPPINGS,
     **lora.NODE_CLASS_MAPPINGS,
-    **io.NODE_CLASS_MAPPINGS,
     **platform_io.NODE_CLASS_MAPPINGS,
     **wrapper.NODE_CLASS_MAPPINGS,
 }
@@ -59,6 +59,7 @@ NODE_CLASS_MAPPINGS = {
 NODE_DISPLAY_NAME_MAPPINGS = {
     **image.NODE_DISPLAY_NAME_MAPPINGS,
     **mask.NODE_DISPLAY_NAME_MAPPINGS,
+    **file.NODE_DISPLAY_NAME_MAPPINGS,
     **transform.NODE_DISPLAY_NAME_MAPPINGS,
     **numbers.NODE_DISPLAY_NAME_MAPPINGS,
     **primitives.NODE_DISPLAY_NAME_MAPPINGS,
@@ -67,7 +68,6 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     **utils.NODE_DISPLAY_NAME_MAPPINGS,
     **data.NODE_DISPLAY_NAME_MAPPINGS,
     **lora.NODE_DISPLAY_NAME_MAPPINGS,
-    **io.NODE_DISPLAY_NAME_MAPPINGS,
     **platform_io.NODE_DISPLAY_NAME_MAPPINGS,
     **wrapper.NODE_DISPLAY_NAME_MAPPINGS,
 }

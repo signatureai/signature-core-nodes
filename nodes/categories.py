@@ -7,10 +7,10 @@ TRANSFORM_CAT = f"{BASE_NAME_CAT}/Transforms"
 PRIMITIVES = f"{BASE_NAME_CAT}/Primitives"
 MODELS_CAT = f"{BASE_NAME_CAT}/Models"
 UTILS_CAT = f"{BASE_NAME_CAT}/Utils"
+FILE_CAT = f"{BASE_NAME_CAT}/File"
 
 
 AUGMENTATION_CAT = f"{BASE_NAME_CAT}/Others/Augmentations"
 PLATFROM_IO_CAT = f"{BASE_NAME_CAT}/Others/Platform IO"
-IO_CAT = f"{BASE_NAME_CAT}/Others/IO"
 DATA_CAT = f"{BASE_NAME_CAT}/Others/Data"
 LORA_CAT = f"{BASE_NAME_CAT}/Others/Loras"

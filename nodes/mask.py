@@ -16,6 +16,31 @@ from .categories import MASK_CAT
 from .shared import MAX_INT
 
 
+class BaseMask:
+    @classmethod
+    def INPUT_TYPES(cls):  # type: ignore
+        return {
+            "color": (["white", "black"],),
+            "width": ("INT", {"default": 1024, "min": 1, "max": MAX_INT, "step": 1}),
+            "height": ("INT", {"default": 1024, "min": 1, "max": MAX_INT, "step": 1}),
+        }
+
+    RETURN_TYPES = ("MASK",)
+    FUNCTION = "process"
+    CATEGORY = MASK_CAT
+
+    def process(self, **kwargs):
+        color = kwargs.get("color") or "white"
+        width = kwargs.get("width") or 1024
+        height = kwargs.get("height") or 1024
+        if color == "white":
+            mask = torch.ones(1, 1, height, width)
+        else:
+            mask = torch.zeros(1, 1, height, width)
+        mask = TensorImage(mask).get_BWHC()
+        return (mask,)
+
+
 class MaskMorphology:
     @classmethod
     def INPUT_TYPES(cls):  # type: ignore
@@ -405,6 +430,7 @@ class MaskGrowWithBlur:
 
 
 NODE_CLASS_MAPPINGS = {
+    "signature_mask_base": BaseMask,
     "signature_mask_morphology": MaskMorphology,
     "signature_mask_distance": MaskDistance,
     "signature_mask_trimap": Mask2Trimap,
@@ -416,6 +442,7 @@ NODE_CLASS_MAPPINGS = {
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
+    "signature_mask_base": "SIG BaseMask",
     "signature_mask_morphology": "SIG MaskMorphology",
     "signature_mask_distance": "SIG MaskDistance",
     "signature_mask_trimap": "SIG Mask2Trimap",
