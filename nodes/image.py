@@ -303,7 +303,8 @@ class ImageTranspose:
             )
 
         mask = mask.to(base_image.device)
-        result = base_image * (1 - mask) + overlay_image * mask
+        alpha = mask.unsqueeze(1)
+        result = torch.where(alpha > 0.01, overlay_image, base_image)
 
         output = TensorImage(result).get_BWHC()
 
