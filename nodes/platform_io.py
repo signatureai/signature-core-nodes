@@ -280,37 +280,37 @@ class PlatformOutput:
         return None
 
     def apply(self, **kwargs):
-        title = kwargs.get("title")
-        if not isinstance(title, str):
-            raise ValueError("Title must be a string")
-        subtype = kwargs.get("subtype")
-        if not isinstance(subtype, list):
+        title_list = kwargs.get("title")
+        if not isinstance(title_list, list):
+            raise ValueError("Title must be a list")
+        metadata_list = kwargs.get("metadata")
+        if not isinstance(metadata_list, list):
+            raise ValueError("Metadata must be a list")
+        subtype_list = kwargs.get("subtype")
+        if not isinstance(subtype_list, list):
             raise ValueError("Subtype must be a list")
-        value = kwargs.get("value")
-        if not isinstance(value, list):
+        output_path_list = kwargs.get("output_path")
+        print(f"output_path_list: {output_path_list} {type(output_path_list)}")
+        if not isinstance(output_path_list, list):
+            output_path_list = ["output"] * len(title_list)
+        value_list = kwargs.get("value")
+        if not isinstance(value_list, list):
             raise ValueError("Value must be a list")
-        output_path = kwargs.get("output_path")
-        if not isinstance(output_path, list):
-            raise ValueError("Output path must be a list")
-        metadata = kwargs.get("metadata")
-        if not isinstance(metadata, str):
-            raise ValueError("Metadata must be a string")
-        if len(subtype) == 0 or len(value) == 0:
-            raise ValueError("No input found")
-        main_subtype = subtype[0]
+        main_subtype = subtype_list[0]
         supported_types = ["image", "mask", "int", "float", "string", "dict"]
         if main_subtype not in supported_types:
-            raise ValueError(f"Unsupported output type: {subtype}")
-        # ComfyUI passes output_path as a list instead of a string because of INPUT_IS_LIST=True
-        output_dir = os.path.join(BASE_COMFY_DIR, output_path[0])
+            raise ValueError(f"Unsupported output type: {main_subtype}")
+
         results = []
         thumbnail_size = 1024
-        for item in value:
+        for idx, item in enumerate(value_list):
+            title = title_list[idx]
+            metadata = metadata_list[idx]
+            output_dir = os.path.join(BASE_COMFY_DIR, output_path_list[idx])
             if isinstance(item, torch.Tensor):
                 if main_subtype in ["image", "mask"]:
                     tensor_images = TensorImage.from_BWHC(item.to("cpu"))
                     for img in tensor_images:
-                        # console.log(f"Input tensor shape {img.shape}")
                         result = self.__save_outputs(
                             img, title, main_subtype, thumbnail_size, output_dir, metadata
                         )
@@ -323,6 +323,7 @@ class PlatformOutput:
                 results.append(
                     {"title": title, "type": main_subtype, "metadata": metadata, "value": value_json}
                 )
+        print(f"results: {results}")
         return {"ui": {"signature_output": results}}
 
 
