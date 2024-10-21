@@ -309,11 +309,30 @@ class ImageTranspose:
                 1
             )
 
-        mask = mask.to(base_image.device)
-        alpha = mask.unsqueeze(1)
-        result = torch.where(alpha > 0.01, overlay_image, base_image)
+        # mask = mask.to(base_image.device)
+        # alpha = mask.unsqueeze(1)
+        # result = torch.where(alpha > 0.01, overlay_image, base_image)
 
-        rgba = TensorImage(result).get_BWHC()
+        # Prepare alpha channels (already in 0-1 range)
+        bg_alpha = base_image[:, 3:4]
+        fg_alpha = overlay_image[:, 3:4]
+
+        # Blend images
+        tar_alpha = fg_alpha + bg_alpha - fg_alpha * bg_alpha
+        tar_background = base_image[:, :3] * (1.0 - fg_alpha)
+        tar_foreground = overlay_image[:, :3] * fg_alpha
+        result = tar_background + tar_foreground
+
+        # Combine RGB and alpha
+        result = torch.cat([result, tar_alpha], dim=1)
+        result = TensorImage(result).get_BWHC()
+
+        if result.shape[1] == 4:
+            rgba = result
+        else:
+            rgba = torch.cat(
+                [result, torch.ones(result.shape[0], 1, result.shape[2], result.shape[3])], dim=1
+            )
         rgb = rgba[:, :, :, :3]
 
         return (rgb, rgba)
