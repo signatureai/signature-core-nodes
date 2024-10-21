@@ -20,9 +20,11 @@ class BaseMask:
     @classmethod
     def INPUT_TYPES(cls):  # type: ignore
         return {
-            "color": (["white", "black"],),
-            "width": ("INT", {"default": 1024, "min": 1, "max": MAX_INT, "step": 1}),
-            "height": ("INT", {"default": 1024, "min": 1, "max": MAX_INT, "step": 1}),
+            "required": {
+                "color": (["white", "black"],),
+                "width": ("INT", {"default": 1024, "min": 1, "max": MAX_INT, "step": 1}),
+                "height": ("INT", {"default": 1024, "min": 1, "max": MAX_INT, "step": 1}),
+            }
         }
 
     RETURN_TYPES = ("MASK",)
