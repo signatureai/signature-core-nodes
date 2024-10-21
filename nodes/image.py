@@ -259,20 +259,14 @@ class ImageTranspose:
         overlay_image = TensorImage.from_BWHC(image_overlay)
 
         if width == -1:
-            width = base_image.shape[3]
+            width = overlay_image.shape[3]
         if height == -1:
-            height = base_image.shape[2]
+            height = overlay_image.shape[2]
 
         device = base_image.device
         overlay_image = overlay_image.to(device)
 
-        # Ensure both images have the same number of channels (3 or 4)
-        if base_image.shape[1] != overlay_image.shape[1]:
-            if base_image.shape[1] == 3:
-                base_image = torch.cat([base_image, torch.ones_like(base_image[:, :1, :, :])], dim=1)
-            elif overlay_image.shape[1] == 3:
-                overlay_image = torch.cat([overlay_image, torch.ones_like(overlay_image[:, :1, :, :])], dim=1)
-
+        # Resize overlay image
         overlay_image = transform.resize(overlay_image, (height, width))
 
         if rotation != 0:
@@ -280,8 +274,10 @@ class ImageTranspose:
             center = torch.tensor([width / 2, height / 2], dtype=torch.float32, device=device)
             overlay_image = transform.rotate(overlay_image, angle, center=center)
 
-        mask = overlay_image[:, -1:, :, :]
+        # Create mask (assuming overlay_image is RGBA)
+        mask = overlay_image[:, 3:4, :, :]
 
+        # Pad overlay image and mask
         pad_left = x
         pad_top = y
         pad_right = max(0, base_image.shape[3] - overlay_image.shape[3] - x)
@@ -290,6 +286,7 @@ class ImageTranspose:
         overlay_image = torch.nn.functional.pad(overlay_image, (pad_left, pad_right, pad_top, pad_bottom))
         mask = torch.nn.functional.pad(mask, (pad_left, pad_right, pad_top, pad_bottom))
 
+        # Resize to match base image
         overlay_image = transform.resize(overlay_image, base_image.shape[2:])
         mask = transform.resize(mask, base_image.shape[2:])
 
@@ -299,16 +296,12 @@ class ImageTranspose:
             mask = torch.nn.functional.conv2d(mask, feather_kernel, padding=feathering)
 
         # Blend images
-        result = base_image * (1 - mask) + overlay_image * mask
+        result = base_image * (1 - mask) + overlay_image[:, :3, :, :] * mask
 
         result = TensorImage(result).get_BWHC()
 
-        if result.shape[3] == 4:
-            rgba = result
-            rgb = result[:, :, :, :3]
-        else:
-            rgb = result
-            rgba = torch.cat([rgb, torch.ones_like(rgb[:, :, :, :1])], dim=3)
+        rgb = result
+        rgba = torch.cat([rgb, mask.permute(0, 2, 3, 1)], dim=3)
 
         return (rgb, rgba)
 
