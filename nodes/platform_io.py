@@ -323,7 +323,6 @@ class PlatformOutput:
                 results.append(
                     {"title": title, "type": main_subtype, "metadata": metadata, "value": value_json}
                 )
-        print(f"results: {results}")
         return {"ui": {"signature_output": results}}
 
 
