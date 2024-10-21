@@ -191,7 +191,7 @@ class PlatformInputNumber:
 
     def execute(self, **kwargs):
         value = kwargs.get("value")
-        if not isinstance(value, str):
+        if not isinstance(value, int) and not isinstance(value, float):
             raise ValueError("Value must be a string")
         subtype = kwargs.get("subtype")
         if not isinstance(subtype, str):
