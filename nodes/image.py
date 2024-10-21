@@ -208,11 +208,12 @@ class ImageTranspose:
             "required": {
                 "image": ("IMAGE",),
                 "image_overlay": ("IMAGE",),
-                "width": ("INT", {"default": 512, "min": 0, "max": 48000, "step": 1}),
-                "height": ("INT", {"default": 512, "min": 0, "max": 48000, "step": 1}),
+                "width": ("INT", {"default": -1, "min": -1, "max": 48000, "step": 1}),
+                "height": ("INT", {"default": -1, "min": -1, "max": 48000, "step": 1}),
                 "X": ("INT", {"default": 0, "min": 0, "max": 48000, "step": 1}),
                 "Y": ("INT", {"default": 0, "min": 0, "max": 48000, "step": 1}),
                 "rotation": ("INT", {"default": 0, "min": -360, "max": 360, "step": 1}),
+                "feathering": ("INT", {"default": 0, "min": 0, "max": 100, "step": 1}),
             },
         }
 
@@ -222,52 +223,91 @@ class ImageTranspose:
     CATEGORY = IMAGE_CAT
 
     def process(self, **kwargs):
-        image_element = kwargs.get("image")
-        image_bg = kwargs.get("image_overlay")
-
-        if not isinstance(image_element, torch.Tensor):
-            raise ValueError("Image element must be a torch.Tensor")
-        if not isinstance(image_bg, torch.Tensor):
-            raise ValueError("Image background must be a torch.Tensor")
-
-        image_element = TensorImage.from_BWHC(image_element)
-        image_bg = TensorImage.from_BWHC(image_bg)
-
+        image = kwargs.get("image")
+        if not isinstance(image, torch.Tensor):
+            raise ValueError("Image must be a torch.Tensor")
+        image_overlay = kwargs.get("image_overlay")
+        if not isinstance(image_overlay, torch.Tensor):
+            raise ValueError("Image overlay must be a torch.Tensor")
         width = kwargs.get("width")
         if not isinstance(width, int):
             raise ValueError("Width must be an integer")
         height = kwargs.get("height")
         if not isinstance(height, int):
             raise ValueError("Height must be an integer")
-        X = kwargs.get("X")
-        if not isinstance(X, int):
+        x = kwargs.get("X")
+        if not isinstance(x, int):
             raise ValueError("X must be an integer")
-        Y = kwargs.get("Y")
-        if not isinstance(Y, int):
+        y = kwargs.get("Y")
+        if not isinstance(y, int):
             raise ValueError("Y must be an integer")
-        rotate = kwargs.get("rotation")
-        if not isinstance(rotate, int):
+        rotation = kwargs.get("rotation")
+        if not isinstance(rotation, int):
             raise ValueError("Rotation must be an integer")
-        size = (width, height)
-        loc = (X, Y)
+        feathering = kwargs.get("feathering")
+        if not isinstance(feathering, int):
+            raise ValueError("Feathering must be an integer")
 
-        image_element = transform.rotate(image_element, torch.tensor([rotate]).float())
-        image_element = transform.resize(image_element, size)
+        base_image = TensorImage.from_BWHC(image)
+        overlay_image = TensorImage.from_BWHC(image_overlay)
 
-        elem_h, elem_w = image_element.shape[2], image_element.shape[3]
+        if width == -1:
+            width = base_image.shape[3]
+        if height == -1:
+            height = base_image.shape[2]
 
-        new_image = torch.zeros_like(image_element)[0]
-        print(image_element.shape)
-        print(image_bg.shape)
-        new_image[:, loc[1] : loc[1] + elem_h, loc[0] : loc[0] + elem_w] = image_element
+        device = base_image.device
+        overlay_image = overlay_image.to(device)
 
-        alpha_element = image_element[:, 3:4, :, :]
-        alpha_bg = 1.0 - alpha_element
+        if base_image.shape[1] != overlay_image.shape[1]:
+            if overlay_image.shape[1] == 4 and base_image.shape[1] == 3:
+                alpha = torch.ones(
+                    (base_image.shape[0], 1, base_image.shape[2], base_image.shape[3]), device=device
+                )
+                base_image = torch.cat([base_image, alpha], dim=1)
+            elif overlay_image.shape[1] == 3 and base_image.shape[1] == 4:
+                base_image = base_image[:, :3, :, :]
+            else:
+                raise ValueError(
+                    f"Channel mismatch: overlay ({overlay_image.shape[1]}) vs base ({base_image.shape[1]})"
+                )
 
-        result = alpha_bg * image_bg + alpha_element * new_image
-        result = TensorImage(result).get_BWHC()
+        overlay_image = transform.resize(overlay_image, (height, width))
 
-        return (result,)
+        if rotation != 0:
+            angle = torch.tensor(rotation, dtype=torch.float32, device=device)
+            center = torch.tensor([width / 2, height / 2], dtype=torch.float32, device=device)
+            overlay_image = transform.rotate(overlay_image, angle, center=center)
+
+        if overlay_image.shape[1] == 4:
+            mask = overlay_image[:, -1, :, :]
+        else:
+            mask = torch.ones((1, 1, overlay_image.shape[2], overlay_image.shape[3]), device=device)
+
+        pad_left = x
+        pad_top = y
+        pad_right = max(0, base_image.shape[3] - overlay_image.shape[3] - x)
+        pad_bottom = max(0, base_image.shape[2] - overlay_image.shape[2] - y)
+
+        overlay_image = torch.nn.functional.pad(overlay_image, (pad_left, pad_right, pad_top, pad_bottom))
+        mask = torch.nn.functional.pad(mask, (pad_left, pad_right, pad_top, pad_bottom))
+
+        overlay_image = transform.resize(overlay_image, base_image.shape[2:])
+        mask = transform.resize(mask, base_image.shape[2:])
+
+        if feathering > 0:
+            kernel_size = 2 * feathering + 1
+            feather_kernel = torch.ones((1, 1, kernel_size, kernel_size), device=device) / (kernel_size**2)
+            mask = torch.nn.functional.conv2d(mask.unsqueeze(1), feather_kernel, padding=feathering).squeeze(
+                1
+            )
+
+        mask = mask.to(base_image.device)
+        result = base_image * (1 - mask) + overlay_image * mask
+
+        output = TensorImage(result).get_BWHC()
+
+        return (output,)
 
 
 NODE_CLASS_MAPPINGS = {
@@ -277,7 +317,7 @@ NODE_CLASS_MAPPINGS = {
     "signature_image_soft_light": ImageSoftLight,
     "signature_image_average": ImageAverage,
     "signature_image_subtract": ImageSubtract,
-    # "signature_image_transpose": ImageTranspose,
+    "signature_image_transpose": ImageTranspose,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -287,5 +327,5 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "signature_image_soft_light": "SIG ImageSoftLight",
     "signature_image_average": "SIG ImageAverage",
     "signature_image_subtract": "SIG ImageSubtract",
-    # "signature_image_transpose": "SIG ImageTranspose",
+    "signature_image_transpose": "SIG ImageTranspose",
 }
