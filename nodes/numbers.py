@@ -428,7 +428,7 @@ class MathOperator:
             result = 0.0
 
         return (
-            round(result),
+            round(result),  # type: ignore
             result,
         )  # type: ignore
 
