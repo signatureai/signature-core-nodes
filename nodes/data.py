@@ -19,6 +19,8 @@ class JsonToDict:
 
     def process(self, **kwargs):
         json_str = kwargs.get("json_str")
+        if not isinstance(json_str, str):
+            raise ValueError("Json string must be a string")
         json_dict = json.loads(json_str)
         return (json_dict,)
 
@@ -60,6 +62,8 @@ class GetImageListItem:
     def process(self, **kwargs):
         images = kwargs.get("images")
         index = kwargs.get("index")
+        if not isinstance(index, int):
+            raise ValueError("Index must be an integer")
         if not isinstance(images, list):
             raise ValueError("Images must be a list")
         images = images[index]
@@ -86,6 +90,10 @@ class GetListItem:
     def process(self, **kwargs):
         list_obj = kwargs.get("list")
         index = kwargs.get("index")
+        if not isinstance(index, int):
+            raise ValueError("Index must be an integer")
+        if not isinstance(list_obj, list):
+            raise ValueError("List must be a list")
         item = list_obj[index]
         item_type = type(item).__name__
         return (item, item_type)
@@ -109,6 +117,10 @@ class GetDictValue:
     def process(self, **kwargs):
         dict_obj = kwargs.get("dict")
         key = kwargs.get("key")
+        if not isinstance(key, str):
+            raise ValueError("Key must be a string")
+        if not isinstance(dict_obj, dict):
+            raise ValueError("Dict must be a dictionary")
         value = dict_obj.get(key)
         value_type = type(value).__name__
         return (value, value_type)

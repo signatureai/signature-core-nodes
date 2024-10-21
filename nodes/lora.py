@@ -1,6 +1,7 @@
 import os
 
 import folder_paths  # type: ignore
+import torch
 
 # comfy related imports
 from comfy import sd, utils  # type: ignore
@@ -149,6 +150,8 @@ class Dict2LoraStack:
 
     def process(self, **kwargs):
         lora_dicts = kwargs.get("lora_dicts")
+        if not isinstance(lora_dicts, list):
+            raise ValueError("Lora dicts must be a list")
         lora_stack = kwargs.get("lora_stack")
         loras = [None for _ in lora_dicts]
 
@@ -189,11 +192,23 @@ class SaveLoraCaptions:
         **kwargs,
     ):
         dataset_name = kwargs.get("dataset_name")
+        if not isinstance(dataset_name, str):
+            raise ValueError("Dataset name must be a string")
         repeats = kwargs.get("repeats")
+        if not isinstance(repeats, int):
+            raise ValueError("Repeats must be an integer")
         images = kwargs.get("images")
+        if not isinstance(images, torch.Tensor):
+            raise ValueError("Images must be a torch.Tensor")
         labels = kwargs.get("labels")
+        if not isinstance(labels, str):
+            raise ValueError("Labels must be a string")
         prefix = kwargs.get("prefix")
+        if not isinstance(prefix, str):
+            raise ValueError("Prefix must be a string")
         suffix = kwargs.get("suffix")
+        if not isinstance(suffix, str):
+            raise ValueError("Suffix must be a string")
 
         labels_list = labels.split("\n") if "\n" in labels else [labels]
 

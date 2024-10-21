@@ -35,9 +35,14 @@ class IntClamp:
 
     def process(self, **kwargs):
         number = kwargs.get("number")
+        if not isinstance(number, int):
+            raise ValueError("Number must be an integer")
         min_value = kwargs.get("min_value")
+        if not isinstance(min_value, int):
+            raise ValueError("Min value must be an integer")
         max_value = kwargs.get("max_value")
-
+        if not isinstance(max_value, int):
+            raise ValueError("Max value must be an integer")
         if number < min_value:
             return (min_value,)
         if number > max_value:
@@ -76,8 +81,14 @@ class FloatClamp:
 
     def process(self, **kwargs):
         number = kwargs.get("number")
+        if not isinstance(number, float):
+            raise ValueError("Number must be a float")
         min_value = kwargs.get("min_value")
+        if not isinstance(min_value, float):
+            raise ValueError("Min value must be a float")
         max_value = kwargs.get("max_value")
+        if not isinstance(max_value, float):
+            raise ValueError("Max value must be a float")
 
         if number < min_value:
             return (min_value,)
@@ -101,6 +112,8 @@ class Float2Int:
 
     def process(self, **kwargs):
         number = kwargs.get("number")
+        if not isinstance(number, float):
+            raise ValueError("Number must be a float")
         return (int(number),)
 
 
@@ -119,6 +132,8 @@ class Int2Float:
 
     def process(self, **kwargs):
         number = kwargs.get("number")
+        if not isinstance(number, int):
+            raise ValueError("Number must be an integer")
         return (float(number),)
 
 
@@ -145,8 +160,14 @@ class IntOperator:
 
     def process(self, **kwargs):
         left = kwargs.get("left")
+        if not isinstance(left, float):
+            raise ValueError("Left must be a float")
         right = kwargs.get("right")
+        if not isinstance(right, float):
+            raise ValueError("Right must be a float")
         operator = kwargs.get("operator")
+        if not isinstance(operator, str):
+            raise ValueError("Operator must be a string")
         if operator == "+":
             return (left + right,)
         if operator == "-":
@@ -182,8 +203,14 @@ class FloatOperator:
 
     def process(self, **kwargs):
         left = kwargs.get("left")
+        if not isinstance(left, float):
+            raise ValueError("Left must be a float")
         right = kwargs.get("right")
+        if not isinstance(right, float):
+            raise ValueError("Right must be a float")
         operator = kwargs.get("operator")
+        if not isinstance(operator, str):
+            raise ValueError("Operator must be a string")
         if operator == "+":
             return (left + right,)
         if operator == "-":
@@ -214,7 +241,13 @@ class IntMinMax:
     def process(self, **kwargs):
         a = kwargs.get("a")
         b = kwargs.get("b")
+        if not isinstance(a, int):
+            raise ValueError("A must be an integer")
+        if not isinstance(b, int):
+            raise ValueError("B must be an integer")
         mode = kwargs.get("mode")
+        if not isinstance(mode, str):
+            raise ValueError("Mode must be a string")
         if mode == "min":
             return (min(a, b),)
         if mode == "max":
@@ -240,7 +273,13 @@ class FloatMinMax:
     def process(self, **kwargs):
         a = kwargs.get("a")
         b = kwargs.get("b")
+        if not isinstance(a, float):
+            raise ValueError("A must be a float")
+        if not isinstance(b, float):
+            raise ValueError("B must be a float")
         mode = kwargs.get("mode")
+        if not isinstance(mode, str):
+            raise ValueError("Mode must be a string")
         if mode == "min":
             return (min(a, b),)
         if mode == "max":

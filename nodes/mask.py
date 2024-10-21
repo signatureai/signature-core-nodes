@@ -331,17 +331,29 @@ class MaskGrowWithBlur:
 
     def expand_mask(self, **kwargs):
         mask = kwargs.get("mask")
-        expand = kwargs.get("expand")
-        incremental_expandrate = kwargs.get("incremental_expandrate")
-        tapered_corners = kwargs.get("tapered_corners")
-        flip_input = kwargs.get("flip_input")
-        blur_radius = kwargs.get("blur_radius")
-        lerp_alpha = kwargs.get("lerp_alpha")
-        decay_factor = kwargs.get("decay_factor")
-
         if not isinstance(mask, torch.Tensor):
             raise ValueError("Mask must be a tensor")
-
+        expand = kwargs.get("expand")
+        if not isinstance(expand, int):
+            raise ValueError("Expand must be an integer")
+        incremental_expandrate = kwargs.get("incremental_expandrate")
+        if not isinstance(incremental_expandrate, float):
+            raise ValueError("Incremental expandrate must be a float")
+        tapered_corners = kwargs.get("tapered_corners")
+        if not isinstance(tapered_corners, bool):
+            raise ValueError("Tapered corners must be a boolean")
+        flip_input = kwargs.get("flip_input")
+        if not isinstance(flip_input, bool):
+            raise ValueError("Flip input must be a boolean")
+        blur_radius = kwargs.get("blur_radius")
+        if not isinstance(blur_radius, float):
+            raise ValueError("Blur radius must be a float")
+        lerp_alpha = kwargs.get("lerp_alpha")
+        if not isinstance(lerp_alpha, float):
+            raise ValueError("Lerp alpha must be a float")
+        decay_factor = kwargs.get("decay_factor")
+        if not isinstance(decay_factor, float):
+            raise ValueError("Decay factor must be a float")
         mask = TensorImage.from_BWHC(mask)
         alpha = lerp_alpha
         decay = decay_factor

@@ -48,9 +48,17 @@ class PlatformInputImage:
             return output
 
         value = kwargs.get("value")
+        if not isinstance(value, str):
+            raise ValueError("Value must be a string")
         subtype = kwargs.get("subtype")
+        if not isinstance(subtype, str):
+            raise ValueError("Subtype must be a string")
         include_alpha = kwargs.get("include_alpha")
+        if not isinstance(include_alpha, bool):
+            raise ValueError("Include alpha must be a boolean")
         multiple = kwargs.get("multiple")
+        if not isinstance(multiple, bool):
+            raise ValueError("Multiple must be a boolean")
         fallback = kwargs.get("fallback")
 
         if "," in value:
@@ -113,9 +121,17 @@ class PlatformInputConnector:
         **kwargs,
     ):
         value = kwargs.get("value")
+        if not isinstance(value, str):
+            raise ValueError("Value must be a string")
         token = kwargs.get("token")
+        if not isinstance(token, str):
+            raise ValueError("Token must be a string")
         mime_type = kwargs.get("mime_type")
+        if not isinstance(mime_type, str):
+            raise ValueError("Mime type must be a string")
         override = kwargs.get("override")
+        if not isinstance(override, bool):
+            raise ValueError("Override must be a boolean")
         connector = GoogleConnector(token=token)
         input_folder = os.path.join(BASE_COMFY_DIR, "input")
         data = connector.download(
@@ -146,7 +162,11 @@ class PlatformInputText:
 
     def apply(self, **kwargs):
         value = kwargs.get("value")
+        if not isinstance(value, str):
+            raise ValueError("Value must be a string")
         fallback = kwargs.get("fallback")
+        if not isinstance(fallback, str):
+            raise ValueError("Fallback must be a string")
         if value == "":
             value = fallback or ""
         return (value,)
@@ -171,7 +191,11 @@ class PlatformInputNumber:
 
     def apply(self, **kwargs):
         value = kwargs.get("value")
+        if not isinstance(value, str):
+            raise ValueError("Value must be a string")
         subtype = kwargs.get("subtype")
+        if not isinstance(subtype, str):
+            raise ValueError("Subtype must be a string")
         if subtype == "int":
             value = int(value)
         else:
@@ -199,6 +223,8 @@ class PlatformInputBoolean:
 
     def apply(self, **kwargs):
         value = kwargs.get("value")
+        if not isinstance(value, bool):
+            raise ValueError("Value must be a boolean")
         return (value,)
 
 
@@ -255,10 +281,20 @@ class PlatformOutput:
 
     def apply(self, **kwargs):
         title = kwargs.get("title")
+        if not isinstance(title, str):
+            raise ValueError("Title must be a string")
         subtype = kwargs.get("subtype")
+        if not isinstance(subtype, list):
+            raise ValueError("Subtype must be a list")
         value = kwargs.get("value")
+        if not isinstance(value, list):
+            raise ValueError("Value must be a list")
         output_path = kwargs.get("output_path")
+        if not isinstance(output_path, list):
+            raise ValueError("Output path must be a list")
         metadata = kwargs.get("metadata")
+        if not isinstance(metadata, str):
+            raise ValueError("Metadata must be a string")
         if len(subtype) == 0 or len(value) == 0:
             raise ValueError("No input found")
         main_subtype = subtype[0]
