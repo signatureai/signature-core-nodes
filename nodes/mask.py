@@ -28,10 +28,10 @@ class BaseMask:
         }
 
     RETURN_TYPES = ("MASK",)
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = MASK_CAT
 
-    def process(self, **kwargs):
+    def execute(self, **kwargs):
         color = kwargs.get("color") or "white"
         width = kwargs.get("width") or 1024
         height = kwargs.get("height") or 1024
@@ -72,10 +72,10 @@ class MaskMorphology:
         }
 
     RETURN_TYPES = ("MASK",)
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = MASK_CAT
 
-    def process(self, **kwargs):
+    def execute(self, **kwargs):
         mask = kwargs.get("mask")
         if not isinstance(mask, torch.Tensor):
             raise ValueError("Mask must be a tensor")
@@ -115,10 +115,10 @@ class MaskBitwise:
         }
 
     RETURN_TYPES = ("MASK",)
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = MASK_CAT
 
-    def process(self, mask_1: torch.Tensor, mask_2: torch.Tensor, mode: str):
+    def execute(self, mask_1: torch.Tensor, mask_2: torch.Tensor, mode: str):
         input_mask_1 = TensorImage.from_BWHC(mask_1)
         input_mask_2 = TensorImage.from_BWHC(mask_2)
         eight_bit_mask_1 = torch.tensor(input_mask_1 * 255, dtype=torch.uint8)
@@ -148,10 +148,10 @@ class MaskDistance:
         return {"required": {"mask_0": ("MASK",), "mask_1": ("MASK",)}}
 
     RETURN_TYPES = ("FLOAT",)
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = MASK_CAT
 
-    def process(self, **kwargs):
+    def execute(self, **kwargs):
         mask_0 = kwargs.get("mask_0")
         mask_1 = kwargs.get("mask_1")
         if not isinstance(mask_0, torch.Tensor) or not isinstance(mask_1, torch.Tensor):
@@ -177,10 +177,10 @@ class Mask2Trimap:
         }
 
     RETURN_TYPES = ("MASK", "TRIMAP")
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = MASK_CAT
 
-    def process(self, **kwargs):
+    def execute(self, **kwargs):
         mask = kwargs.get("mask")
         inner_min_threshold = kwargs.get("inner_min_threshold") or 200
         inner_max_threshold = kwargs.get("inner_max_threshold") or 255
@@ -241,10 +241,10 @@ class MaskBinaryFilter:
         }
 
     RETURN_TYPES = ("MASK",)
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = MASK_CAT
 
-    def process(self, mask: torch.Tensor, threshold: float):
+    def execute(self, mask: torch.Tensor, threshold: float):
         step = TensorImage.from_BWHC(mask)
         step[step > threshold] = 1.0
         step[step <= threshold] = 0.0
@@ -262,10 +262,10 @@ class MaskInvert:
         }
 
     RETURN_TYPES = ("MASK",)
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = MASK_CAT
 
-    def process(self, mask: torch.Tensor):
+    def execute(self, mask: torch.Tensor):
         step = TensorImage.from_BWHC(mask)
         step = 1.0 - step
         output = TensorImage(step).get_BWHC()
@@ -286,10 +286,10 @@ class MaskGaussianBlur:
         }
 
     RETURN_TYPES = ("MASK",)
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = MASK_CAT
 
-    def process(self, image: torch.Tensor, radius, sigma, interations):
+    def execute(self, image: torch.Tensor, radius, sigma, interations):
         tensor_image = TensorImage.from_BWHC(image)
         output = gaussian_blur2d(tensor_image, radius, sigma, interations).get_BWHC()
         return (output,)
@@ -305,10 +305,10 @@ class Mask2Image:
         }
 
     RETURN_TYPES = ("IMAGE",)
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = MASK_CAT
 
-    def process(self, mask: torch.Tensor):
+    def execute(self, mask: torch.Tensor):
         mask_tensor = TensorImage.from_BWHC(mask)
         output = mask_tensor.repeat(1, 3, 1, 1)
         output = TensorImage(output).get_BWHC()

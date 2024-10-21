@@ -27,10 +27,10 @@ class RandomCropAugmentation:
 
     RETURN_TYPES = ("AUGMENTATION",)
     RETURN_NAMES = ("augmentation",)
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = AUGMENTATION_CAT
 
-    def process(
+    def execute(
         self,
         **kwargs,
     ):
@@ -59,10 +59,10 @@ class FlipAugmentation:
 
     RETURN_TYPES = ("AUGMENTATION",)
     RETURN_NAMES = ("augmentation",)
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = AUGMENTATION_CAT
 
-    def process(self, **kwargs):
+    def execute(self, **kwargs):
         flip = kwargs.get("flip") or "horizontal"
         percent = kwargs.get("percent") or 0.5
         augmentation = kwargs.get("augmentation")
@@ -89,14 +89,14 @@ class ComposeAugmentation:
         "IMAGE",
         "MASK",
     )
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = AUGMENTATION_CAT
     OUTPUT_IS_LIST = (
         True,
         True,
     )
 
-    def process(
+    def execute(
         self,
         **kwargs,
     ):

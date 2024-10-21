@@ -1,3 +1,6 @@
+import ast
+import math
+import operator as op
 import random
 
 from .categories import NUMBERS_CAT
@@ -30,10 +33,10 @@ class IntClamp:
         }
 
     RETURN_TYPES = ("INT",)
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = NUMBERS_CAT
 
-    def process(self, **kwargs):
+    def execute(self, **kwargs):
         number = kwargs.get("number")
         if not isinstance(number, int):
             raise ValueError("Number must be an integer")
@@ -66,20 +69,20 @@ class FloatClamp:
                 ),
                 "min_value": (
                     "FLOAT",
-                    {"default": 0, "min": -MAX_FLOAT, "max": MAX_FLOAT, "step": 0.001},
+                    {"default": 0, "min": -MAX_FLOAT, "max": MAX_FLOAT, "step": 0.01},
                 ),
                 "max_value": (
                     "FLOAT",
-                    {"default": 0, "min": -MAX_FLOAT, "max": MAX_FLOAT, "step": 0.001},
+                    {"default": 0, "min": -MAX_FLOAT, "max": MAX_FLOAT, "step": 0.01},
                 ),
             }
         }
 
     RETURN_TYPES = ("FLOAT",)
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = NUMBERS_CAT
 
-    def process(self, **kwargs):
+    def execute(self, **kwargs):
         number = kwargs.get("number")
         if not isinstance(number, float):
             raise ValueError("Number must be a float")
@@ -107,10 +110,10 @@ class Float2Int:
         }
 
     RETURN_TYPES = ("INT",)
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = NUMBERS_CAT
 
-    def process(self, **kwargs):
+    def execute(self, **kwargs):
         number = kwargs.get("number")
         if not isinstance(number, float):
             raise ValueError("Number must be a float")
@@ -127,10 +130,10 @@ class Int2Float:
         }
 
     RETURN_TYPES = ("FLOAT",)
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = NUMBERS_CAT
 
-    def process(self, **kwargs):
+    def execute(self, **kwargs):
         number = kwargs.get("number")
         if not isinstance(number, int):
             raise ValueError("Number must be an integer")
@@ -144,21 +147,21 @@ class IntOperator:
             "required": {
                 "left": (
                     "FLOAT",
-                    {"default": 0, "min": -MAX_FLOAT, "max": MAX_FLOAT, "step": 0.001},
+                    {"default": 0, "min": -MAX_FLOAT, "max": MAX_FLOAT, "step": 0.01},
                 ),
                 "right": (
                     "FLOAT",
-                    {"default": 0, "min": -MAX_FLOAT, "max": MAX_FLOAT, "step": 0.001},
+                    {"default": 0, "min": -MAX_FLOAT, "max": MAX_FLOAT, "step": 0.01},
                 ),
                 "operator": (["+", "-", "*", "/"],),
             }
         }
 
     RETURN_TYPES = ("INT",)
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = NUMBERS_CAT
 
-    def process(self, **kwargs):
+    def execute(self, **kwargs):
         left = kwargs.get("left")
         if not isinstance(left, float):
             raise ValueError("Left must be a float")
@@ -187,21 +190,21 @@ class FloatOperator:
             "required": {
                 "left": (
                     "FLOAT",
-                    {"default": 0, "min": -MAX_FLOAT, "max": MAX_FLOAT, "step": 0.001},
+                    {"default": 0, "min": -MAX_FLOAT, "max": MAX_FLOAT, "step": 0.01},
                 ),
                 "right": (
                     "FLOAT",
-                    {"default": 0, "min": -MAX_FLOAT, "max": MAX_FLOAT, "step": 0.001},
+                    {"default": 0, "min": -MAX_FLOAT, "max": MAX_FLOAT, "step": 0.01},
                 ),
                 "operator": (["+", "-", "*", "/"],),
             }
         }
 
     RETURN_TYPES = ("FLOAT",)
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = NUMBERS_CAT
 
-    def process(self, **kwargs):
+    def execute(self, **kwargs):
         left = kwargs.get("left")
         if not isinstance(left, float):
             raise ValueError("Left must be a float")
@@ -235,10 +238,10 @@ class IntMinMax:
         }
 
     RETURN_TYPES = ("INT",)
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = NUMBERS_CAT
 
-    def process(self, **kwargs):
+    def execute(self, **kwargs):
         a = kwargs.get("a")
         b = kwargs.get("b")
         if not isinstance(a, int):
@@ -267,10 +270,10 @@ class FloatMinMax:
         }
 
     RETURN_TYPES = ("FLOAT",)
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = NUMBERS_CAT
 
-    def process(self, **kwargs):
+    def execute(self, **kwargs):
         a = kwargs.get("a")
         b = kwargs.get("b")
         if not isinstance(a, float):
@@ -296,7 +299,7 @@ class RandomNumber:
         "INT",
         "FLOAT",
     )
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = NUMBERS_CAT
 
     @staticmethod
@@ -307,12 +310,127 @@ class RandomNumber:
             float(result),
         )
 
-    def process(self):
+    def execute(self):
         return RandomNumber.get_random()
 
     @classmethod
     def IS_CHANGED(cls):  # type: ignore
         return RandomNumber.get_random()
+
+
+class MathOperator:
+
+    @classmethod
+    def INPUT_TYPES(cls):  # type: ignore
+        return {
+            "optional": {
+                "a": ("FLOAT", {"default": 0, "min": -MAX_FLOAT, "max": MAX_FLOAT, "step": 0.01}),
+                "b": ("FLOAT", {"default": 0, "min": -MAX_FLOAT, "max": MAX_FLOAT, "step": 0.01}),
+                "c": ("FLOAT", {"default": 0, "min": -MAX_FLOAT, "max": MAX_FLOAT, "step": 0.01}),
+                "d": ("FLOAT", {"default": 0, "min": -MAX_FLOAT, "max": MAX_FLOAT, "step": 0.01}),
+            },
+            "required": {
+                "value": ("STRING", {"multiline": True, "default": ""}),
+            },
+        }
+
+    RETURN_TYPES = (
+        "INT",
+        "FLOAT",
+    )
+    FUNCTION = "execute"
+    CATEGORY = NUMBERS_CAT
+
+    def execute(self, **kwargs):
+
+        a = kwargs.get("a") or 0.0
+        b = kwargs.get("b") or 0.0
+        c = kwargs.get("c") or 0.0
+        d = kwargs.get("d") or 0.0
+        value = kwargs.get("value") or ""
+        # trim value
+        value = value.strip()
+
+        def safe_xor(x, y):
+            if isinstance(x, float) or isinstance(y, float):
+                # Convert to integers if either operand is a float
+                return float(int(x) ^ int(y))
+            return op.xor(x, y)
+
+        operators = {
+            ast.Add: op.add,
+            ast.Sub: op.sub,
+            ast.Mult: op.mul,
+            ast.Div: op.truediv,
+            ast.FloorDiv: op.floordiv,
+            ast.Pow: op.pow,
+            ast.USub: op.neg,
+            ast.Mod: op.mod,
+            ast.Eq: op.eq,
+            ast.NotEq: op.ne,
+            ast.Lt: op.lt,
+            ast.LtE: op.le,
+            ast.Gt: op.gt,
+            ast.GtE: op.ge,
+            ast.And: lambda x, y: x and y,
+            ast.Or: lambda x, y: x or y,
+            ast.Not: op.not_,
+            ast.BitXor: safe_xor,  # Use the safe_xor function
+        }
+
+        op_functions = {
+            "min": min,
+            "max": max,
+            "round": round,
+            "sum": sum,
+            "len": len,
+        }
+
+        def eval_(node):
+            if isinstance(node, ast.Num):  # number
+                return node.n
+            if isinstance(node, ast.Name):  # variable
+                if node.id == "a":
+                    return a
+                if node.id == "b":
+                    return b
+                if node.id == "c":
+                    return c
+                if node.id == "d":
+                    return d
+            if isinstance(node, ast.BinOp):  # <left> <operator> <right>
+                return operators[type(node.op)](eval_(node.left), eval_(node.right))  # type: ignore
+            if isinstance(node, ast.UnaryOp):  # <operator> <operand> e.g., -1
+                return operators[type(node.op)](eval_(node.operand))  # type: ignore
+            if isinstance(node, ast.Compare):  # comparison operators
+                left = eval_(node.left)
+                for operator, comparator in zip(node.ops, node.comparators):
+                    if not operators[type(operator)](left, eval_(comparator)):  # type: ignore
+                        return 0
+                return 1
+            if isinstance(node, ast.BoolOp):  # boolean operators (And, Or)
+                values = [eval_(value) for value in node.values]
+                return operators[type(node.op)](*values)  # type: ignore
+            if isinstance(node, ast.Call):  # custom function
+                if node.func.id in op_functions:  # type: ignore
+                    args = [eval_(arg) for arg in node.args]
+                    return op_functions[node.func.id](*args)  # type: ignore
+            if isinstance(node, ast.Subscript):  # indexing or slicing
+                value = eval_(node.value)
+                if isinstance(node.slice, ast.Constant):
+                    return value[node.slice.value]
+                return 0
+            return 0
+
+        result = eval_(ast.parse(value, mode="eval").body)
+
+        if math.isnan(result):  # type: ignore
+            result = 0.0
+
+        return (
+            round(result),
+            result,
+        )  # type: ignore
 
 
 NODE_CLASS_MAPPINGS = {
@@ -325,6 +443,7 @@ NODE_CLASS_MAPPINGS = {
     "signature_float_clamp": FloatClamp,
     "signature_float_operator": FloatOperator,
     "signature_random_number": RandomNumber,
+    "signature_math_operator": MathOperator,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -337,4 +456,5 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "signature_float_clamp": "SIG FloatClamp",
     "signature_float_operator": "SIG FloatOperator",
     "signature_random_number": "SIG RandomNumber",
+    "signature_math_operator": "SIG MathOperator",
 }

@@ -31,11 +31,11 @@ class PlatformInputImage:
         }
 
     RETURN_TYPES = (any_type,)
-    FUNCTION = "apply"
+    FUNCTION = "execute"
     CATEGORY = PLATFROM_IO_CAT
     OUTPUT_IS_LIST = (True,)
 
-    def apply(
+    def execute(
         self,
         **kwargs,
     ):
@@ -113,10 +113,10 @@ class PlatformInputConnector:
         }
 
     RETURN_TYPES = ("FILE",)
-    FUNCTION = "apply"
+    FUNCTION = "execute"
     CATEGORY = PLATFROM_IO_CAT
 
-    def apply(
+    def execute(
         self,
         **kwargs,
     ):
@@ -157,10 +157,10 @@ class PlatformInputText:
         }
 
     RETURN_TYPES = ("STRING",)
-    FUNCTION = "apply"
+    FUNCTION = "execute"
     CATEGORY = PLATFROM_IO_CAT
 
-    def apply(self, **kwargs):
+    def execute(self, **kwargs):
         value = kwargs.get("value")
         if not isinstance(value, str):
             raise ValueError("Value must be a string")
@@ -186,10 +186,10 @@ class PlatformInputNumber:
         }
 
     RETURN_TYPES = (any_type,)
-    FUNCTION = "apply"
+    FUNCTION = "execute"
     CATEGORY = PLATFROM_IO_CAT
 
-    def apply(self, **kwargs):
+    def execute(self, **kwargs):
         value = kwargs.get("value")
         if not isinstance(value, str):
             raise ValueError("Value must be a string")
@@ -218,10 +218,10 @@ class PlatformInputBoolean:
 
     RETURN_TYPES = ("BOOLEAN",)
     RETURN_NAMES = ("boolean",)
-    FUNCTION = "apply"
+    FUNCTION = "execute"
     CATEGORY = PLATFROM_IO_CAT
 
-    def apply(self, **kwargs):
+    def execute(self, **kwargs):
         value = kwargs.get("value")
         if not isinstance(value, bool):
             raise ValueError("Value must be a boolean")
@@ -246,7 +246,7 @@ class PlatformOutput:
     RETURN_TYPES = ()
     OUTPUT_NODE = True
     INPUT_IS_LIST = True
-    FUNCTION = "apply"
+    FUNCTION = "execute"
     CATEGORY = PLATFROM_IO_CAT
 
     def __save_outputs(
@@ -279,7 +279,7 @@ class PlatformOutput:
 
         return None
 
-    def apply(self, **kwargs):
+    def execute(self, **kwargs):
         title_list = kwargs.get("title")
         if not isinstance(title_list, list):
             raise ValueError("Title must be a list")

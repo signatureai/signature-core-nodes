@@ -14,10 +14,10 @@ class JsonToDict:
         }
 
     RETURN_TYPES = ("DICT",)
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = DATA_CAT
 
-    def process(self, **kwargs):
+    def execute(self, **kwargs):
         json_str = kwargs.get("json_str")
         if not isinstance(json_str, str):
             raise ValueError("Json string must be a string")
@@ -35,10 +35,10 @@ class DictToJson:
         }
 
     RETURN_TYPES = ("STRING",)
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = DATA_CAT
 
-    def process(self, **kwargs):
+    def execute(self, **kwargs):
         json_dict = kwargs.get("dict")
         json_str = json.dumps(json_dict)
         return (json_str,)
@@ -56,10 +56,10 @@ class GetImageListItem:
 
     RETURN_TYPES = "IMAGE"
     RETURN_NAMES = "image"
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = DATA_CAT
 
-    def process(self, **kwargs):
+    def execute(self, **kwargs):
         images = kwargs.get("images")
         index = kwargs.get("index")
         if not isinstance(index, int):
@@ -84,10 +84,10 @@ class GetListItem:
 
     RETURN_TYPES = (any_type, "STRING")
     RETURN_NAMES = ("item", "value_type")
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = DATA_CAT
 
-    def process(self, **kwargs):
+    def execute(self, **kwargs):
         list_obj = kwargs.get("list")
         index = kwargs.get("index")
         if not isinstance(index, int):
@@ -111,10 +111,10 @@ class GetDictValue:
 
     RETURN_TYPES = (any_type, "STRING")
     RETURN_NAMES = ("value", "value_type")
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = DATA_CAT
 
-    def process(self, **kwargs):
+    def execute(self, **kwargs):
         dict_obj = kwargs.get("dict")
         key = kwargs.get("key")
         if not isinstance(key, str):

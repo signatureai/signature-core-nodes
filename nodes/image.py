@@ -23,10 +23,10 @@ class ImageBaseColor:
         }
 
     RETURN_TYPES = ("IMAGE",)
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = IMAGE_CAT
 
-    def process(self, **kwargs):
+    def execute(self, **kwargs):
         hex_color = kwargs.get("hex_color")
         width = kwargs.get("width")
         height = kwargs.get("height")
@@ -65,10 +65,10 @@ class ImageGaussianBlur:
         }
 
     RETURN_TYPES = ("IMAGE",)
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = IMAGE_CAT
 
-    def process(self, **kwargs):
+    def execute(self, **kwargs):
         image = kwargs.get("image")
         if not isinstance(image, torch.Tensor):
             raise ValueError("Image must be a torch.Tensor")
@@ -99,10 +99,10 @@ class ImageUnsharpMask:
         }
 
     RETURN_TYPES = ("IMAGE",)
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = IMAGE_CAT
 
-    def process(self, **kwargs):
+    def execute(self, **kwargs):
         image = kwargs.get("image")
         if not isinstance(image, torch.Tensor):
             raise ValueError("Image must be a torch.Tensor")
@@ -131,10 +131,10 @@ class ImageSoftLight:
         }
 
     RETURN_TYPES = ("IMAGE",)
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = IMAGE_CAT
 
-    def process(self, **kwargs):
+    def execute(self, **kwargs):
         top = kwargs.get("top")
         bottom = kwargs.get("bottom")
         if not isinstance(top, torch.Tensor):
@@ -158,10 +158,10 @@ class ImageAverage:
         }
 
     RETURN_TYPES = ("IMAGE",)
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = IMAGE_CAT
 
-    def process(self, **kwargs):
+    def execute(self, **kwargs):
         image = kwargs.get("image")
         if not isinstance(image, torch.Tensor):
             raise ValueError("Image must be a torch.Tensor")
@@ -181,10 +181,10 @@ class ImageSubtract:
         }
 
     RETURN_TYPES = ("IMAGE",)
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = IMAGE_CAT
 
-    def process(self, **kwargs):
+    def execute(self, **kwargs):
         image_0 = kwargs.get("image_0")
         image_1 = kwargs.get("image_1")
         if not isinstance(image_0, torch.Tensor):
@@ -225,11 +225,11 @@ class ImageTranspose:
         "rgb",
         "rgba",
     )
-    FUNCTION = "process"
+    FUNCTION = "execute"
 
     CATEGORY = IMAGE_CAT
 
-    def process(self, **kwargs):
+    def execute(self, **kwargs):
         image = kwargs.get("image")
         if not isinstance(image, torch.Tensor):
             raise ValueError("Image must be a torch.Tensor")

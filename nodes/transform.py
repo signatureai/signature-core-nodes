@@ -34,10 +34,10 @@ class AutoCrop:
     RETURN_TYPES = ("IMAGE", "MASK", "INT", "INT", "INT", "INT")
     RETURN_NAMES = ("cropped_image", "cropped_mask", "x", "y", "width", "height")
 
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = TRANSFORM_CAT
 
-    def process(
+    def execute(
         self,
         image: torch.Tensor,
         mask: torch.Tensor,
@@ -70,7 +70,7 @@ class Rescale:
             "optional": {
                 "image": ("IMAGE", {"default": None}),
                 "mask": ("MASK", {"default": None}),
-                "factor": ("FLOAT", {"default": 2.0, "min": 0.001, "max": 100.0, "step": 0.01}),
+                "factor": ("FLOAT", {"default": 2.0, "min": 0.01, "max": 100.0, "step": 0.01}),
                 "interpolation": (
                     ["nearest", "nearest-exact", "bilinear", "bicubic", "box", "hamming", "lanczos"],
                 ),
@@ -82,10 +82,10 @@ class Rescale:
         "IMAGE",
         "MASK",
     )
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = TRANSFORM_CAT
 
-    def process(
+    def execute(
         self,
         image: torch.Tensor | None = None,
         mask: torch.Tensor | None = None,
@@ -135,10 +135,10 @@ class Resize:
         "IMAGE",
         "MASK",
     )
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = TRANSFORM_CAT
 
-    def process(
+    def execute(
         self,
         image: torch.Tensor | None = None,
         mask: torch.Tensor | None = None,
@@ -184,10 +184,10 @@ class Rotate:
         "IMAGE",
         "MASK",
     )
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = TRANSFORM_CAT
 
-    def process(
+    def execute(
         self,
         image: torch.Tensor | None = None,
         mask: torch.Tensor | None = None,
@@ -225,10 +225,10 @@ class Cutout:
 
     RETURN_TYPES = ("IMAGE", "IMAGE")
     RETURN_NAMES = ("rgb", "rgba")
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = TRANSFORM_CAT
 
-    def process(self, image: torch.Tensor, mask: torch.Tensor):
+    def execute(self, image: torch.Tensor, mask: torch.Tensor):
         tensor_image = TensorImage.from_BWHC(image)
         tensor_mask = TensorImage.from_BWHC(mask, image.device)
 

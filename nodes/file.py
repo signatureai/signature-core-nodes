@@ -25,10 +25,10 @@ class ImageFromWeb:
         return {"required": {"url": ("STRING", {"default": "URL HERE"})}}
 
     RETURN_TYPES = ("IMAGE", "MASK")
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = FILE_CAT
 
-    def process(self, **kwargs):
+    def execute(self, **kwargs):
         url = kwargs.get("url")
         if not isinstance(url, str):
             raise ValueError("URL must be a string")
@@ -42,10 +42,10 @@ class ImageFromBase64:
         return {"required": {"base64": ("STRING", {"default": "BASE64 HERE"})}}
 
     RETURN_TYPES = ("IMAGE", "MASK")
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = FILE_CAT
 
-    def process(self, **kwargs):
+    def execute(self, **kwargs):
         base64 = kwargs.get("base64")
         if not isinstance(base64, str):
             raise ValueError("Base64 must be a string")
@@ -59,11 +59,11 @@ class Base64FromImage:
         return {"required": {"image": ("IMAGE",)}}
 
     RETURN_TYPES = ("STRING",)
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = FILE_CAT
     OUTPUT_NODE = True
 
-    def process(self, **kwargs):
+    def execute(self, **kwargs):
         image = kwargs.get("image")
         if not isinstance(image, torch.Tensor):
             raise ValueError("Image must be a torch.Tensor")
@@ -82,10 +82,10 @@ class FileLoader:
         }
 
     RETURN_TYPES = ("FILE",)
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = FILE_CAT
 
-    def process(self, **kwargs):
+    def execute(self, **kwargs):
         value = kwargs.get("value")
         if not isinstance(value, str):
             raise ValueError("Value must be a string")
@@ -115,10 +115,10 @@ class FolderLoader:
         }
 
     RETURN_TYPES = ("FILE",)
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = FILE_CAT
 
-    def process(self, **kwargs):
+    def execute(self, **kwargs):
         value = kwargs.get("value")
         if not isinstance(value, str):
             raise ValueError("Value must be a string")
@@ -147,11 +147,11 @@ class FiletoImageList:
         }
 
     RETURN_TYPES = ("IMAGE",)
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = FILE_CAT
     OUTPUT_IS_LIST = (True,)
 
-    def process(self, **kwargs):
+    def execute(self, **kwargs):
         files = kwargs.get("files")
         if not isinstance(files, list):
             raise ValueError("Files must be a list")
@@ -176,10 +176,10 @@ class File2List:
         }
 
     RETURN_TYPES = ("LIST",)
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = FILE_CAT
 
-    def process(self, **kwargs):
+    def execute(self, **kwargs):
         files = kwargs.get("files")
         if not isinstance(files, list):
             raise ValueError("Files must be a list")

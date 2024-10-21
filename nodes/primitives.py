@@ -8,17 +8,17 @@ class Float:
             "required": {
                 "value": (
                     "FLOAT",
-                    {"default": 0, "min": -18446744073709551615, "max": 18446744073709551615, "step": 0.001},
+                    {"default": 0, "min": -18446744073709551615, "max": 18446744073709551615, "step": 0.01},
                 ),
             },
         }
 
     RETURN_TYPES = ("FLOAT",)
     RETURN_NAMES = ("float",)
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = PRIMITIVES
 
-    def process(self, value):
+    def execute(self, value):
         return (value,)
 
 
@@ -36,10 +36,10 @@ class Int:
 
     RETURN_TYPES = ("INT",)
     RETURN_NAMES = ("int",)
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = PRIMITIVES
 
-    def process(self, value):
+    def execute(self, value):
         return (value,)
 
 
@@ -54,10 +54,10 @@ class String:
 
     RETURN_TYPES = ("STRING",)
     RETURN_NAMES = ("string",)
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = PRIMITIVES
 
-    def process(self, value):
+    def execute(self, value):
         return (value,)
 
 
@@ -72,10 +72,10 @@ class StringMultiline:
 
     RETURN_TYPES = ("STRING",)
     RETURN_NAMES = ("string",)
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = PRIMITIVES
 
-    def process(self, value):
+    def execute(self, value):
         return (value,)
 
 
@@ -90,10 +90,10 @@ class Boolean:
 
     RETURN_TYPES = ("BOOLEAN",)
     RETURN_NAMES = ("boolean",)
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = PRIMITIVES
 
-    def process(self, value):
+    def execute(self, value):
         return (value,)
 
 

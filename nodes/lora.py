@@ -31,10 +31,10 @@ class ApplyLoraStack:
         "MODEL",
         "CLIP",
     )
-    FUNCTION = "apply"
+    FUNCTION = "execute"
     CATEGORY = CATEGORY = LORA_CAT
 
-    def apply(
+    def execute(
         self,
         **kwargs,
     ):
@@ -93,10 +93,10 @@ class LoraStack:
 
     RETURN_TYPES = ("LORA_STACK",)
     RETURN_NAMES = ("lora_stack",)
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = LORA_CAT
 
-    def process(
+    def execute(
         self,
         **kwargs,
     ):
@@ -145,10 +145,10 @@ class Dict2LoraStack:
 
     RETURN_TYPES = ("LORA_STACK",)
     RETURN_NAMES = ("lora_stack",)
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = LORA_CAT
 
-    def process(self, **kwargs):
+    def execute(self, **kwargs):
         lora_dicts = kwargs.get("lora_dicts")
         if not isinstance(lora_dicts, list):
             raise ValueError("Lora dicts must be a list")
@@ -184,10 +184,10 @@ class SaveLoraCaptions:
     RETURN_TYPES = ("STRING",)
     RETURN_NAMES = ("folder_path",)
     OUTPUT_NODE = True
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = LORA_CAT
 
-    def process(
+    def execute(
         self,
         **kwargs,
     ):

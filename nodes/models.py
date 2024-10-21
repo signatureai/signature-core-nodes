@@ -32,10 +32,10 @@ class MagicEraser(SaveImage):
         }
 
     RETURN_TYPES = ("IMAGE",)
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = MODELS_CAT
 
-    def process(
+    def execute(
         self,
         image: torch.Tensor,
         mask: torch.Tensor,
@@ -76,10 +76,10 @@ class Unblur(SaveImage):
         }
 
     RETURN_TYPES = ("IMAGE",)
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = MODELS_CAT
 
-    def process(
+    def execute(
         self, image: torch.Tensor, preview: str, filename_prefix="Signature", prompt=None, extra_pnginfo=None
     ):
         model = SeeMore()
@@ -116,10 +116,10 @@ class BackgroundRemoval(SaveImage):
 
     RETURN_TYPES = ("IMAGE", "IMAGE", "MASK")
     RETURN_NAMES = ("rgba", "rgb", "mask")
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = MODELS_CAT
 
-    def process(
+    def execute(
         self,
         image: torch.Tensor,
         model_name: str,

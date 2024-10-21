@@ -321,10 +321,10 @@ class PlatfromWrapper:
         return inputs
 
     RETURN_TYPES = (any_type,) * 20
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = UTILS_CAT
 
-    def process(self, **kwargs):
+    def execute(self, **kwargs):
         data = kwargs.get("data")
         # console.log(f"kwargs: {kwargs}")
 

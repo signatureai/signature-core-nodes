@@ -23,10 +23,10 @@ class Any2String:
         }
 
     RETURN_TYPES = ("STRING",)
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = UTILS_CAT
 
-    def process(self, value):
+    def execute(self, value):
         return (str(value),)
 
 
@@ -40,10 +40,10 @@ class Any2Image:
         }
 
     RETURN_TYPES = ("IMAGE",)
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = UTILS_CAT
 
-    def process(self, value):
+    def execute(self, value):
         if isinstance(value, torch.Tensor):
             return (value,)
         raise ValueError(f"Unsupported type: {type(value)}")
@@ -59,10 +59,10 @@ class Any2Any:
         }
 
     RETURN_TYPES = (any_type,)
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = UTILS_CAT
 
-    def process(self, value):
+    def execute(self, value):
         return (value,)
 
 
@@ -77,10 +77,10 @@ class String2Case:
         }
 
     RETURN_TYPES = ("STRING",)
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = UTILS_CAT
 
-    def process(self, text: str, case: str):
+    def execute(self, text: str, case: str):
         result = text
         if case == "lower":
             result = text.lower()
@@ -102,10 +102,10 @@ class RGB2HSV:
         }
 
     RETURN_TYPES = ("IMAGE",)
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = UTILS_CAT
 
-    def process(self, image: torch.Tensor):
+    def execute(self, image: torch.Tensor):
         image_tensor = TensorImage.from_BWHC(image)
         output = rgb_to_hsv(image_tensor).get_BWHC()
         return (output,)
@@ -121,10 +121,10 @@ class RGBHLS:
         }
 
     RETURN_TYPES = ("IMAGE",)
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = UTILS_CAT
 
-    def process(self, image: torch.Tensor):
+    def execute(self, image: torch.Tensor):
         image_tensor = TensorImage.from_BWHC(image)
         output = rgb_to_hls(image_tensor).get_BWHC()
         return (output,)
@@ -140,10 +140,10 @@ class RGBA2RGB:
         }
 
     RETURN_TYPES = ("IMAGE",)
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = UTILS_CAT
 
-    def process(self, image: torch.Tensor):
+    def execute(self, image: torch.Tensor):
         image_tensor = TensorImage.from_BWHC(image)
         if image_tensor.shape[1] == 4:
             image_tensor = rgba_to_rgb(image_tensor)
@@ -162,13 +162,13 @@ class TextPreview:
 
     INPUT_IS_LIST = True
     RETURN_TYPES = ("STRING",)
-    FUNCTION = "process"
+    FUNCTION = "execute"
     OUTPUT_NODE = True
     OUTPUT_IS_LIST = (True,)
 
     CATEGORY = UTILS_CAT
 
-    def process(self, text):
+    def execute(self, text):
         text_string = ""
 
         for t in text:
@@ -196,10 +196,10 @@ class MaskPreview(SaveImage):
             "hidden": {"prompt": "PROMPT", "extra_pnginfo": "EXTRA_PNGINFO"},
         }
 
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = UTILS_CAT
 
-    def process(self, mask, filename_prefix="Signature", prompt=None, extra_pnginfo=None):
+    def execute(self, mask, filename_prefix="Signature", prompt=None, extra_pnginfo=None):
         preview = TensorImage.from_BWHC(mask).get_rgb_or_rgba().get_BWHC()
         return self.save_images(preview, filename_prefix, prompt, extra_pnginfo)
 
@@ -215,11 +215,11 @@ class ConsoleDebug:
         }
 
     RETURN_TYPES = ()
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = UTILS_CAT
     OUTPUT_NODE = True
 
-    def process(self, value, prefix):
+    def execute(self, value, prefix):
         print(f"\033[96m{prefix} {value}\033[0m")
         return (None,)
 
@@ -235,10 +235,10 @@ class ImageShape:
 
     RETURN_TYPES = ("INT", "INT", "INT", "INT", "STRING")
     RETURN_NAMES = ("batch", "width", "height", "channels", "debug")
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = UTILS_CAT
 
-    def process(self, image):
+    def execute(self, image):
         return (image.shape[0], image.shape[2], image.shape[1], image.shape[3], str(image.shape))
 
 
@@ -253,10 +253,10 @@ class MaskShape:
 
     RETURN_TYPES = ("INT", "INT", "INT", "INT", "STRING")
     RETURN_NAMES = ("batch", "width", "height", "channels", "debug")
-    FUNCTION = "process"
+    FUNCTION = "execute"
     CATEGORY = UTILS_CAT
 
-    def process(self, mask):
+    def execute(self, mask):
         if len(mask.shape) == 3:
             return (mask.shape[0], mask.shape[2], mask.shape[1], 1, str(mask.shape))
         return (mask.shape[0], mask.shape[2], mask.shape[1], mask.shape[3], str(mask.shape))
@@ -276,11 +276,11 @@ class PurgeVRAM:
         }
 
     RETURN_TYPES = ()
-    FUNCTION = "apply"
+    FUNCTION = "execute"
     CATEGORY = UTILS_CAT
     OUTPUT_NODE = True
 
-    def apply(self, anything, purge_cache, purge_models):
+    def execute(self, anything, purge_cache, purge_models):
 
         if purge_cache:
 
