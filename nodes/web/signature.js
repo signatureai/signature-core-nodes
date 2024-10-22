@@ -2,9 +2,6 @@ import { app } from "../scripts/app.js";
 
 const urlParams = new URLSearchParams(window.location.search);
 const env = urlParams.get("env");
-if (env === undefined) {
-  return;
-}
 let main_url = "https://api.signature.ai/api/v1";
 if (env === "staging") {
   main_url = "https://api-staging.signature.ai/api/v1";
