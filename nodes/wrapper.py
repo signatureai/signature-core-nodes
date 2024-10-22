@@ -1,4 +1,7 @@
+import asyncio
 import json
+import sys
+import uuid
 
 import httpx
 import torch
@@ -8,7 +11,20 @@ from signature_core.logger import console
 from uuid_extensions import uuid7str
 
 from .categories import UTILS_CAT
-from .shared import any_type
+from .shared import BASE_COMFY_DIR, any_type
+
+sys.path.append(BASE_COMFY_DIR)
+import execution  # type: ignore
+import server  # type: ignore
+
+import nodes  # type: ignore
+
+nodes.init_extra_nodes(init_custom_nodes=True)  # type: ignore
+loop = asyncio.new_event_loop()
+asyncio.set_event_loop(loop)
+server = server.PromptServer(loop)  # type: ignore
+q = execution.PromptQueue(server)  # type: ignore
+executor = execution.PromptExecutor(server)  # type: ignore
 
 
 class PlatfromWrapper:
@@ -220,21 +236,18 @@ class PlatfromWrapper:
                         value["inputs"]["value"] = data.get("value") or ""
         return json_data
 
-    def get_workflow_outputs(self, json_data: dict) -> list:
-        outputs = []
-
-        if not isinstance(json_data, dict):
-            return outputs
-
-        for _, value in json_data.items():
+    def get_workflow_outputs(self, json_data: dict) -> dict:
+        data = {}
+        for key, value in json_data.items():
             if value.get("class_type", "").startswith("signature_output"):
-                value_inputs = value.get("inputs") or None
-                if value_inputs is None:
+                data_value = value.get("inputs") or None
+                if data_value is None:
                     continue
-                output_title = value_inputs.get("title")
-                output_type = (value_inputs.get("subtype") or "").upper()
-                outputs.append({"title": output_title, "type": output_type})
-        return outputs
+                data_title = data_value.get("title")
+                data_type = (data_value.get("subtype") or "").upper()
+                data_metadata = data_value.get("metadata")
+                data.update({key: {"title": data_title, "type": data_type, "metadata": data_metadata}})
+        return data
 
     def get_workflow_inputs(self, json_data: dict) -> list:
         inputs = []
@@ -325,6 +338,7 @@ class PlatfromWrapper:
     CATEGORY = UTILS_CAT
 
     def execute(self, **kwargs):
+
         data = kwargs.get("data")
         # console.log(f"kwargs: {kwargs}")
 
@@ -367,7 +381,9 @@ class PlatfromWrapper:
         json_data = json.loads(wf_api_string)
         node_inputs = self.get_workflow_inputs(json_data)
         # console.log(f"Node inputs: {node_inputs}")
-        node_outputs = self.get_workflow_outputs(json_data)
+        workflow_outputs = self.get_workflow_outputs(json_data)
+        output_ids = workflow_outputs.keys()
+        node_outputs = workflow_outputs.values()
         # console.log(f"Node outputs: {node_outputs}")
 
         for node_input in node_inputs:
@@ -398,7 +414,16 @@ class PlatfromWrapper:
         if not isinstance(json_data, dict):
             return fallback
 
-        job_outputs = self.run_workflow_job(inference_host, org_id, json_data, token)
+        executor.execute(json_data, uuid.uuid4(), {}, output_ids)
+        outputs = executor.history_result["outputs"].values()
+        job_outputs = []
+        for job_output in outputs:
+            for key, value in job_output.items():
+                if key == "signature_output":
+                    job_outputs.extend(value)
+
+        print(f"Success: {executor.success} | Result: {executor.history_result}")
+        # job_outputs = self.run_workflow_job(inference_host, org_id, json_data, token)
 
         return self.process_outputs(job_outputs, node_outputs)
 
