@@ -2,10 +2,7 @@ import asyncio
 import json
 import os
 import sys
-import threading
-import time
 import uuid
-from queue import Queue
 from typing import Any
 
 import httpx
@@ -395,33 +392,9 @@ class PlatfromWrapper:
         if not isinstance(workflow_api, dict):
             return fallback
 
-        # Create a queue to store the result
-        result_queue = Queue()
+        executor.execute(workflow_api, uuid.uuid4(), {}, output_ids)
 
-        # Define a function to run in a separate thread
-        def run_execution():
-            executor.execute(workflow_api, uuid.uuid4(), {}, output_ids)
-            result_queue.put(executor.history_result)
-
-        # Start the execution in a separate thread
-        execution_thread = threading.Thread(target=run_execution)
-        execution_thread.start()
-
-        # Monitor the status while waiting for the execution to complete
-        while execution_thread.is_alive():
-            console.log(f"Monitoring status: {executor.status_messages}")
-            time.sleep(1)
-
-        # Wait for the thread to finish and get the result
-        execution_thread.join()
-        history_result = result_queue.get()
-        console.log(f"Final status: {executor.status_messages}")
-
-        if history_result is None:
-            console.log("Execution failed or returned no result.")
-            return fallback
-
-        outputs = history_result["outputs"].values()
+        outputs = executor.history_result["outputs"].values()
         job_outputs = []
         for job_output in outputs:
             for key, value in job_output.items():
