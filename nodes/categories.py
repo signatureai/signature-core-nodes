@@ -8,7 +8,7 @@ PRIMITIVES = f"{BASE_NAME_CAT}/Primitives"
 MODELS_CAT = f"{BASE_NAME_CAT}/Models"
 UTILS_CAT = f"{BASE_NAME_CAT}/Utils"
 FILE_CAT = f"{BASE_NAME_CAT}/File"
-
+LOGIC_CAT = f"{BASE_NAME_CAT}/Logic"
 
 AUGMENTATION_CAT = f"{BASE_NAME_CAT}/Others/Augmentations"
 PLATFROM_IO_CAT = f"{BASE_NAME_CAT}/Others/Platform IO"
