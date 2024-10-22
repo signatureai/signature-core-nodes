@@ -2,7 +2,11 @@ import asyncio
 import json
 import os
 import sys
+import threading
+import time
 import uuid
+from queue import Queue
+from typing import Any
 
 import httpx
 import torch
@@ -25,6 +29,59 @@ loop = asyncio.new_event_loop()
 asyncio.set_event_loop(loop)
 server = server.PromptServer(loop)  # type: ignore
 executor = execution.PromptExecutor(server)  # type: ignore
+
+
+class Workflow:
+    def __init__(self, workflow: dict):
+        self.__workflow = workflow
+
+    @property
+    def data(self) -> dict:
+        return self.__workflow
+
+    def get_inputs(self) -> dict:
+        data = {}
+        for key, value in self.__workflow.items():
+            if value.get("class_type", "").startswith("signature_input"):
+                data_value = value.get("inputs") or None
+                if data_value is None:
+                    continue
+                data_title = data_value.get("title")
+                data_type = (data_value.get("subtype") or "").upper()
+                data_value = data_value.get("value")
+                if data_value == "":
+                    data_value = None
+                data.update({key: {"title": data_title, "type": data_type, "value": data_value}})
+        return data
+
+    def get_outputs(self) -> dict:
+        data = {}
+        for key, value in self.__workflow.items():
+            if value.get("class_type", "").startswith("signature_output"):
+                data_value = value.get("inputs") or None
+                if data_value is None:
+                    continue
+                data_title = data_value.get("title")
+                data_type = (data_value.get("subtype") or "").upper()
+                data_metadata = data_value.get("metadata")
+                data.update({key: {"title": data_title, "type": data_type, "metadata": data_metadata}})
+        return data
+
+    def set_inputs(self, new_inputs: dict):
+        for key, value in self.__workflow.items():
+            if value.get("class_type", "").startswith("signature_input"):
+                old_inputs = value.get("inputs") or None
+                if old_inputs is None:
+                    continue
+                for new_input_key in new_inputs.keys():
+                    if new_input_key != key:
+                        continue
+                    new_input_dict = new_inputs[new_input_key]
+                    for new_input_key, new_input_value in new_input_dict.items():
+                        value["inputs"][new_input_key] = new_input_value
+
+    def set_input(self, key: str, value: Any):
+        self.set_inputs({key: value})
 
 
 class PlatfromWrapper:
@@ -67,7 +124,7 @@ class PlatfromWrapper:
                 console.log(e)
         return output
 
-    def run_workflow_job(self, base_url, org_id: str, json_data: dict, token: str) -> list:
+    def run_workflow_job(self, base_url, org_id: str, workflow: Workflow, token: str) -> list:
         def process_data_chunk(chunk: str, nodes_ids: list) -> dict | None:
             cleaned_chunk = chunk.strip()
             if cleaned_chunk.startswith("data:"):
@@ -123,12 +180,11 @@ class PlatfromWrapper:
             "Authorization": f"Bearer {token}",
             "X-Org-Id": org_id,
         }
-
-        total_nodes = self.get_workflow_ids(json_data)
+        total_nodes = list(workflow.data.keys())
         total_steps = len(total_nodes)
         remaining_ids = total_nodes
-        workflow = json.dumps(json_data)
-        params = {"data": {"client_id": uuid7str(), "workflow": workflow}}
+        workflow_data = json.dumps(workflow.data)
+        params = {"data": {"client_id": uuid7str(), "workflow": workflow_data}}
         outputs = []
         try:
             data = json.dumps(params)
@@ -207,64 +263,6 @@ class PlatfromWrapper:
 
         return None
 
-    def get_workflow_ids(self, json_data: dict) -> list:
-        ids = []
-        if not isinstance(json_data, dict):
-            return None
-
-        for value, _ in json_data.items():
-            ids.append(value)
-
-        return ids
-
-    def update_workflow_inputs(self, json_data: dict, inputs: list) -> dict | None:
-
-        if not isinstance(json_data, dict):
-            return None
-
-        for _, value in json_data.items():
-            if value.get("class_type", "").startswith("signature_input"):
-                value_inputs = value.get("inputs", {})
-                for data in inputs:
-                    input_title = data.get("title")
-                    input_type = data.get("type")
-                    value_title = value_inputs.get("title")
-                    value_type = (value_inputs.get("subtype") or "").upper()
-                    if input_title == value_title and input_type == value_type:
-                        # console.log(f"Updating input: {value}")
-                        # console.log(f"data : {data}")
-                        value["inputs"]["value"] = data.get("value") or ""
-        return json_data
-
-    def get_workflow_outputs(self, json_data: dict) -> dict:
-        data = {}
-        for key, value in json_data.items():
-            if value.get("class_type", "").startswith("signature_output"):
-                data_value = value.get("inputs") or None
-                if data_value is None:
-                    continue
-                data_title = data_value.get("title")
-                data_type = (data_value.get("subtype") or "").upper()
-                data_metadata = data_value.get("metadata")
-                data.update({key: {"title": data_title, "type": data_type, "metadata": data_metadata}})
-        return data
-
-    def get_workflow_inputs(self, json_data: dict) -> list:
-        inputs = []
-
-        if not isinstance(json_data, dict):
-            return inputs
-
-        for _, value in json_data.items():
-            if value.get("class_type", "").startswith("signature_input"):
-                value_inputs = value.get("inputs") or None
-                if value_inputs is None:
-                    continue
-                input_title = value_inputs.get("title")
-                input_type = (value_inputs.get("subtype") or "").upper()
-                inputs.append({"title": input_title, "type": input_type})
-        return inputs
-
     def process_outputs(self, job_outputs, node_outputs):
 
         def process_data(node_output: dict, job_output: dict):
@@ -274,9 +272,6 @@ class PlatfromWrapper:
             if value is None or not isinstance(node_type, str):
                 return []
             if node_type in ("IMAGE", "MASK"):
-                if not isinstance(job_output, dict):
-                    return None
-                console.log(f"value: {value}")
                 if not isinstance(value, str):
                     return None
                 image_path = os.path.join(BASE_COMFY_DIR, "output", value)
@@ -342,7 +337,7 @@ class PlatfromWrapper:
         if not isinstance(json_data, dict):
             return fallback
         base_url = json_data.get("origin") or None
-        workflow_id = json_data.get("workflow_id") or None
+        workflow_api = json_data.get("workflow_api") or None
         token = json_data.get("token") or None
         inference_host = json_data.get("inference_host") or None
         widget_inputs = json_data.get("widget_inputs") or []
@@ -353,34 +348,26 @@ class PlatfromWrapper:
         # console.log(f"Origin: {base_url}, Inference host: {inference_host}")
         if not isinstance(base_url, str):
             return fallback
-        if not isinstance(workflow_id, str):
+        if not isinstance(workflow_api, dict):
             return fallback
         if not isinstance(token, str):
             return fallback
 
-        result = self.get_workflow(base_url, workflow_id, token)
-
-        if result is None:
-            return fallback
-        wf_api_string = result.get("workflow_api") or ""
-        projects = result.get("projects") or []
-        if len(projects) == 0:
-            return fallback
-        # org_id = projects[0].get("organisation") or None
-        org_id = "66f16ff117e9f62c90b83e7f"
-        if org_id is None:
-            return fallback
-        json_data = json.loads(wf_api_string)
-        node_inputs = self.get_workflow_inputs(json_data)
+        workflow = Workflow(workflow_api)
+        node_inputs = workflow.get_inputs()
         # console.log(f"Node inputs: {node_inputs}")
-        workflow_outputs = self.get_workflow_outputs(json_data)
+        workflow_outputs = workflow.get_outputs()
         output_ids = workflow_outputs.keys()
         node_outputs = workflow_outputs.values()
         # console.log(f"Node outputs: {node_outputs}")
 
-        for node_input in node_inputs:
-            node_title = node_input.get("title")
-            node_type = node_input.get("type")
+        for key, value in node_inputs.items():
+            if not isinstance(value, dict):
+                continue
+            node_title = value.get("title")
+            node_type = value.get("type")
+            if not isinstance(node_type, str) or not isinstance(node_title, str):
+                continue
             comfy_value = kwargs.get(node_title)
             if comfy_value is None:
                 for widget_input in widget_inputs:
@@ -396,28 +383,52 @@ class PlatfromWrapper:
                 if isinstance(comfy_value, torch.Tensor):
                     tensor_image = TensorImage.from_BWHC(comfy_value)
                     uploaded_image = self.upload_image_to_s3(base_url, token, tensor_image)
-                    node_input.update({"value": uploaded_image})
+                    value.update({"value": uploaded_image})
+                    node_inputs[key] = value
             else:
-                # console.log(f"Title: {node_title} Value: {comfy_value} Type: {node_type}")
-                node_input.update({"value": comfy_value})
+                value.update({"value": comfy_value})
+                node_inputs[key] = value
 
-        json_data = self.update_workflow_inputs(json_data, node_inputs)
+        workflow.set_inputs(node_inputs)
+        workflow_api = workflow.data
 
-        if not isinstance(json_data, dict):
+        if not isinstance(workflow_api, dict):
             return fallback
 
-        executor.execute(json_data, uuid.uuid4(), {}, output_ids)
-        outputs = executor.history_result["outputs"].values()
+        # Create a queue to store the result
+        result_queue = Queue()
+
+        # Define a function to run in a separate thread
+        def run_execution():
+            executor.execute(workflow_api, uuid.uuid4(), {}, output_ids)
+            result_queue.put(executor.history_result)
+
+        # Start the execution in a separate thread
+        execution_thread = threading.Thread(target=run_execution)
+        execution_thread.start()
+
+        # Monitor the status while waiting for the execution to complete
+        while execution_thread.is_alive():
+            console.log(f"Monitoring status: {executor.status_messages}")
+            time.sleep(1)
+
+        # Wait for the thread to finish and get the result
+        execution_thread.join()
+        history_result = result_queue.get()
+        console.log(f"Final status: {executor.status_messages}")
+
+        if history_result is None:
+            console.log("Execution failed or returned no result.")
+            return fallback
+
+        outputs = history_result["outputs"].values()
         job_outputs = []
         for job_output in outputs:
             for key, value in job_output.items():
                 if key == "signature_output":
                     job_outputs.extend(value)
 
-            # print(f"Success: {executor.success} | Result: {executor.history_result}")
-            # job_outputs = self.run_workflow_job(inference_host, org_id, json_data, token)
-
-            return self.process_outputs(job_outputs, node_outputs)
+        return self.process_outputs(job_outputs, node_outputs)
 
 
 NODE_CLASS_MAPPINGS = {

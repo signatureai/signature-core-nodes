@@ -53,10 +53,10 @@ class PlatformInputImage:
         subtype = kwargs.get("subtype")
         if not isinstance(subtype, str):
             raise ValueError("Subtype must be a string")
-        include_alpha = kwargs.get("include_alpha")
+        include_alpha = kwargs.get("include_alpha") or False
         if not isinstance(include_alpha, bool):
             raise ValueError("Include alpha must be a boolean")
-        multiple = kwargs.get("multiple")
+        multiple = kwargs.get("multiple") or False
         if not isinstance(multiple, bool):
             raise ValueError("Multiple must be a boolean")
         fallback = kwargs.get("fallback")

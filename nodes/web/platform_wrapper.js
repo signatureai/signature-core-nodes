@@ -4,9 +4,9 @@ const origin = window.location.search;
 const urlParams = new URLSearchParams(origin);
 const env = urlParams.get("env");
 let token = urlParams.get("token");
-let main_url = "https://api.signature.ai/api/v1";
-if (env === "staging") {
-  main_url = "https://api-staging.signature.ai/api/v1";
+let main_url = "https://api-staging.signature.ai/api/v1";
+if (env === "prod") {
+  main_url = "https://api.signature.ai/api/v1";
 }
 
 if (token == undefined || token == "") {
@@ -199,7 +199,6 @@ async function displayWorkflows(node, id, projectName) {
         for (let i = 0; i < data.length; i++) {
           if (data[i].name === selectedWidget.value) {
             updateInputsOutputs(node, data[i], true);
-            // updateInputsOutputs(node, data[i], cached === false);
             break;
           }
         }
@@ -242,10 +241,12 @@ function updateInputsOutputs(node, workflowObject, update) {
   let data = {
     origin: main_url,
     token: token,
-    workflow_id: workflowId,
+    workflow_api: parsedWorkflow,
     widget_inputs: [],
   };
+  console.log("Selected workflow: ", workflowObject);
   console.log("Selected workflow id: ", workflowId);
+
   const nodes = Object.keys(parsedWorkflow).map((key) => [key, parsedWorkflow[key]]);
   for (let i = 0; i < nodes.length; i++) {
     const wfNode = nodes[i][1];
