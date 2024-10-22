@@ -1,5 +1,6 @@
 import asyncio
 import json
+import os
 import sys
 import uuid
 
@@ -23,7 +24,6 @@ nodes.init_extra_nodes(init_custom_nodes=True)  # type: ignore
 loop = asyncio.new_event_loop()
 asyncio.set_event_loop(loop)
 server = server.PromptServer(loop)  # type: ignore
-q = execution.PromptQueue(server)  # type: ignore
 executor = execution.PromptExecutor(server)  # type: ignore
 
 
@@ -279,15 +279,8 @@ class PlatfromWrapper:
                 console.log(f"value: {value}")
                 if not isinstance(value, str):
                     return None
-                if not value.startswith("https://") and not value.startswith("http://"):
-                    try:
-                        url = "https://mango-taskforce.signature.ai/view?filename=" + value
-                        output_image = TensorImage.from_web(url)
-                    except Exception:
-                        url = "https://plugins-platform.signature.ai/view?filename=" + value
-                        output_image = TensorImage.from_web(url)
-                else:
-                    output_image = TensorImage.from_web(value)
+                image_path = os.path.join(BASE_COMFY_DIR, "output", value)
+                output_image = TensorImage.from_local(image_path)
                 return output_image.get_BWHC()
             if node_type == "INT":
                 return int(value)
@@ -377,8 +370,8 @@ class PlatfromWrapper:
         org_id = "66f16ff117e9f62c90b83e7f"
         if org_id is None:
             return fallback
-
         json_data = json.loads(wf_api_string)
+        # json_data = json.loads(open("/resources/repos/ComfyUI/custom_nodes/signature-core-nodes/test.json").read())
         node_inputs = self.get_workflow_inputs(json_data)
         # console.log(f"Node inputs: {node_inputs}")
         workflow_outputs = self.get_workflow_outputs(json_data)
@@ -422,7 +415,7 @@ class PlatfromWrapper:
                 if key == "signature_output":
                     job_outputs.extend(value)
 
-        print(f"Success: {executor.success} | Result: {executor.history_result}")
+        # print(f"Success: {executor.success} | Result: {executor.history_result}")
         # job_outputs = self.run_workflow_job(inference_host, org_id, json_data, token)
 
         return self.process_outputs(job_outputs, node_outputs)
