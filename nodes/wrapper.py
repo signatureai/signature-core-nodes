@@ -19,9 +19,9 @@ sys.path.append(BASE_COMFY_DIR)
 import execution  # type: ignore
 import server  # type: ignore
 
-import nodes  # type: ignore
+# import nodes  # type: ignore
 
-nodes.init_extra_nodes(init_custom_nodes=True)  # type: ignore
+# nodes.init_extra_nodes(init_custom_nodes=True)  # type: ignore
 loop = asyncio.new_event_loop()
 asyncio.set_event_loop(loop)
 server = server.PromptServer(loop)  # type: ignore
@@ -393,7 +393,16 @@ class PlatfromWrapper:
             return fallback
 
         executor.execute(workflow_api, uuid.uuid4(), {}, output_ids)
-
+        if executor.success:
+            console.log("Success wrapper inference")
+        else:
+            console.log("Failed wrapper inference")
+            final_status = executor.status_messages[-1]
+            console.log(f"Final status: {final_status}")
+            if isinstance(final_status, dict):
+                final_error = final_status.get("execution_error") or None
+                if final_error is not None:
+                    raise Exception(final_error)
         outputs = executor.history_result["outputs"].values()
         job_outputs = []
         for job_output in outputs:
