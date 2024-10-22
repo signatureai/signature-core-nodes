@@ -371,7 +371,6 @@ class PlatfromWrapper:
         if org_id is None:
             return fallback
         json_data = json.loads(wf_api_string)
-        # json_data = json.loads(open("/resources/repos/ComfyUI/custom_nodes/signature-core-nodes/test.json").read())
         node_inputs = self.get_workflow_inputs(json_data)
         # console.log(f"Node inputs: {node_inputs}")
         workflow_outputs = self.get_workflow_outputs(json_data)
@@ -415,10 +414,10 @@ class PlatfromWrapper:
                 if key == "signature_output":
                     job_outputs.extend(value)
 
-        # print(f"Success: {executor.success} | Result: {executor.history_result}")
-        # job_outputs = self.run_workflow_job(inference_host, org_id, json_data, token)
+            # print(f"Success: {executor.success} | Result: {executor.history_result}")
+            # job_outputs = self.run_workflow_job(inference_host, org_id, json_data, token)
 
-        return self.process_outputs(job_outputs, node_outputs)
+            return self.process_outputs(job_outputs, node_outputs)
 
 
 NODE_CLASS_MAPPINGS = {

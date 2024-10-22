@@ -245,7 +245,7 @@ function updateInputsOutputs(node, workflowObject, update) {
     workflow_id: workflowId,
     widget_inputs: [],
   };
-
+  console.log("Selected workflow id: ", workflowId);
   const nodes = Object.keys(parsedWorkflow).map((key) => [key, parsedWorkflow[key]]);
   for (let i = 0; i < nodes.length; i++) {
     const wfNode = nodes[i][1];
@@ -401,8 +401,6 @@ const ext = {
           options: { values: [] },
         });
 
-        // node.inputs = [];
-        // node.outputs = [];
         resetWidgets(node);
       }
       await displayOrganisations(node);
