@@ -274,8 +274,11 @@ class ImageTranspose:
             center = torch.tensor([width / 2, height / 2], dtype=torch.float32, device=device)
             overlay_image = transform.rotate(overlay_image, angle, center=center)
 
-        # Create mask (assuming overlay_image is RGBA)
-        mask = overlay_image[:, 3:4, :, :]
+        # Create mask (handle both RGB and RGBA cases)
+        if overlay_image.shape[1] == 4:
+            mask = overlay_image[:, 3:4, :, :]
+        else:
+            mask = torch.ones((1, 1, height, width), device=device)
 
         # Pad overlay image and mask
         pad_left = x
