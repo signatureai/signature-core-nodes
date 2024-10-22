@@ -1,4 +1,5 @@
 import asyncio
+import gc
 import json
 import os
 import sys
@@ -16,6 +17,7 @@ from .categories import UTILS_CAT
 from .shared import BASE_COMFY_DIR, any_type
 
 sys.path.append(BASE_COMFY_DIR)
+import comfy  # type: ignore
 import execution  # type: ignore
 import server  # type: ignore
 
@@ -393,6 +395,12 @@ class PlatfromWrapper:
             return fallback
 
         executor.execute(workflow_api, uuid.uuid4(), {}, output_ids)
+
+        comfy.model_management.unload_all_models()
+        executor.reset()
+        comfy.model_management.cleanup_models()
+        gc.collect()
+        comfy.model_management.soft_empty_cache()
         if executor.success:
             console.log("Success wrapper inference")
         else:
