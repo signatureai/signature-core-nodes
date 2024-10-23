@@ -4,6 +4,7 @@ import json
 import os
 import sys
 import uuid
+from collections.abc import Callable
 from typing import Any
 
 import httpx
@@ -19,14 +20,46 @@ from .shared import BASE_COMFY_DIR, any_type
 sys.path.append(BASE_COMFY_DIR)
 import comfy  # type: ignore
 import execution  # type: ignore
-import server  # type: ignore
 
-# import nodes  # type: ignore
 
-# nodes.init_extra_nodes(init_custom_nodes=True)  # type: ignore
-loop = asyncio.new_event_loop()
-asyncio.set_event_loop(loop)
-server = server.PromptServer(loop)  # type: ignore
+class PlaceholderServer:
+    def __init__(self, loop: asyncio.AbstractEventLoop):
+        self.loop = loop
+        self.client_id = str(uuid.uuid4())
+        self.outputs = {}
+        self.prompt = {}
+
+    def add_on_prompt_handler(self, handler: Callable):
+        pass
+
+    def add_on_execution_start_handler(self, handler: Callable):
+        pass
+
+    def add_on_execution_end_handler(self, handler: Callable):
+        pass
+
+    def send_sync(self, event: str, data: dict[str, Any], sid: str | None = None):
+        pass
+
+    def send_sync_if_running(self, event: str, data: dict[str, Any], sid: str | None = None):
+        pass
+
+    def queue_prompt(self, prompt_id: str, prompt: dict[str, Any]):
+        self.prompt = prompt
+
+    def get_images(self) -> list[str]:
+        return []
+
+    def get_history(self) -> list[dict[str, Any]]:
+        return []
+
+    def get_prompt(self) -> dict[str, Any]:
+        return self.prompt
+
+
+current_loop = asyncio.new_event_loop()
+asyncio.set_event_loop(loop=current_loop)
+server = PlaceholderServer(loop=current_loop)
 executor = execution.PromptExecutor(server)  # type: ignore
 
 
@@ -395,12 +428,12 @@ class PlatfromWrapper:
             return fallback
 
         executor.execute(workflow_api, uuid.uuid4(), {}, output_ids)
-
-        comfy.model_management.unload_all_models()
         executor.reset()
-        comfy.model_management.cleanup_models()
         gc.collect()
+        comfy.model_management.unload_all_models()
+        comfy.model_management.cleanup_models()
         comfy.model_management.soft_empty_cache()
+
         if executor.success:
             console.log("Success wrapper inference")
         else:
