@@ -413,9 +413,9 @@ class PlatfromWrapper:
                 continue
             if node_type in ("IMAGE", "MASK"):
                 if isinstance(comfy_value, torch.Tensor):
-                    tensor_image = TensorImage.from_BWHC(comfy_value)
-                    uploaded_image = self.upload_image_to_s3(base_url, token, tensor_image)
-                    value.update({"value": uploaded_image})
+                    tensor_image = TensorImage.from_BWHC(comfy_value).get_base64()
+                    # uploaded_image = self.upload_image_to_s3(base_url, token, tensor_image)
+                    value.update({"value": tensor_image})
                     node_inputs[key] = value
             else:
                 value.update({"value": comfy_value})
