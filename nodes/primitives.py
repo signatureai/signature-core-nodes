@@ -1,4 +1,4 @@
-from .categories import PRIMITIVES
+from .categories import PRIMITIVES_CAT
 
 
 class Float:
@@ -16,7 +16,7 @@ class Float:
     RETURN_TYPES = ("FLOAT",)
     RETURN_NAMES = ("float",)
     FUNCTION = "execute"
-    CATEGORY = PRIMITIVES
+    CATEGORY = PRIMITIVES_CAT
 
     def execute(self, value):
         return (value,)
@@ -37,7 +37,7 @@ class Int:
     RETURN_TYPES = ("INT",)
     RETURN_NAMES = ("int",)
     FUNCTION = "execute"
-    CATEGORY = PRIMITIVES
+    CATEGORY = PRIMITIVES_CAT
 
     def execute(self, value):
         return (value,)
@@ -55,7 +55,7 @@ class String:
     RETURN_TYPES = ("STRING",)
     RETURN_NAMES = ("string",)
     FUNCTION = "execute"
-    CATEGORY = PRIMITIVES
+    CATEGORY = PRIMITIVES_CAT
 
     def execute(self, value):
         return (value,)
@@ -73,7 +73,7 @@ class StringMultiline:
     RETURN_TYPES = ("STRING",)
     RETURN_NAMES = ("string",)
     FUNCTION = "execute"
-    CATEGORY = PRIMITIVES
+    CATEGORY = PRIMITIVES_CAT
 
     def execute(self, value):
         return (value,)
@@ -91,7 +91,7 @@ class Boolean:
     RETURN_TYPES = ("BOOLEAN",)
     RETURN_NAMES = ("boolean",)
     FUNCTION = "execute"
-    CATEGORY = PRIMITIVES
+    CATEGORY = PRIMITIVES_CAT
 
     def execute(self, value):
         return (value,)

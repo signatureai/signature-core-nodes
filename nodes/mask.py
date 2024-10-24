@@ -1,3 +1,6 @@
+import random
+
+import folder_paths  # type: ignore
 import torch
 from kornia import filters, morphology
 from signature_core.functional.filters import gaussian_blur2d
@@ -11,6 +14,8 @@ from signature_core.functional.morphology import (
     top_hat,
 )
 from signature_core.img.tensor_image import TensorImage
+
+from nodes import SaveImage  # type: ignore
 
 from .categories import MASK_CAT
 from .shared import MAX_INT
@@ -429,3 +434,47 @@ class MaskGrowWithBlur:
             return (TensorImage(blurred).get_BWHC(),)
 
         return (TensorImage(torch.stack(out, dim=0)).get_BWHC(),)
+
+
+class GetMaskShape:
+    @classmethod
+    def INPUT_TYPES(cls):  # type: ignore
+        return {
+            "required": {
+                "mask": ("MASK",),
+            },
+        }
+
+    RETURN_TYPES = ("INT", "INT", "INT", "INT", "STRING")
+    RETURN_NAMES = ("batch", "width", "height", "channels", "debug")
+    FUNCTION = "execute"
+    CATEGORY = MASK_CAT
+
+    def execute(self, mask):
+        if len(mask.shape) == 3:
+            return (mask.shape[0], mask.shape[2], mask.shape[1], 1, str(mask.shape))
+        return (mask.shape[0], mask.shape[2], mask.shape[1], mask.shape[3], str(mask.shape))
+
+
+class MaskPreview(SaveImage):
+    def __init__(self):
+        self.output_dir = folder_paths.get_temp_directory()
+        self.type = "temp"
+        self.prefix_append = "_temp_" + "".join(random.choice("abcdefghijklmnopqrstupvxyz") for _ in range(5))
+        self.compress_level = 4
+
+    @classmethod
+    def INPUT_TYPES(cls):  # type: ignore
+        return {
+            "required": {
+                "mask": ("MASK",),
+            },
+            "hidden": {"prompt": "PROMPT", "extra_pnginfo": "EXTRA_PNGINFO"},
+        }
+
+    FUNCTION = "execute"
+    CATEGORY = MASK_CAT
+
+    def execute(self, mask, filename_prefix="Signature", prompt=None, extra_pnginfo=None):
+        preview = TensorImage.from_BWHC(mask).get_rgb_or_rgba().get_BWHC()
+        return self.save_images(preview, filename_prefix, prompt, extra_pnginfo)

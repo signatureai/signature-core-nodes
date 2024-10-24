@@ -1,6 +1,7 @@
 import importlib
 import inspect
 import os
+import re
 import shutil
 
 from dotenv import load_dotenv
@@ -9,7 +10,6 @@ from signature_core.version import __version__
 
 load_dotenv()
 
-# script folder
 script_folder = os.path.dirname(os.path.realpath(__file__))
 base_comfy_dir = os.path.dirname(os.path.realpath(__file__)).split("custom_nodes")[0]
 signature_js = "signature.js"
@@ -31,7 +31,7 @@ def get_node_class_mappings(nodes_directory: str):
 
     for path, _, files in os.walk(nodes_directory):
         for name in files:
-            if not name.endswith(".py") or name.startswith("__"):
+            if not name.endswith(".py"):
                 continue
             plugin_file_paths.append(os.path.join(path, name))
 
@@ -51,15 +51,10 @@ def get_node_class_mappings(nodes_directory: str):
                 ):
                     continue
 
-                if hasattr(value, "INPUT_TYPES"):
+                if hasattr(value, "FUNCTION"):
                     cleaned_name = item.replace("2", "")
-                    camel_case_name = "".join(
-                        [
-                            cleaned_name[0].lower() + cleaned_name[1:] if i == 0 else part.capitalize()
-                            for i, part in enumerate(cleaned_name.split("_"))
-                        ]
-                    )
-                    key = f"signature_{camel_case_name}"
+                    snake_case = re.sub(r"(?<!^)(?=[A-Z])", "_", cleaned_name).lower()
+                    key = f"signature_{snake_case}"
                     node_class_mappings[key] = value
                     node_display_name_mappings[key] = f"SIG {item}"
         except ImportError as e:
@@ -89,7 +84,7 @@ greet_logo = f"""
           ███████████            ██████████████          ███████████████
        ██████     ███████      ██████████████████       ██████████████████
       ████            ████    █████           █████    ████           █████
-      ████                    █████                    ████             █
+      ████                    █████                    ████
        █████████               ██████████████          ██████████████
          ████████████████        █████████████████       █████████████████
                      █████                  ███████                ████████
@@ -98,30 +93,6 @@ greet_logo = f"""
        ██████████████████      ███████████████████      ██████████████████
             █████████             █████████████            █████████████
 
-            ████████                ████████                █████████
-       █████████████████        █████████████████       █████████████████
-      ██████       ███████    ███████      ████████    ███████     ████████
-      ████            ████    █████            ███    █████            ████
-      ██████                  ██████                   ██████
-       █████████████████       █████████████████        █████████████████
-          ████████████████        █████████████████        ████████████████
-       █              █████    ██             █████     █             ██████
-     █████            █████  █████            █████  ██████            █████
-      ████████     ███████    ██████████   ████████   ██████████   ████████
-        █████████████████       █████████████████       ██████████████████
-              █████                   ██████                  ██████
-                                                                █
-        ███████████████          ███████████████         ███████████████
-      ███████████████████      ███████████████████     ████████████████████
-      █████          ██████   █████          ██████   ██████          ██████
-     ██████            ██     █████            ██     ██████            ██
-      ███████████████         ████████████████         ████████████████
-        █████████████████       ██████████████████      ███████████████████
-                ███████████              ██████████              ███████████
-     ████             █████  █████            █████  █████             █████
-     ██████          ██████  ███████          █████  ███████          ██████
-      ████████████████████     ███████████████████     ████████████████████
-         ███████████████         ███████████████          ███████████████
 
     Maintained by: Marco, Frederico, Anderson
     Version: {__version__}

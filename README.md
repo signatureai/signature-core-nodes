@@ -51,14 +51,18 @@ pip install -e .
 
 - 🖼️ Image - Image processing and manipulation nodes
 - 🎭 Mask - Mask generation and operations
+- 🔤 Text - Text processing and manipulation nodes
+- 🔢 Numbers - Numerical operations and processing
 - 🔄 Transform - Image transformation tools
-- 🤖 Models - AI model integration nodes
-- 📁 File - File handling operations
-- 🛠️ Utils - Utility functions
 - 🧱 Primitives - Basic data type nodes
+- 🤖 Models - AI model integration nodes
+- 🧠 Logic - Logic operations and control flow
+- 📁 File - File handling operations
+- 🔀 Augmentation - Image augmentation tools
 - 🔌 Platform I/O - Platform integration nodes
 - 📊 Data - Data conversion and handling
-- 🔀 Augmentation - Image augmentation tools
+- 🧬 Loras - LoRA model handling and integration
+- 🛠️ Utils - Utility functions
 
 ## 💻 Usage
 

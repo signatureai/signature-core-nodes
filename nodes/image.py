@@ -378,3 +378,21 @@ class ImageBatch2List:
 
         image_list = [img.unsqueeze(0) for img in image]
         return (image_list,)
+
+
+class GetImageShape:
+    @classmethod
+    def INPUT_TYPES(cls):  # type: ignore
+        return {
+            "required": {
+                "image": ("IMAGE",),
+            },
+        }
+
+    RETURN_TYPES = ("INT", "INT", "INT", "INT", "STRING")
+    RETURN_NAMES = ("batch", "width", "height", "channels", "debug")
+    FUNCTION = "execute"
+    CATEGORY = IMAGE_CAT
+
+    def execute(self, image):
+        return (image.shape[0], image.shape[2], image.shape[1], image.shape[3], str(image.shape))
