@@ -127,16 +127,3 @@ class ComposeAugmentation:
             node_image,
             node_mask,
         )
-
-
-NODE_CLASS_MAPPINGS = {
-    "signature_compose_augmentation": ComposeAugmentation,
-    "signature_random_crop_augmentation": RandomCropAugmentation,
-    "signature_flip_augmentation": FlipAugmentation,
-}
-
-NODE_DISPLAY_NAME_MAPPINGS = {
-    "signature_compose_augmentation": "SIG Compose Augmentation",
-    "signature_random_crop_augmentation": "SIG Random Crop Augmentation",
-    "signature_flip_augmentation": "SIG Flip Augmentation",
-}

@@ -37,7 +37,7 @@ function showMessage(message, color) {
   );
 }
 
-async function loadWorkflow(app) {
+async function loadWorkflow(app, url) {
   try {
     const response = await fetch(url, {
       method: "GET",
@@ -59,7 +59,7 @@ async function loadWorkflow(app) {
     }
   } catch (error) {
     showMessage(
-      "An Error occurerd while loading the workflow from Signature",
+      "An Error occurred while loading the workflow from Signature",
       "#ff0000ff",
     );
   }
@@ -229,7 +229,7 @@ const ext = {
   },
   async setup(app) {
     // await instance.loadGraphData(empty_workflow, true, true);
-    await loadWorkflow(app);
+    await loadWorkflow(app, url);
     if (app.menu) {
       // Ensure the ComfyAppMenu is available
       if (app.bodyTop) {

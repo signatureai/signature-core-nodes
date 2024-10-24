@@ -1,9 +1,13 @@
+import importlib
+import inspect
 import os
 import shutil
 
 from dotenv import load_dotenv
 from signature_core.logger import console
 from signature_core.version import __version__
+
+load_dotenv()
 
 # script folder
 script_folder = os.path.dirname(os.path.realpath(__file__))
@@ -21,63 +25,57 @@ if os.path.exists(web_extensions):
 console.log(f"[green]:::> Signature Core version: {__version__}")
 
 
-from .nodes import (
-    augmentations,
-    data,
-    file,
-    image,
-    logic,
-    lora,
-    mask,
-    models,
-    numbers,
-    platform_io,
-    primitives,
-    transform,
-    utils,
-    wrapper,
-)
+def get_node_class_mappings(nodes_directory: str):
+    node_class_mappings = {}
+    node_display_name_mappings = {}
 
-load_dotenv()
+    plugin_file_paths = []
+
+    for path, _, files in os.walk(nodes_directory):
+        for name in files:
+            if not name.endswith(".py") or name.startswith("__"):
+                continue
+            plugin_file_paths.append(os.path.join(path, name))
+
+    for plugin_file_path in plugin_file_paths:
+        plugin_rel_path = plugin_file_path.replace(".py", "").replace(os.sep, ".")
+        plugin_rel_path = plugin_rel_path.split("signature-core-nodes.nodes.")[-1]
+
+        try:
+            module = importlib.import_module("signature-core-nodes.nodes." + plugin_rel_path)
+
+            for item in dir(module):
+                value = getattr(module, item)
+                if (
+                    not value
+                    or not inspect.isclass(value)
+                    or not value.__module__.startswith("signature-core-nodes.nodes.")
+                ):
+                    continue
+
+                if hasattr(value, "INPUT_TYPES"):
+                    cleaned_name = item.replace("2", "")
+                    camel_case_name = "".join(
+                        [
+                            cleaned_name[0].lower() + cleaned_name[1:] if i == 0 else part.capitalize()
+                            for i, part in enumerate(cleaned_name.split("_"))
+                        ]
+                    )
+                    key = f"signature_{camel_case_name}"
+                    node_class_mappings[key] = value
+                    node_display_name_mappings[key] = f"SIG {item}"
+        except ImportError as e:
+            console.log(f"[red]Error importing {plugin_rel_path}: {e}")
+
+    return node_class_mappings, node_display_name_mappings
 
 
-NODE_CLASS_MAPPINGS = {
-    **image.NODE_CLASS_MAPPINGS,
-    **mask.NODE_CLASS_MAPPINGS,
-    **file.NODE_CLASS_MAPPINGS,
-    **transform.NODE_CLASS_MAPPINGS,
-    **logic.NODE_CLASS_MAPPINGS,
-    **numbers.NODE_CLASS_MAPPINGS,
-    **primitives.NODE_CLASS_MAPPINGS,
-    **augmentations.NODE_CLASS_MAPPINGS,
-    **models.NODE_CLASS_MAPPINGS,
-    **utils.NODE_CLASS_MAPPINGS,
-    **data.NODE_CLASS_MAPPINGS,
-    **lora.NODE_CLASS_MAPPINGS,
-    **platform_io.NODE_CLASS_MAPPINGS,
-    **wrapper.NODE_CLASS_MAPPINGS,
-}
-
-NODE_DISPLAY_NAME_MAPPINGS = {
-    **image.NODE_DISPLAY_NAME_MAPPINGS,
-    **mask.NODE_DISPLAY_NAME_MAPPINGS,
-    **file.NODE_DISPLAY_NAME_MAPPINGS,
-    **transform.NODE_DISPLAY_NAME_MAPPINGS,
-    **logic.NODE_DISPLAY_NAME_MAPPINGS,
-    **numbers.NODE_DISPLAY_NAME_MAPPINGS,
-    **primitives.NODE_DISPLAY_NAME_MAPPINGS,
-    **augmentations.NODE_DISPLAY_NAME_MAPPINGS,
-    **models.NODE_DISPLAY_NAME_MAPPINGS,
-    **utils.NODE_DISPLAY_NAME_MAPPINGS,
-    **data.NODE_DISPLAY_NAME_MAPPINGS,
-    **lora.NODE_DISPLAY_NAME_MAPPINGS,
-    **platform_io.NODE_DISPLAY_NAME_MAPPINGS,
-    **wrapper.NODE_DISPLAY_NAME_MAPPINGS,
-}
+# Get the path to the nodes directory
+nodes_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "nodes")
+NODE_CLASS_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS = get_node_class_mappings(nodes_path)
 
 WEB_DIRECTORY = "./nodes/web"
 NAME = "🔲 Signature Nodes"
-
 
 __all__ = ["NODE_CLASS_MAPPINGS", "NODE_DISPLAY_NAME_MAPPINGS", "MANIFEST"]
 

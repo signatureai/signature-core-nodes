@@ -95,20 +95,3 @@ class Boolean:
 
     def execute(self, value):
         return (value,)
-
-
-NODE_CLASS_MAPPINGS = {
-    "signature_float": Float,
-    "signature_int": Int,
-    "signature_string": String,
-    "signature_string_multiline": StringMultiline,
-    "signature_boolean": Boolean,
-}
-
-NODE_DISPLAY_NAME_MAPPINGS = {
-    "signature_float": "SIG Float",
-    "signature_int": "SIG Int",
-    "signature_string": "SIG String",
-    "signature_string_multiline": "SIG StringMultiline",
-    "signature_boolean": "SIG Boolean",
-}

@@ -158,16 +158,3 @@ class BackgroundRemoval(SaveImage):
         del model
         model = None
         return result
-
-
-NODE_CLASS_MAPPINGS = {
-    "signature_magic_eraser": MagicEraser,
-    "signature_background_removal": BackgroundRemoval,
-    "signature_unblur": Unblur,
-}
-
-NODE_DISPLAY_NAME_MAPPINGS = {
-    "signature_magic_eraser": "SIG MagicEraser",
-    "signature_background_removal": "SIG BackgroundRemoval",
-    "signature_unblur": "SIG Unblur",
-}

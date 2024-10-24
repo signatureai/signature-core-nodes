@@ -116,7 +116,7 @@ class Workflow:
         self.set_inputs({key: value})
 
 
-class PlatfromWrapper:
+class Wrapper:
 
     def upload_file(self, base_url, file_path: str, token: str) -> dict:
         url = f"{base_url}/assets/upload"
@@ -452,12 +452,3 @@ class PlatfromWrapper:
                     job_outputs.extend(value)
 
         return self.process_outputs(job_outputs, node_outputs)
-
-
-NODE_CLASS_MAPPINGS = {
-    "signature_wrapper": PlatfromWrapper,
-}
-
-NODE_DISPLAY_NAME_MAPPINGS = {
-    "signature_wrapper": "SIG Wrapper",
-}

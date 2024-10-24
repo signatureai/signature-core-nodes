@@ -429,28 +429,3 @@ class MaskGrowWithBlur:
             return (TensorImage(blurred).get_BWHC(),)
 
         return (TensorImage(torch.stack(out, dim=0)).get_BWHC(),)
-
-
-NODE_CLASS_MAPPINGS = {
-    "signature_mask_base": BaseMask,
-    "signature_mask_morphology": MaskMorphology,
-    "signature_mask_distance": MaskDistance,
-    "signature_mask_trimap": Mask2Trimap,
-    "signature_mask_invert": MaskInvert,
-    "signature_mask_binary_filter": MaskBinaryFilter,
-    "signature_mask_bitwise": MaskBitwise,
-    "signature_mask_gaussian_blur": MaskGaussianBlur,
-    "signature_mask_grow_blur": MaskGrowWithBlur,
-}
-
-NODE_DISPLAY_NAME_MAPPINGS = {
-    "signature_mask_base": "SIG BaseMask",
-    "signature_mask_morphology": "SIG MaskMorphology",
-    "signature_mask_distance": "SIG MaskDistance",
-    "signature_mask_trimap": "SIG Mask2Trimap",
-    "signature_mask_binary_filter": "SIG MaskBinaryFilter",
-    "signature_mask_invert": "SIG MaskInvert",
-    "signature_mask_bitwise": "SIG MaskBitwise",
-    "signature_mask_gaussian_blur": "SIG MaskGaussianBlur",
-    "signature_mask_grow_blur": "SIG MaskGrowWithBlur",
-}

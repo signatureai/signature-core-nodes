@@ -137,7 +137,7 @@ class FolderLoader:
         return (data,)
 
 
-class FiletoImageList:
+class File2ImageList:
     @classmethod
     def INPUT_TYPES(cls):  # type: ignore
         return {
@@ -184,18 +184,3 @@ class File2List:
         if not isinstance(files, list):
             raise ValueError("Files must be a list")
         return (files,)
-
-
-NODE_CLASS_MAPPINGS = {
-    "signature_load_file": FileLoader,
-    "signature_load_folder": FolderLoader,
-    "signature_file_list": File2List,
-    "signature_file_image_list": FiletoImageList,
-}
-
-NODE_DISPLAY_NAME_MAPPINGS = {
-    "signature_load_file": "SIG FileLoader",
-    "signature_load_folder": "SIG FolderLoader",
-    "signature_file_list": "SIG File2List",
-    "signature_file_image_list": "SIG File2ImageList",
-}

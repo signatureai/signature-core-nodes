@@ -6,6 +6,7 @@ from signature_core.functional.filters import (
     image_soft_light,
     unsharp_mask,
 )
+from signature_core.functional.transform import resize
 from signature_core.img.tensor_image import TensorImage
 
 from .categories import IMAGE_CAT
@@ -309,22 +310,71 @@ class ImageTranspose:
         return (rgb, rgba)
 
 
-NODE_CLASS_MAPPINGS = {
-    "signature_image_base_color": ImageBaseColor,
-    "signature_image_gaussian_blur": ImageGaussianBlur,
-    "signature_image_unsharp_mask": ImageUnsharpMask,
-    "signature_image_soft_light": ImageSoftLight,
-    "signature_image_average": ImageAverage,
-    "signature_image_subtract": ImageSubtract,
-    "signature_image_transpose": ImageTranspose,
-}
+class ImageList2Batch:
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "images": ("IMAGE",),
+                "mode": (["STRETCH", "FIT", "FILL", "ASPECT"],),
+                "interpolation": (["bilinear", "nearest", "bicubic", "area"],),
+            }
+        }
 
-NODE_DISPLAY_NAME_MAPPINGS = {
-    "signature_image_base_color": "SIG ImageBaseColor",
-    "signature_image_gaussian_blur": "SIG ImageGaussianBlur",
-    "signature_image_unsharp_mask": "SIG ImageUnsharpMask",
-    "signature_image_soft_light": "SIG ImageSoftLight",
-    "signature_image_average": "SIG ImageAverage",
-    "signature_image_subtract": "SIG ImageSubtract",
-    "signature_image_transpose": "SIG ImageTranspose",
-}
+    RETURN_TYPES = ("IMAGE",)
+    FUNCTION = "execute"
+    CATEGORY = IMAGE_CAT
+    INPUT_IS_LIST = True
+
+    def execute(self, **kwargs):
+        images = kwargs.get("images")
+        mode = kwargs.get("mode") or "FIT"
+        interpolation = kwargs.get("interpolation") or "bilinear"
+        if not isinstance(images, list):
+            raise ValueError("Images must be a list")
+        if isinstance(mode, list) and len(mode) == 1:
+            mode = mode[0]
+        if isinstance(interpolation, list) and len(interpolation) == 1:
+            interpolation = interpolation[0]
+
+        if not isinstance(mode, str):
+            raise ValueError("Mode must be a string")
+        if not isinstance(interpolation, str):
+            raise ValueError("Interpolation must be a string")
+
+        # Check if all images have the same shape
+        shapes = [img.shape for img in images]
+        if len(set(shapes)) == 1:
+            # All images have the same shape, no need to resize
+            return (torch.stack(images),)
+
+        # Images have different shapes, proceed with resizing
+        max_height = max(img.shape[1] for img in images)
+        max_width = max(img.shape[2] for img in images)
+
+        resized_images = []
+        for img in images:
+            tensor_img = TensorImage.from_BWHC(img)
+            resized_img = resize(tensor_img, max_width, max_height, mode=mode, interpolation=interpolation)
+            resized_images.append(resized_img.get_BWHC().squeeze(0))
+
+        return (torch.stack(resized_images),)
+
+
+class ImageBatch2List:
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {"required": {"image": ("IMAGE",)}}
+
+    RETURN_TYPES = ("IMAGE",)
+    FUNCTION = "execute"
+    CATEGORY = IMAGE_CAT
+    OUTPUT_IS_LIST = (True,)
+
+    def execute(self, **kwargs):
+        image = kwargs.get("image")
+        if not isinstance(image, torch.Tensor):
+            raise ValueError("Image must be a torch.Tensor")
+
+        image_list = [img.unsqueeze(0) for img in image]
+        return (image_list,)

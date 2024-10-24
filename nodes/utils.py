@@ -224,7 +224,7 @@ class ConsoleDebug:
         return (None,)
 
 
-class ImageShape:
+class GetImageShape:
     @classmethod
     def INPUT_TYPES(cls):  # type: ignore
         return {
@@ -242,7 +242,7 @@ class ImageShape:
         return (image.shape[0], image.shape[2], image.shape[1], image.shape[3], str(image.shape))
 
 
-class MaskShape:
+class GetMaskShape:
     @classmethod
     def INPUT_TYPES(cls):  # type: ignore
         return {
@@ -293,36 +293,3 @@ class PurgeVRAM:
             mm.unload_all_models()
             mm.soft_empty_cache(True)
         return (None,)
-
-
-NODE_CLASS_MAPPINGS = {
-    "signature_any2any": Any2Any,
-    "signature_any2string": Any2String,
-    "signature_any2image": Any2Image,
-    "signature_string2case": String2Case,
-    "signature_text_preview": TextPreview,
-    "signature_mask_preview": MaskPreview,
-    "signature_console_debug": ConsoleDebug,
-    "signature_get_image_size": ImageShape,
-    "signature_get_mask_size": MaskShape,
-    "signature_purge_vram": PurgeVRAM,
-    "signature_rgb2hsv": RGB2HSV,
-    "signature_rgbhls": RGBHLS,
-    "signature_rgba2rgb": RGBA2RGB,
-}
-
-NODE_DISPLAY_NAME_MAPPINGS = {
-    "signature_rgb2hsv": "SIG RGB2HSV",
-    "signature_rgbhls": "SIG RGBHLS",
-    "signature_rgba2rgb": "SIG RGBA2RGB",
-    "signature_any2any": "SIG Any2Any",
-    "signature_any2string": "SIG Any2String",
-    "signature_any2image": "SIG Any2Image",
-    "signature_string2case": "SIG String2Case",
-    "signature_text_preview": "SIG TextPreview",
-    "signature_mask_preview": "SIG MaskPreview",
-    "signature_console_debug": "SIG ConsoleDebug",
-    "signature_get_image_size": "SIG GetImageShape",
-    "signature_get_mask_size": "SIG GetMaskShape",
-    "signature_purge_vram": "SIG PurgeVRAM",
-}

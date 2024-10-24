@@ -87,14 +87,3 @@ class LogicCompare:
             output = all(output)
 
         return (bool(output),)
-
-
-NODE_CLASS_MAPPINGS = {
-    "signature_logic_compare": LogicCompare,
-    "signature_logic_switch": LogicSwitch,
-}
-
-NODE_DISPLAY_NAME_MAPPINGS = {
-    "signature_logic_compare": "SIG LogicCompare",
-    "signature_logic_switch": "SIG LogicSwitch",
-}

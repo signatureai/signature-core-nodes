@@ -235,18 +235,3 @@ class SaveLoraCaptions:
                 f.write(label)
 
         return (dataset_folder,)
-
-
-NODE_CLASS_MAPPINGS = {
-    "signature_apply_lora_stack": ApplyLoraStack,
-    "signature_lora_stack": LoraStack,
-    "signature_dict_to_lora_stack": Dict2LoraStack,
-    "signature_save_lora_captions": SaveLoraCaptions,
-}
-
-NODE_DISPLAY_NAME_MAPPINGS = {
-    "signature_apply_lora_stack": "SIG ApplyLoRAStack",
-    "signature_lora_stack": "SIG LoRAStack",
-    "signature_dict_to_lora_stack": "SIG Dict2LoRAStack",
-    "signature_save_lora_captions": "SIG SaveLoRACaptions",
-}

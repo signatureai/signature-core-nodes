@@ -324,22 +324,3 @@ class PlatformOutput:
                     {"title": title, "type": main_subtype, "metadata": metadata, "value": value_json}
                 )
         return {"ui": {"signature_output": results}}
-
-
-NODE_CLASS_MAPPINGS = {
-    "signature_input_image": PlatformInputImage,
-    "signature_input_text": PlatformInputText,
-    "signature_input_number": PlatformInputNumber,
-    "signature_input_boolean": PlatformInputBoolean,
-    "signature_input_connector": PlatformInputConnector,
-    "signature_output": PlatformOutput,
-}
-
-NODE_DISPLAY_NAME_MAPPINGS = {
-    "signature_input_image": "SIG InputImage",
-    "signature_input_text": "SIG InputText",
-    "signature_input_number": "SIG InputNumber",
-    "signature_input_boolean": "SIG InputBoolean",
-    "signature_input_connector": "SIG InputConnector",
-    "signature_output": "SIG Output",
-}

@@ -362,22 +362,3 @@ class UpscaleImage:
             up_image = rescale(tensor_image, scale_factor, resampling_method, True).get_BWHC()
 
         return (up_image,)
-
-
-NODE_CLASS_MAPPINGS = {
-    "signature_cutout": Cutout,
-    "signature_rotate": Rotate,
-    "signature_rescale": Rescale,
-    "signature_resize": Resize,
-    "signature_auto_crop": AutoCrop,
-    "signature_upscale_image": UpscaleImage,
-}
-
-NODE_DISPLAY_NAME_MAPPINGS = {
-    "signature_cutout": "SIG Cutout",
-    "signature_rotate": "SIG Rotate",
-    "signature_rescale": "SIG Rescale",
-    "signature_resize": "SIG Resize",
-    "signature_auto_crop": "SIG AutoCrop",
-    "signature_upscale_image": "SIG UpscaleImage",
-}

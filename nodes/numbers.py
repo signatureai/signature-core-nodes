@@ -431,30 +431,3 @@ class MathOperator:
             round(result),  # type: ignore
             result,
         )  # type: ignore
-
-
-NODE_CLASS_MAPPINGS = {
-    "signature_int2float": Int2Float,
-    "signature_int_minmax": IntMinMax,
-    "signature_int_clamp": IntClamp,
-    "signature_int_operator": IntOperator,
-    "signature_float2int": Float2Int,
-    "signature_float_minmax": FloatMinMax,
-    "signature_float_clamp": FloatClamp,
-    "signature_float_operator": FloatOperator,
-    "signature_random_number": RandomNumber,
-    "signature_math_operator": MathOperator,
-}
-
-NODE_DISPLAY_NAME_MAPPINGS = {
-    "signature_int2float": "SIG Int2Float",
-    "signature_int_minmax": "SIG IntMinMax",
-    "signature_int_clamp": "SIG IntClamp",
-    "signature_int_operator": "SIG IntOperator",
-    "signature_float2int": "SIG Float2Int",
-    "signature_float_minmax": "SIG FloatMinMax",
-    "signature_float_clamp": "SIG FloatClamp",
-    "signature_float_operator": "SIG FloatOperator",
-    "signature_random_number": "SIG RandomNumber",
-    "signature_math_operator": "SIG MathOperator",
-}
