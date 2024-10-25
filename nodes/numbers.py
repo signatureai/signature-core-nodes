@@ -8,6 +8,17 @@ from .shared import MAX_FLOAT, MAX_INT
 
 
 class IntClamp:
+    """Clamps an integer within a specified range.
+
+    This class ensures that an integer input is clamped between a minimum and maximum value.
+
+    Methods:
+        execute(**kwargs): Returns the clamped integer value.
+
+    Raises:
+        ValueError: If the input values are not integers.
+    """
+
     @classmethod
     def INPUT_TYPES(cls):  # type: ignore
         return {
@@ -54,6 +65,17 @@ class IntClamp:
 
 
 class FloatClamp:
+    """Clamps a float within a specified range.
+
+    This class ensures that a float input is clamped between a minimum and maximum value.
+
+    Methods:
+        execute(**kwargs): Returns the clamped float value.
+
+    Raises:
+        ValueError: If the input values are not floats.
+    """
+
     @classmethod
     def INPUT_TYPES(cls):  # type: ignore
         return {
@@ -101,6 +123,17 @@ class FloatClamp:
 
 
 class Float2Int:
+    """Converts a float to an integer.
+
+    This class converts a floating-point number to an integer by truncating the decimal part.
+
+    Methods:
+        execute(**kwargs): Returns the integer representation of the float.
+
+    Raises:
+        ValueError: If the input value is not a float.
+    """
+
     @classmethod
     def INPUT_TYPES(cls):  # type: ignore
         return {
@@ -121,6 +154,17 @@ class Float2Int:
 
 
 class Int2Float:
+    """Converts an integer to a float.
+
+    This class converts an integer to a floating-point number.
+
+    Methods:
+        execute(**kwargs): Returns the float representation of the integer.
+
+    Raises:
+        ValueError: If the input value is not an integer.
+    """
+
     @classmethod
     def INPUT_TYPES(cls):  # type: ignore
         return {
@@ -141,6 +185,18 @@ class Int2Float:
 
 
 class IntOperator:
+    """Performs arithmetic operations on two floats and returns an integer.
+
+    This class supports basic arithmetic operations (+, -, *, /) on two float inputs
+    and returns the result as an integer.
+
+    Methods:
+        execute(**kwargs): Returns the result of the arithmetic operation.
+
+    Raises:
+        ValueError: If the input values are not floats or if the operator is unsupported.
+    """
+
     @classmethod
     def INPUT_TYPES(cls):  # type: ignore
         return {
@@ -184,6 +240,17 @@ class IntOperator:
 
 
 class FloatOperator:
+    """Performs arithmetic operations on two floats.
+
+    This class supports basic arithmetic operations (+, -, *, /) on two float inputs.
+
+    Methods:
+        execute(**kwargs): Returns the result of the arithmetic operation.
+
+    Raises:
+        ValueError: If the input values are not floats or if the operator is unsupported.
+    """
+
     @classmethod
     def INPUT_TYPES(cls):  # type: ignore
         return {
@@ -227,6 +294,17 @@ class FloatOperator:
 
 
 class IntMinMax:
+    """Finds the minimum or maximum of two integers.
+
+    This class returns either the minimum or maximum of two integer inputs based on the specified mode.
+
+    Methods:
+        execute(**kwargs): Returns the minimum or maximum integer.
+
+    Raises:
+        ValueError: If the input values are not integers or if the mode is unsupported.
+    """
+
     @classmethod
     def INPUT_TYPES(cls):  # type: ignore
         return {
@@ -259,6 +337,17 @@ class IntMinMax:
 
 
 class FloatMinMax:
+    """Finds the minimum or maximum of two floats.
+
+    This class returns either the minimum or maximum of two float inputs based on the specified mode.
+
+    Methods:
+        execute(**kwargs): Returns the minimum or maximum float.
+
+    Raises:
+        ValueError: If the input values are not floats or if the mode is unsupported.
+    """
+
     @classmethod
     def INPUT_TYPES(cls):  # type: ignore
         return {
@@ -291,6 +380,14 @@ class FloatMinMax:
 
 
 class RandomNumber:
+    """Generates a random integer and its float representation.
+
+    This class generates a random integer within a specified range and provides its float representation.
+
+    Methods:
+        execute(): Returns a tuple containing the random integer and its float representation.
+    """
+
     @classmethod
     def INPUT_TYPES(cls):  # type: ignore
         return {"required": {}}
@@ -319,6 +416,16 @@ class RandomNumber:
 
 
 class MathOperator:
+    """Evaluates mathematical expressions using variables and operators.
+
+    This class evaluates mathematical expressions that can include variables (a, b, c, d) and a variety of operators.
+
+    Methods:
+        execute(**kwargs): Returns the result of the evaluated expression as both an integer and a float.
+
+    Raises:
+        ValueError: If the expression contains unsupported operations or invalid syntax.
+    """
 
     @classmethod
     def INPUT_TYPES(cls):  # type: ignore

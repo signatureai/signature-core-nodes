@@ -5,6 +5,19 @@ from .shared import any_type
 
 
 class LogicSwitch:
+    """Switches between two values based on a boolean condition.
+
+    This class returns one of two values depending on the boolean condition provided.
+
+    Methods:
+        execute(**kwargs): Returns the 'true' value if the condition is True, otherwise returns the 'false' value.
+
+    Args:
+        condition (bool): The condition to evaluate.
+        true: The value to return if the condition is True.
+        false: The value to return if the condition is False.
+    """
+
     @classmethod
     def INPUT_TYPES(cls):  # type: ignore
         return {
@@ -29,6 +42,22 @@ class LogicSwitch:
 
 
 class LogicCompare:
+    """Compares two values using a specified operator.
+
+    This class compares two input values using either 'equal' or 'not_equal' operators and returns a boolean result.
+
+    Methods:
+        execute(**kwargs): Returns True if the comparison is successful, otherwise False.
+
+    Args:
+        input_a: The first value to compare.
+        input_b: The second value to compare.
+        operator (str): The comparison operator ('equal' or 'not_equal').
+
+    Raises:
+        ValueError: If any input is None or if the operator is invalid.
+    """
+
     @classmethod
     def INPUT_TYPES(cls):  # type: ignore
         return {
@@ -52,11 +81,16 @@ class LogicCompare:
             raise ValueError("All inputs are required")
 
         def safe_compare(a, b, tensor_op, primitive_op):
-            if isinstance(a, torch.Tensor) or isinstance(b, torch.Tensor):
-                # Convert to tensors if not already
-                a = torch.tensor(a) if not isinstance(a, torch.Tensor) else a
-                b = torch.tensor(b) if not isinstance(b, torch.Tensor) else b
+            # Handle None values
+            if a is None or b is None:
+                return a is b
 
+            # If types are different, they're never equal
+            if not isinstance(a, type(b)) and not isinstance(b, type(a)):
+                return False
+
+            # Now we know both types are compatible
+            if isinstance(a, torch.Tensor):
                 if a.shape != b.shape:
                     # Reshape tensors to 1D for comparison
                     a = a.reshape(-1)
@@ -66,6 +100,7 @@ class LogicCompare:
                     a = a[:min_size]
                     b = b[:min_size]
                 return tensor_op(a, b)
+
             return primitive_op(a, b)
 
         operator_map = {

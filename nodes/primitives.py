@@ -2,6 +2,15 @@ from .categories import PRIMITIVES_CAT
 
 
 class Float:
+    """Represents a floating-point number input.
+
+    This class provides a node for handling floating-point number inputs with
+    specified default, minimum, maximum, and step values.
+
+    Methods:
+        execute(value): Returns the input floating-point value as a tuple.
+    """
+
     @classmethod
     def INPUT_TYPES(cls):  # type: ignore
         return {
@@ -23,6 +32,14 @@ class Float:
 
 
 class Int:
+    """Represents an integer input.
+
+    This class provides a node for handling integer inputs with specified default, minimum, maximum, and step values.
+
+    Methods:
+        execute(value): Returns the input integer value as a tuple.
+    """
+
     @classmethod
     def INPUT_TYPES(cls):  # type: ignore
         return {
@@ -44,6 +61,14 @@ class Int:
 
 
 class String:
+    """Represents a single-line string input.
+
+    This class provides a node for handling single-line string inputs with a specified default value.
+
+    Methods:
+        execute(value): Returns the input string value as a tuple.
+    """
+
     @classmethod
     def INPUT_TYPES(cls):  # type: ignore
         return {
@@ -62,6 +87,14 @@ class String:
 
 
 class StringMultiline:
+    """Represents a multi-line string input.
+
+    This class provides a node for handling multi-line string inputs with a specified default value.
+
+    Methods:
+        execute(value): Returns the input multi-line string value as a tuple.
+    """
+
     @classmethod
     def INPUT_TYPES(cls):  # type: ignore
         return {
@@ -80,6 +113,14 @@ class StringMultiline:
 
 
 class Boolean:
+    """Represents a boolean input.
+
+    This class provides a node for handling boolean inputs with a specified default value.
+
+    Methods:
+        execute(value): Returns the input boolean value as a tuple.
+    """
+
     @classmethod
     def INPUT_TYPES(cls):  # type: ignore
         return {

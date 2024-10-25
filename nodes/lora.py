@@ -165,6 +165,7 @@ class Dict2LoraStack:
         return (loras,)
 
 
+# * Move this to signature dojo
 class SaveLoraCaptions:
     @classmethod
     def INPUT_TYPES(cls):

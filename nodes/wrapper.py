@@ -1,4 +1,3 @@
-import asyncio
 import gc
 import json
 import os
@@ -23,8 +22,7 @@ import execution  # type: ignore
 
 
 class PlaceholderServer:
-    def __init__(self, loop: asyncio.AbstractEventLoop):
-        self.loop = loop
+    def __init__(self):
         self.client_id = str(uuid.uuid4())
         self.outputs = {}
         self.prompt = {}
@@ -57,9 +55,7 @@ class PlaceholderServer:
         return self.prompt
 
 
-current_loop = asyncio.new_event_loop()
-asyncio.set_event_loop(loop=current_loop)
-server = PlaceholderServer(loop=current_loop)
+server = PlaceholderServer()
 executor = execution.PromptExecutor(server)  # type: ignore
 
 

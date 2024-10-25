@@ -10,6 +10,11 @@ from .shared import any_type
 
 
 class Any2String:
+    """Converts any input value to its string representation.
+
+    A utility node that takes any input value and converts it to a string using Python's str() function.
+    """
+
     @classmethod
     def INPUT_TYPES(cls):  # type: ignore
         return {
@@ -27,6 +32,14 @@ class Any2String:
 
 
 class Any2Image:
+    """Converts any inputs value to image format.
+
+    A utility node that converts tensor inputs to image format. Currently only supports torch.Tensor inputs.
+
+    Raises:
+        ValueError: If the input value is not a torch.Tensor.
+    """
+
     @classmethod
     def INPUT_TYPES(cls):  # type: ignore
         return {
@@ -46,6 +59,11 @@ class Any2Image:
 
 
 class Any2Any:
+    """Passes through any input value unchanged.
+
+    A utility node that acts as a pass-through, returning the input value without modification.
+    """
+
     @classmethod
     def INPUT_TYPES(cls):  # type: ignore
         return {
@@ -63,6 +81,12 @@ class Any2Any:
 
 
 class RGB2HSV:
+    """Converts RGB images to HSV color space.
+
+    A utility node that converts RGB format images to HSV (Hue, Saturation, Value) color space.
+    Expects input images in BWHC format.
+    """
+
     @classmethod
     def INPUT_TYPES(cls):  # type: ignore
         return {
@@ -82,6 +106,12 @@ class RGB2HSV:
 
 
 class RGBHLS:
+    """Converts RGB images to HLS color space.
+
+    A utility node that converts RGB format images to HLS (Hue, Lightness, Saturation) color space.
+    Expects input images in BWHC format.
+    """
+
     @classmethod
     def INPUT_TYPES(cls):  # type: ignore
         return {
@@ -101,6 +131,13 @@ class RGBHLS:
 
 
 class RGBA2RGB:
+    """Converts RGBA images to RGB format.
+
+    A utility node that converts RGBA (Red, Green, Blue, Alpha) images to RGB format.
+    If the input image is already in RGB format, it will be passed through unchanged.
+    Expects input images in BWHC format.
+    """
+
     @classmethod
     def INPUT_TYPES(cls):  # type: ignore
         return {
@@ -122,6 +159,19 @@ class RGBA2RGB:
 
 
 class PurgeVRAM:
+    """Cleans up VRAM by purging caches and/or unloading models.
+
+    A utility node that helps manage VRAM usage by:
+    - Clearing Python garbage collector
+    - Emptying PyTorch CUDA cache
+    - Optionally unloading all models
+    - Optionally purging system cache
+
+    Args:
+        anything: Any input value (unused, allows connection in workflow)
+        purge_cache (bool): Whether to purge system and CUDA cache
+        purge_models (bool): Whether to unload all models from memory
+    """
 
     @classmethod
     def INPUT_TYPES(cls):  # type: ignore

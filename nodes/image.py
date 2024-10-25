@@ -13,6 +13,17 @@ from .categories import IMAGE_CAT
 
 
 class ImageBaseColor:
+    """Creates a solid color image of specified dimensions.
+
+    Parameters:
+        hex_color (str): Hex color code (e.g., "#FFFFFF")
+        width (int): Width of the output image
+        height (int): Height of the output image
+
+    Returns:
+        tuple[torch.Tensor]: Single-element tuple containing a BWHC format tensor
+    """
+
     @classmethod
     def INPUT_TYPES(cls):  # type: ignore
         return {
@@ -54,6 +65,18 @@ class ImageBaseColor:
 
 
 class ImageGaussianBlur:
+    """Applies Gaussian blur to an input image.
+
+    Parameters:
+        image (torch.Tensor): Input image in BWHC format
+        radius (int): Blur radius (default: 13)
+        sigma (float): Blur sigma/strength (default: 10.5)
+        interations (int): Number of blur passes (default: 1)
+
+    Returns:
+        tuple[torch.Tensor]: Single-element tuple containing the blurred image
+    """
+
     @classmethod
     def INPUT_TYPES(cls):  # type: ignore
         return {
@@ -88,6 +111,18 @@ class ImageGaussianBlur:
 
 
 class ImageUnsharpMask:
+    """Applies unsharp mask filter to sharpen an image.
+
+    Parameters:
+        image (torch.Tensor): Input image in BWHC format
+        radius (int): Sharpening radius (default: 3)
+        sigma (float): Sharpening strength (default: 1.5)
+        interations (int): Number of sharpening passes (default: 1)
+
+    Returns:
+        tuple[torch.Tensor]: Single-element tuple containing the sharpened image
+    """
+
     @classmethod
     def INPUT_TYPES(cls):  # type: ignore
         return {
@@ -122,6 +157,16 @@ class ImageUnsharpMask:
 
 
 class ImageSoftLight:
+    """Applies soft light blend mode between two images.
+
+    Parameters:
+        top (torch.Tensor): Top layer image in BWHC format
+        bottom (torch.Tensor): Bottom layer image in BWHC format
+
+    Returns:
+        tuple[torch.Tensor]: Single-element tuple containing the blended image
+    """
+
     @classmethod
     def INPUT_TYPES(cls):  # type: ignore
         return {
@@ -150,6 +195,15 @@ class ImageSoftLight:
 
 
 class ImageAverage:
+    """Calculates the color average of an input image.
+
+    Parameters:
+        image (torch.Tensor): Input image in BWHC format
+
+    Returns:
+        tuple[torch.Tensor]: Single-element tuple containing the averaged image
+    """
+
     @classmethod
     def INPUT_TYPES(cls):  # type: ignore
         return {
@@ -172,6 +226,16 @@ class ImageAverage:
 
 
 class ImageSubtract:
+    """Subtracts one image from another (absolute difference).
+
+    Parameters:
+        image_0 (torch.Tensor): First image in BWHC format
+        image_1 (torch.Tensor): Second image in BWHC format
+
+    Returns:
+        tuple[torch.Tensor]: Single-element tuple containing the difference image
+    """
+
     @classmethod
     def INPUT_TYPES(cls):  # type: ignore
         return {
@@ -200,6 +264,22 @@ class ImageSubtract:
 
 
 class ImageTranspose:
+    """Transforms an overlay image onto a base image with various adjustments.
+
+    Parameters:
+        image (torch.Tensor): Base image in BWHC format
+        image_overlay (torch.Tensor): Overlay image in BWHC format
+        width (int): Target width for overlay (-1 for original size)
+        height (int): Target height for overlay (-1 for original size)
+        X (int): Horizontal offset
+        Y (int): Vertical offset
+        rotation (int): Rotation angle in degrees
+        feathering (int): Edge feathering amount
+
+    Returns:
+        tuple[torch.Tensor, torch.Tensor]: RGB and RGBA versions of the composited image
+    """
+
     def __init__(self):
         pass
 
@@ -311,6 +391,17 @@ class ImageTranspose:
 
 
 class ImageList2Batch:
+    """Converts a list of images into a batched tensor, handling different image sizes.
+
+    Parameters:
+        images (list[torch.Tensor]): List of input images
+        mode (str): Resize mode ('STRETCH', 'FIT', 'FILL', 'ASPECT')
+        interpolation (str): Interpolation method for resizing
+
+    Returns:
+        tuple[torch.Tensor]: Single-element tuple containing the batched images
+    """
+
     @classmethod
     def INPUT_TYPES(cls):
         return {
@@ -362,6 +453,15 @@ class ImageList2Batch:
 
 
 class ImageBatch2List:
+    """Converts a batched tensor of images into a list of individual images.
+
+    Parameters:
+        image (torch.Tensor): Batched input images in BWHC format
+
+    Returns:
+        tuple[list[torch.Tensor]]: Single-element tuple containing list of images
+    """
+
     @classmethod
     def INPUT_TYPES(cls):
         return {"required": {"image": ("IMAGE",)}}
@@ -381,6 +481,15 @@ class ImageBatch2List:
 
 
 class GetImageShape:
+    """Returns the dimensions of an input image.
+
+    Parameters:
+        image (torch.Tensor): Input image in BWHC format
+
+    Returns:
+        tuple[int, int, int, int, str]: Batch size, width, height, channels, and shape string
+    """
+
     @classmethod
     def INPUT_TYPES(cls):  # type: ignore
         return {

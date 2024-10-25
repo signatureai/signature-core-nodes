@@ -5,6 +5,23 @@ from .shared import any_type
 
 
 class JsonToDict:
+    """Converts a JSON string to a Python dictionary.
+
+    This class parses a JSON-formatted string and converts it into a Python dictionary.
+
+    Methods:
+        execute(**kwargs): Parses the JSON string and returns the resulting dictionary.
+
+    Args:
+        json_str (str): The JSON string to be converted.
+
+    Returns:
+        tuple: A tuple containing the resulting dictionary.
+
+    Raises:
+        ValueError: If the input is not a string.
+    """
+
     @classmethod
     def INPUT_TYPES(cls):  # type: ignore
         return {
@@ -26,6 +43,20 @@ class JsonToDict:
 
 
 class DictToJson:
+    """Converts a Python dictionary to a JSON string.
+
+    This class serializes a Python dictionary into a JSON-formatted string.
+
+    Methods:
+        execute(**kwargs): Serializes the dictionary and returns the resulting JSON string.
+
+    Args:
+        dict (dict): The dictionary to be converted.
+
+    Returns:
+        tuple: A tuple containing the resulting JSON string.
+    """
+
     @classmethod
     def INPUT_TYPES(cls):  # type: ignore
         return {
@@ -45,6 +76,24 @@ class DictToJson:
 
 
 class GetImageListItem:
+    """Retrieves an image from a list by index.
+
+    This class accesses a list of images and retrieves the image at the specified index.
+
+    Methods:
+        execute(**kwargs): Returns the image at the specified index.
+
+    Args:
+        images (list): The list of images.
+        index (int): The index of the image to retrieve.
+
+    Returns:
+        tuple: A tuple containing the retrieved image.
+
+    Raises:
+        ValueError: If the index is not an integer or if images is not a list.
+    """
+
     @classmethod
     def INPUT_TYPES(cls):  # type: ignore
         return {
@@ -73,6 +122,24 @@ class GetImageListItem:
 
 
 class GetListItem:
+    """Retrieves an item from a list by index and returns its type.
+
+    This class accesses a list and retrieves the item at the specified index, also returning the item's type.
+
+    Methods:
+        execute(**kwargs): Returns the item and its type.
+
+    Args:
+        list (list): The list to access.
+        index (int): The index of the item to retrieve.
+
+    Returns:
+        tuple: A tuple containing the item and its type as a string.
+
+    Raises:
+        ValueError: If the index is not an integer or if the list is not a list.
+    """
+
     @classmethod
     def INPUT_TYPES(cls):  # type: ignore
         return {
@@ -93,13 +160,32 @@ class GetListItem:
         if not isinstance(index, int):
             raise ValueError("Index must be an integer")
         if not isinstance(list_obj, list):
-            raise ValueError("List must be a list")
+            raise ValueError("Input must be a list")
         item = list_obj[index]
         item_type = type(item).__name__
         return (item, item_type)
 
 
 class GetDictValue:
+    """Retrieves a value from a dictionary by key and returns its type.
+
+    This class accesses a dictionary and retrieves the value
+    associated with the specified key, also returning the value's type.
+
+    Methods:
+        execute(**kwargs): Returns the value and its type.
+
+    Args:
+        dict (dict): The dictionary to access.
+        key (str): The key of the value to retrieve.
+
+    Returns:
+        tuple: A tuple containing the value and its type as a string.
+
+    Raises:
+        ValueError: If the key is not a string or if the dict is not a dictionary.
+    """
+
     @classmethod
     def INPUT_TYPES(cls):  # type: ignore
         return {
