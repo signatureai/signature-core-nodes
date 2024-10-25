@@ -1,5 +1,12 @@
 # Signature Core for ComfyUI
 
+![GitHub](https://img.shields.io/github/license/signatureai/signature-core-nodes)
+![Python](https://img.shields.io/badge/python-3.8%2B-blue)
+![PyTorch](https://img.shields.io/badge/PyTorch-%23EE4C2C.svg?&logo=PyTorch&logoColor=white)
+![NumPy](https://img.shields.io/badge/numpy-%23013243.svg?&logo=numpy&logoColor=white)
+![OpenCV](https://img.shields.io/badge/opencv-%23white.svg?&logo=opencv&logoColor=white)
+![ComfyUI](https://img.shields.io/badge/ComfyUI-compatible-green)
+
 A powerful collection of custom nodes for ComfyUI that provides essential image
 processing, data handling, and workflow management capabilities.
 
