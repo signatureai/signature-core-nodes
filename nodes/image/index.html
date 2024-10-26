@@ -1187,12 +1187,9 @@
 <h1 id="image-nodes">Image Nodes</h1>
 <h2 id="imagebasecolor">ImageBaseColor</h2>
 <p>Creates a solid color image of specified dimensions.</p>
-<p>Parameters:
-    hex_color (str): Hex color code (e.g., "#FFFFFF")
-    width (int): Width of the output image
-    height (int): Height of the output image</p>
-<p>Returns:
-    tuple[torch.Tensor]: Single-element tuple containing a BWHC format tensor</p>
+<p>Parameters: hex_color (str): Hex color code (e.g., "#FFFFFF") width (int): Width of the
+output image height (int): Height of the output image</p>
+<p>Returns: tuple[torch.Tensor]: Single-element tuple containing a BWHC format tensor</p>
 <h3 id="return-types">Return Types</h3>
 <ul>
 <li><code>IMAGE</code></li>
@@ -1429,13 +1426,10 @@
 
 </div><h2 id="imagegaussianblur">ImageGaussianBlur</h2>
 <p>Applies Gaussian blur to an input image.</p>
-<p>Parameters:
-    image (torch.Tensor): Input image in BWHC format
-    radius (int): Blur radius (default: 13)
-    sigma (float): Blur sigma/strength (default: 10.5)
-    interations (int): Number of blur passes (default: 1)</p>
-<p>Returns:
-    tuple[torch.Tensor]: Single-element tuple containing the blurred image</p>
+<p>Parameters: image (torch.Tensor): Input image in BWHC format radius (int): Blur radius
+(default: 13) sigma (float): Blur sigma/strength (default: 10.5) interations (int):
+Number of blur passes (default: 1)</p>
+<p>Returns: tuple[torch.Tensor]: Single-element tuple containing the blurred image</p>
 <h3 id="return-types_1">Return Types</h3>
 <ul>
 <li><code>IMAGE</code></li>
@@ -1676,13 +1670,10 @@
 
 </div><h2 id="imageunsharpmask">ImageUnsharpMask</h2>
 <p>Applies unsharp mask filter to sharpen an image.</p>
-<p>Parameters:
-    image (torch.Tensor): Input image in BWHC format
-    radius (int): Sharpening radius (default: 3)
-    sigma (float): Sharpening strength (default: 1.5)
-    interations (int): Number of sharpening passes (default: 1)</p>
-<p>Returns:
-    tuple[torch.Tensor]: Single-element tuple containing the sharpened image</p>
+<p>Parameters: image (torch.Tensor): Input image in BWHC format radius (int): Sharpening
+radius (default: 3) sigma (float): Sharpening strength (default: 1.5) interations (int):
+Number of sharpening passes (default: 1)</p>
+<p>Returns: tuple[torch.Tensor]: Single-element tuple containing the sharpened image</p>
 <h3 id="return-types_2">Return Types</h3>
 <ul>
 <li><code>IMAGE</code></li>
@@ -1923,11 +1914,9 @@
 
 </div><h2 id="imagesoftlight">ImageSoftLight</h2>
 <p>Applies soft light blend mode between two images.</p>
-<p>Parameters:
-    top (torch.Tensor): Top layer image in BWHC format
-    bottom (torch.Tensor): Bottom layer image in BWHC format</p>
-<p>Returns:
-    tuple[torch.Tensor]: Single-element tuple containing the blended image</p>
+<p>Parameters: top (torch.Tensor): Top layer image in BWHC format bottom (torch.Tensor):
+Bottom layer image in BWHC format</p>
+<p>Returns: tuple[torch.Tensor]: Single-element tuple containing the blended image</p>
 <h3 id="return-types_3">Return Types</h3>
 <ul>
 <li><code>IMAGE</code></li>
@@ -2120,10 +2109,8 @@
 
 </div><h2 id="imageaverage">ImageAverage</h2>
 <p>Calculates the color average of an input image.</p>
-<p>Parameters:
-    image (torch.Tensor): Input image in BWHC format</p>
-<p>Returns:
-    tuple[torch.Tensor]: Single-element tuple containing the averaged image</p>
+<p>Parameters: image (torch.Tensor): Input image in BWHC format</p>
+<p>Returns: tuple[torch.Tensor]: Single-element tuple containing the averaged image</p>
 <h3 id="return-types_4">Return Types</h3>
 <ul>
 <li><code>IMAGE</code></li>
@@ -2286,11 +2273,9 @@
 
 </div><h2 id="imagesubtract">ImageSubtract</h2>
 <p>Subtracts one image from another (absolute difference).</p>
-<p>Parameters:
-    image_0 (torch.Tensor): First image in BWHC format
-    image_1 (torch.Tensor): Second image in BWHC format</p>
-<p>Returns:
-    tuple[torch.Tensor]: Single-element tuple containing the difference image</p>
+<p>Parameters: image_0 (torch.Tensor): First image in BWHC format image_1 (torch.Tensor):
+Second image in BWHC format</p>
+<p>Returns: tuple[torch.Tensor]: Single-element tuple containing the difference image</p>
 <h3 id="return-types_5">Return Types</h3>
 <ul>
 <li><code>IMAGE</code></li>
@@ -2483,17 +2468,12 @@
 
 </div><h2 id="imagetranspose">ImageTranspose</h2>
 <p>Transforms an overlay image onto a base image with various adjustments.</p>
-<p>Parameters:
-    image (torch.Tensor): Base image in BWHC format
-    image_overlay (torch.Tensor): Overlay image in BWHC format
-    width (int): Target width for overlay (-1 for original size)
-    height (int): Target height for overlay (-1 for original size)
-    X (int): Horizontal offset
-    Y (int): Vertical offset
-    rotation (int): Rotation angle in degrees
-    feathering (int): Edge feathering amount</p>
-<p>Returns:
-    tuple[torch.Tensor, torch.Tensor]: RGB and RGBA versions of the composited image</p>
+<p>Parameters: image (torch.Tensor): Base image in BWHC format image_overlay
+(torch.Tensor): Overlay image in BWHC format width (int): Target width for overlay (-1
+for original size) height (int): Target height for overlay (-1 for original size) X
+(int): Horizontal offset Y (int): Vertical offset rotation (int): Rotation angle in
+degrees feathering (int): Edge feathering amount</p>
+<p>Returns: tuple[torch.Tensor, torch.Tensor]: RGB and RGBA versions of the composited image</p>
 <h3 id="return-types_6">Return Types</h3>
 <ul>
 <li><code>IMAGE</code></li>
@@ -2961,12 +2941,10 @@
 
 </div><h2 id="imagelist2batch">ImageList2Batch</h2>
 <p>Converts a list of images into a batched tensor, handling different image sizes.</p>
-<p>Parameters:
-    images (list[torch.Tensor]): List of input images
-    mode (str): Resize mode ('STRETCH', 'FIT', 'FILL', 'ASPECT')
-    interpolation (str): Interpolation method for resizing</p>
-<p>Returns:
-    tuple[torch.Tensor]: Single-element tuple containing the batched images</p>
+<p>Parameters: images (list[torch.Tensor]): List of input images mode (str): Resize mode
+('STRETCH', 'FIT', 'FILL', 'ASPECT') interpolation (str): Interpolation method for
+resizing</p>
+<p>Returns: tuple[torch.Tensor]: Single-element tuple containing the batched images</p>
 <h3 id="return-types_7">Return Types</h3>
 <ul>
 <li><code>IMAGE</code></li>
@@ -3223,10 +3201,8 @@
 
 </div><h2 id="imagebatch2list">ImageBatch2List</h2>
 <p>Converts a batched tensor of images into a list of individual images.</p>
-<p>Parameters:
-    image (torch.Tensor): Batched input images in BWHC format</p>
-<p>Returns:
-    tuple[list[torch.Tensor]]: Single-element tuple containing list of images</p>
+<p>Parameters: image (torch.Tensor): Batched input images in BWHC format</p>
+<p>Returns: tuple[list[torch.Tensor]]: Single-element tuple containing list of images</p>
 <h3 id="return-types_8">Return Types</h3>
 <ul>
 <li><code>IMAGE</code></li>
@@ -3383,10 +3359,9 @@
 
 </div><h2 id="getimageshape">GetImageShape</h2>
 <p>Returns the dimensions of an input image.</p>
-<p>Parameters:
-    image (torch.Tensor): Input image in BWHC format</p>
-<p>Returns:
-    tuple[int, int, int, int, str]: Batch size, width, height, channels, and shape string</p>
+<p>Parameters: image (torch.Tensor): Input image in BWHC format</p>
+<p>Returns: tuple[int, int, int, int, str]: Batch size, width, height, channels, and shape
+string</p>
 <h3 id="return-types_9">Return Types</h3>
 <ul>
 <li><code>INT</code></li>

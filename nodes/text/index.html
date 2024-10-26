@@ -989,10 +989,10 @@
 <h1 id="text-nodes">Text Nodes</h1>
 <h2 id="textpreview">TextPreview</h2>
 <p>Generates a preview of text inputs.</p>
-<p>This class takes a list of text inputs and generates a single string preview.
-If the input is a torch.Tensor, it includes the tensor's shape in the preview.</p>
-<p>Returns:
-    dict: A dictionary containing the preview text under the 'ui' key and the result as a tuple.</p>
+<p>This class takes a list of text inputs and generates a single string preview. If the
+input is a torch.Tensor, it includes the tensor's shape in the preview.</p>
+<p>Returns: dict: A dictionary containing the preview text under the 'ui' key and the
+result as a tuple.</p>
 <h3 id="return-types">Return Types</h3>
 <ul>
 <li><code>STRING</code></li>
@@ -1140,12 +1140,11 @@ If the input is a torch.Tensor, it includes the tensor's shape in the preview.</
 
 </div><h2 id="textcase">TextCase</h2>
 <p>Changes the case of a given text.</p>
-<p>This class provides functionality to convert text to lower, upper, capitalize, or title case.</p>
-<p>Args:
-    text (str): The input text to be transformed.
-    case (str): The case transformation to apply ('lower', 'upper', 'capitalize', 'title').</p>
-<p>Returns:
-    tuple: The transformed text.</p>
+<p>This class provides functionality to convert text to lower, upper, capitalize, or title
+case.</p>
+<p>Args: text (str): The input text to be transformed. case (str): The case transformation
+to apply ('lower', 'upper', 'capitalize', 'title').</p>
+<p>Returns: tuple: The transformed text.</p>
 <h3 id="return-types_1">Return Types</h3>
 <ul>
 <li><code>STRING</code></li>
@@ -1346,11 +1345,9 @@ If the input is a torch.Tensor, it includes the tensor's shape in the preview.</
 </div><h2 id="texttrim">TextTrim</h2>
 <p>Trims whitespace from text.</p>
 <p>This class trims whitespace from the left, right, or both sides of the input text.</p>
-<p>Args:
-    text (str): The input text to be trimmed.
-    trim_type (str): The type of trim to apply ('both', 'left', 'right').</p>
-<p>Returns:
-    tuple: The trimmed text.</p>
+<p>Args: text (str): The input text to be trimmed. trim_type (str): The type of trim to
+apply ('both', 'left', 'right').</p>
+<p>Returns: tuple: The trimmed text.</p>
 <h3 id="return-types_2">Return Types</h3>
 <ul>
 <li><code>STRING</code></li>
@@ -1545,11 +1542,9 @@ If the input is a torch.Tensor, it includes the tensor's shape in the preview.</
 </div><h2 id="textsplit">TextSplit</h2>
 <p>Splits text into a list based on a delimiter.</p>
 <p>This class splits the input text into a list of strings using the specified delimiter.</p>
-<p>Args:
-    text (str): The input text to be split.
-    delimiter (str): The delimiter to use for splitting the text.</p>
-<p>Returns:
-    tuple: A list of split text segments.</p>
+<p>Args: text (str): The input text to be split. delimiter (str): The delimiter to use for
+splitting the text.</p>
+<p>Returns: tuple: A list of split text segments.</p>
 <h3 id="return-types_3">Return Types</h3>
 <ul>
 <li><code>STRING</code></li>
@@ -1734,12 +1729,9 @@ If the input is a torch.Tensor, it includes the tensor's shape in the preview.</
 </div><h2 id="textregexreplace">TextRegexReplace</h2>
 <p>Performs regex-based text replacement.</p>
 <p>This class uses regular expressions to find and replace patterns in the input text.</p>
-<p>Args:
-    text (str): The input text to be processed.
-    pattern (str): The regex pattern to search for.
-    replacement (str): The string to replace the pattern with.</p>
-<p>Returns:
-    tuple: The text after regex replacement.</p>
+<p>Args: text (str): The input text to be processed. pattern (str): The regex pattern to
+search for. replacement (str): The string to replace the pattern with.</p>
+<p>Returns: tuple: The text after regex replacement.</p>
 <h3 id="return-types_4">Return Types</h3>
 <ul>
 <li><code>STRING</code></li>
@@ -1943,13 +1935,11 @@ If the input is a torch.Tensor, it includes the tensor's shape in the preview.</
 
 </div><h2 id="textfindreplace">TextFindReplace</h2>
 <p>Finds and replaces text.</p>
-<p>This class finds a specified substring in the input text and replaces it with another substring.</p>
-<p>Args:
-    text (str): The input text to be processed.
-    find (str): The substring to find.
-    replace (str): The substring to replace with.</p>
-<p>Returns:
-    tuple: The text after find and replace.</p>
+<p>This class finds a specified substring in the input text and replaces it with another
+substring.</p>
+<p>Args: text (str): The input text to be processed. find (str): The substring to find.
+replace (str): The substring to replace with.</p>
+<p>Returns: tuple: The text after find and replace.</p>
 <h3 id="return-types_5">Return Types</h3>
 <ul>
 <li><code>STRING</code></li>
@@ -2154,11 +2144,8 @@ If the input is a torch.Tensor, it includes the tensor's shape in the preview.</
 </div><h2 id="textconcatenate">TextConcatenate</h2>
 <p>Concatenates two text strings.</p>
 <p>This class concatenates two input text strings into a single string.</p>
-<p>Args:
-    text1 (str): The first text string.
-    text2 (str): The second text string.</p>
-<p>Returns:
-    tuple: The concatenated text.</p>
+<p>Args: text1 (str): The first text string. text2 (str): The second text string.</p>
+<p>Returns: tuple: The concatenated text.</p>
 <h3 id="return-types_6">Return Types</h3>
 <ul>
 <li><code>STRING</code></li>

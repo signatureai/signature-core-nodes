@@ -684,7 +684,8 @@
 <h1 id="utils-nodes">Utils Nodes</h1>
 <h2 id="any2string">Any2String</h2>
 <p>Converts any input value to its string representation.</p>
-<p>A utility node that takes any input value and converts it to a string using Python's str() function.</p>
+<p>A utility node that takes any input value and converts it to a string using Python's
+str() function.</p>
 <h3 id="return-types">Return Types</h3>
 <ul>
 <li><code>STRING</code></li>
@@ -777,9 +778,9 @@
 
 </div><h2 id="any2image">Any2Image</h2>
 <p>Converts any inputs value to image format.</p>
-<p>A utility node that converts tensor inputs to image format. Currently only supports torch.Tensor inputs.</p>
-<p>Raises:
-    ValueError: If the input value is not a torch.Tensor.</p>
+<p>A utility node that converts tensor inputs to image format. Currently only supports
+torch.Tensor inputs.</p>
+<p>Raises: ValueError: If the input value is not a torch.Tensor.</p>
 <h3 id="return-types_1">Return Types</h3>
 <ul>
 <li><code>IMAGE</code></li>
@@ -905,7 +906,8 @@
 
 </div><h2 id="any2any">Any2Any</h2>
 <p>Passes through any input value unchanged.</p>
-<p>A utility node that acts as a pass-through, returning the input value without modification.</p>
+<p>A utility node that acts as a pass-through, returning the input value without
+modification.</p>
 
 
 <div class="doc doc-object doc-class">
@@ -994,8 +996,8 @@
 
 </div><h2 id="rgb2hsv">RGB2HSV</h2>
 <p>Converts RGB images to HSV color space.</p>
-<p>A utility node that converts RGB format images to HSV (Hue, Saturation, Value) color space.
-Expects input images in BWHC format.</p>
+<p>A utility node that converts RGB format images to HSV (Hue, Saturation, Value) color
+space. Expects input images in BWHC format.</p>
 <h3 id="return-types_2">Return Types</h3>
 <ul>
 <li><code>IMAGE</code></li>
@@ -1095,8 +1097,8 @@ Expects input images in BWHC format.</p>
 
 </div><h2 id="rgbhls">RGBHLS</h2>
 <p>Converts RGB images to HLS color space.</p>
-<p>A utility node that converts RGB format images to HLS (Hue, Lightness, Saturation) color space.
-Expects input images in BWHC format.</p>
+<p>A utility node that converts RGB format images to HLS (Hue, Lightness, Saturation) color
+space. Expects input images in BWHC format.</p>
 <h3 id="return-types_3">Return Types</h3>
 <ul>
 <li><code>IMAGE</code></li>
@@ -1196,9 +1198,9 @@ Expects input images in BWHC format.</p>
 
 </div><h2 id="rgba2rgb">RGBA2RGB</h2>
 <p>Converts RGBA images to RGB format.</p>
-<p>A utility node that converts RGBA (Red, Green, Blue, Alpha) images to RGB format.
-If the input image is already in RGB format, it will be passed through unchanged.
-Expects input images in BWHC format.</p>
+<p>A utility node that converts RGBA (Red, Green, Blue, Alpha) images to RGB format. If the
+input image is already in RGB format, it will be passed through unchanged. Expects input
+images in BWHC format.</p>
 <h3 id="return-types_4">Return Types</h3>
 <ul>
 <li><code>IMAGE</code></li>
@@ -1305,15 +1307,16 @@ Expects input images in BWHC format.</p>
 
 </div><h2 id="purgevram">PurgeVRAM</h2>
 <p>Cleans up VRAM by purging caches and/or unloading models.</p>
-<p>A utility node that helps manage VRAM usage by:
-- Clearing Python garbage collector
-- Emptying PyTorch CUDA cache
-- Optionally unloading all models
-- Optionally purging system cache</p>
-<p>Args:
-    anything: Any input value (unused, allows connection in workflow)
-    purge_cache (bool): Whether to purge system and CUDA cache
-    purge_models (bool): Whether to unload all models from memory</p>
+<p>A utility node that helps manage VRAM usage by:</p>
+<ul>
+<li>Clearing Python garbage collector</li>
+<li>Emptying PyTorch CUDA cache</li>
+<li>Optionally unloading all models</li>
+<li>Optionally purging system cache</li>
+</ul>
+<p>Args: anything: Any input value (unused, allows connection in workflow) purge_cache
+(bool): Whether to purge system and CUDA cache purge_models (bool): Whether to unload
+all models from memory</p>
 
 
 <div class="doc doc-object doc-class">

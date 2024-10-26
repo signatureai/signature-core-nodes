@@ -929,10 +929,8 @@
 <h1 id="file-nodes">File Nodes</h1>
 <h2 id="imagefromweb">ImageFromWeb</h2>
 <p>Loads an image from a URL.</p>
-<p>Parameters:
-    url (str): URL of the image to load</p>
-<p>Returns:
-    tuple[torch.Tensor, torch.Tensor]: Image tensor in BWHC format and mask</p>
+<p>Parameters: url (str): URL of the image to load</p>
+<p>Returns: tuple[torch.Tensor, torch.Tensor]: Image tensor in BWHC format and mask</p>
 <h3 id="return-types">Return Types</h3>
 <ul>
 <li><code>IMAGE</code></li>
@@ -1086,10 +1084,8 @@
 
 </div><h2 id="imagefrombase64">ImageFromBase64</h2>
 <p>Converts a base64 string to an image.</p>
-<p>Parameters:
-    base64 (str): Base64-encoded image string</p>
-<p>Returns:
-    tuple[torch.Tensor, torch.Tensor]: Image tensor in BWHC format and mask</p>
+<p>Parameters: base64 (str): Base64-encoded image string</p>
+<p>Returns: tuple[torch.Tensor, torch.Tensor]: Image tensor in BWHC format and mask</p>
 <h3 id="return-types_1">Return Types</h3>
 <ul>
 <li><code>IMAGE</code></li>
@@ -1243,10 +1239,8 @@
 
 </div><h2 id="base64fromimage">Base64FromImage</h2>
 <p>Converts an image to a base64 string.</p>
-<p>Parameters:
-    image (torch.Tensor): Input image in BWHC format</p>
-<p>Returns:
-    tuple[str]: Base64-encoded string representation of the image</p>
+<p>Parameters: image (torch.Tensor): Input image in BWHC format</p>
+<p>Returns: tuple[str]: Base64-encoded string representation of the image</p>
 <h3 id="return-types_2">Return Types</h3>
 <ul>
 <li><code>STRING</code></li>
@@ -1403,10 +1397,8 @@
 
 </div><h2 id="fileloader">FileLoader</h2>
 <p>Loads file data from a string value.</p>
-<p>Parameters:
-    value (str): Input string containing file data (JSON format)</p>
-<p>Returns:
-    tuple[list]: List of file data with updated paths</p>
+<p>Parameters: value (str): Input string containing file data (JSON format)</p>
+<p>Returns: tuple[list]: List of file data with updated paths</p>
 <h3 id="return-types_3">Return Types</h3>
 <ul>
 <li><code>FILE</code></li>
@@ -1591,10 +1583,8 @@
 
 </div><h2 id="folderloader">FolderLoader</h2>
 <p>Loads file data from a folder path.</p>
-<p>Parameters:
-    value (str): Input string containing folder path data</p>
-<p>Returns:
-    tuple[list]: List of file data with updated paths from the folder</p>
+<p>Parameters: value (str): Input string containing folder path data</p>
+<p>Returns: tuple[list]: List of file data with updated paths from the folder</p>
 <h3 id="return-types_4">Return Types</h3>
 <ul>
 <li><code>FILE</code></li>
@@ -1777,13 +1767,11 @@
 
 </div><h2 id="rotate">Rotate</h2>
 <p>Rotates an image and mask by a specified angle.</p>
-<p>Parameters:
-    image (torch.Tensor, optional): Input image in BWHC format
-    mask (torch.Tensor, optional): Input mask in BWHC format
-    angle (float): Rotation angle in degrees (0-360)
-    zoom_to_fit (bool): Whether to zoom to fit rotated content (default: False)</p>
-<p>Returns:
-    tuple[torch.Tensor, torch.Tensor]: Rotated image and mask</p>
+<p>Parameters: image (torch.Tensor, optional): Input image in BWHC format mask
+(torch.Tensor, optional): Input mask in BWHC format angle (float): Rotation angle in
+degrees (0-360) zoom_to_fit (bool): Whether to zoom to fit rotated content (default:
+False)</p>
+<p>Returns: tuple[torch.Tensor, torch.Tensor]: Rotated image and mask</p>
 
 
 <div class="doc doc-object doc-class">
@@ -1940,14 +1928,11 @@
 
 </div><h2 id="maskgaussianblur">MaskGaussianBlur</h2>
 <p>Applies Gaussian blur to a mask.</p>
-<p>Parameters:
-    image (torch.Tensor): Input mask in BWHC format
-    radius (int): Blur radius (default: 13)
-    sigma (float): Blur sigma/strength (default: 10.5)
-    iterations (int): Number of blur passes (default: 1)
-    only_outline (bool): Whether to blur only the outline (default: False)</p>
-<p>Returns:
-    tuple[torch.Tensor]: Single-element tuple containing the blurred mask</p>
+<p>Parameters: image (torch.Tensor): Input mask in BWHC format radius (int): Blur radius
+(default: 13) sigma (float): Blur sigma/strength (default: 10.5) iterations (int):
+Number of blur passes (default: 1) only_outline (bool): Whether to blur only the outline
+(default: False)</p>
+<p>Returns: tuple[torch.Tensor]: Single-element tuple containing the blurred mask</p>
 
 
 <div class="doc doc-object doc-class">

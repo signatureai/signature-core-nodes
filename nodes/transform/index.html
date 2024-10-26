@@ -615,22 +615,13 @@
 <h1 id="transform-nodes">Transform Nodes</h1>
 <h2 id="autocrop">AutoCrop</h2>
 <p>Automatically crops an image based on a mask.</p>
-<p>Parameters:
-    image (torch.Tensor): Input image in BWHC format
-    mask (torch.Tensor): Input mask in BWHC format
-    mask_threshold (float): Threshold for mask detection (0.0-1.0)
-    left_padding (int): Additional padding on left side
-    right_padding (int): Additional padding on right side
-    top_padding (int): Additional padding on top
-    bottom_padding (int): Additional padding on bottom</p>
-<p>Returns:
-    tuple[torch.Tensor, torch.Tensor, int, int, int, int]:
-        - Cropped image
-        - Cropped mask
-        - X coordinate of crop
-        - Y coordinate of crop
-        - Width of crop
-        - Height of crop</p>
+<p>Parameters: image (torch.Tensor): Input image in BWHC format mask (torch.Tensor): Input
+mask in BWHC format mask_threshold (float): Threshold for mask detection (0.0-1.0)
+left_padding (int): Additional padding on left side right_padding (int): Additional
+padding on right side top_padding (int): Additional padding on top bottom_padding (int):
+Additional padding on bottom</p>
+<p>Returns: tuple[torch.Tensor, torch.Tensor, int, int, int, int]: - Cropped image - Cropped
+mask - X coordinate of crop - Y coordinate of crop - Width of crop - Height of crop</p>
 <h3 id="return-types">Return Types</h3>
 <ul>
 <li><code>IMAGE</code></li>
@@ -972,14 +963,11 @@
 
 </div><h2 id="rescale">Rescale</h2>
 <p>Rescales an image and mask by a given factor.</p>
-<p>Parameters:
-    image (torch.Tensor, optional): Input image in BWHC format
-    mask (torch.Tensor, optional): Input mask in BWHC format
-    factor (float): Scale factor (default: 2.0)
-    interpolation (str): Interpolation method (default: "nearest")
-    antialias (bool): Whether to use antialiasing (default: True)</p>
-<p>Returns:
-    tuple[torch.Tensor, torch.Tensor]: Rescaled image and mask</p>
+<p>Parameters: image (torch.Tensor, optional): Input image in BWHC format mask
+(torch.Tensor, optional): Input mask in BWHC format factor (float): Scale factor
+(default: 2.0) interpolation (str): Interpolation method (default: "nearest") antialias
+(bool): Whether to use antialiasing (default: True)</p>
+<p>Returns: tuple[torch.Tensor, torch.Tensor]: Rescaled image and mask</p>
 <h3 id="return-types_1">Return Types</h3>
 <ul>
 <li><code>IMAGE</code></li>
@@ -1271,16 +1259,12 @@
 
 </div><h2 id="resize">Resize</h2>
 <p>Resizes an image and mask to specified dimensions.</p>
-<p>Parameters:
-    image (torch.Tensor, optional): Input image in BWHC format
-    mask (torch.Tensor, optional): Input mask in BWHC format
-    width (int): Target width (default: 1024)
-    height (int): Target height (default: 1024)
-    mode (str): Resize mode ("STRETCH", "FIT", "FILL", "ASPECT")
-    interpolation (str): Interpolation method (default: "nearest")
-    antialias (bool): Whether to use antialiasing (default: True)</p>
-<p>Returns:
-    tuple[torch.Tensor, torch.Tensor]: Resized image and mask</p>
+<p>Parameters: image (torch.Tensor, optional): Input image in BWHC format mask
+(torch.Tensor, optional): Input mask in BWHC format width (int): Target width
+(default: 1024) height (int): Target height (default: 1024) mode (str): Resize mode
+("STRETCH", "FIT", "FILL", "ASPECT") interpolation (str): Interpolation method (default:
+"nearest") antialias (bool): Whether to use antialiasing (default: True)</p>
+<p>Returns: tuple[torch.Tensor, torch.Tensor]: Resized image and mask</p>
 <h3 id="return-types_2">Return Types</h3>
 <ul>
 <li><code>IMAGE</code></li>
@@ -1618,11 +1602,9 @@
 
 </div><h2 id="cutout">Cutout</h2>
 <p>Cuts out a portion of an image based on a mask.</p>
-<p>Parameters:
-    image (torch.Tensor): Input image in BWHC format
-    mask (torch.Tensor): Mask defining the cutout area</p>
-<p>Returns:
-    tuple[torch.Tensor, torch.Tensor]: RGB and RGBA versions of the cutout image</p>
+<p>Parameters: image (torch.Tensor): Input image in BWHC format mask (torch.Tensor): Mask
+defining the cutout area</p>
+<p>Returns: tuple[torch.Tensor, torch.Tensor]: RGB and RGBA versions of the cutout image</p>
 <h3 id="return-types_3">Return Types</h3>
 <ul>
 <li><code>IMAGE</code></li>

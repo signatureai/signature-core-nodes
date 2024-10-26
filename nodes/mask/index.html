@@ -864,12 +864,11 @@
 <h1 id="mask-nodes">Mask Nodes</h1>
 <h2 id="basemask">BaseMask</h2>
 <p>Creates a basic binary mask of specified dimensions.</p>
-<p>Parameters:
-    color (str): Either "white" or "black" to set mask color
-    width (int): Width of the output mask (default: 1024)
-    height (int): Height of the output mask (default: 1024)</p>
-<p>Returns:
-    tuple[torch.Tensor]: Single-element tuple containing a binary mask in BWHC format</p>
+<p>Parameters: color (str): Either "white" or "black" to set mask color width (int): Width
+of the output mask (default: 1024) height (int): Height of the output mask
+(default: 1024)</p>
+<p>Returns: tuple[torch.Tensor]: Single-element tuple containing a binary mask in BWHC
+format</p>
 <h3 id="return-types">Return Types</h3>
 <ul>
 <li><code>MASK</code></li>
@@ -1078,14 +1077,11 @@
 
 </div><h2 id="maskmorphology">MaskMorphology</h2>
 <p>Applies morphological operations to a mask.</p>
-<p>Parameters:
-    mask (torch.Tensor): Input mask in BWHC format
-    operation (str): One of: "dilation", "erosion", "opening", "closing",
-                    "gradient", "top_hat", "bottom_hat"
-    kernel_size (int): Size of the morphological kernel (default: 1)
-    iterations (int): Number of times to apply the operation (default: 5)</p>
-<p>Returns:
-    tuple[torch.Tensor]: Single-element tuple containing the processed mask</p>
+<p>Parameters: mask (torch.Tensor): Input mask in BWHC format operation (str): One of:
+"dilation", "erosion", "opening", "closing", "gradient", "top_hat", "bottom_hat"
+kernel_size (int): Size of the morphological kernel (default: 1) iterations (int):
+Number of times to apply the operation (default: 5)</p>
+<p>Returns: tuple[torch.Tensor]: Single-element tuple containing the processed mask</p>
 <h3 id="return-types_1">Return Types</h3>
 <ul>
 <li><code>MASK</code></li>
@@ -1381,12 +1377,10 @@
 
 </div><h2 id="maskbitwise">MaskBitwise</h2>
 <p>Performs bitwise operations between two masks.</p>
-<p>Parameters:
-    mask_1 (torch.Tensor): First input mask in BWHC format
-    mask_2 (torch.Tensor): Second input mask in BWHC format
-    mode (str): One of: "and", "or", "xor", "left_shift", "right_shift"</p>
-<p>Returns:
-    tuple[torch.Tensor]: Single-element tuple containing the resulting mask</p>
+<p>Parameters: mask_1 (torch.Tensor): First input mask in BWHC format mask_2
+(torch.Tensor): Second input mask in BWHC format mode (str): One of: "and", "or", "xor",
+"left_shift", "right_shift"</p>
+<p>Returns: tuple[torch.Tensor]: Single-element tuple containing the resulting mask</p>
 <h3 id="return-types_2">Return Types</h3>
 <ul>
 <li><code>MASK</code></li>
@@ -1619,11 +1613,9 @@
 
 </div><h2 id="maskdistance">MaskDistance</h2>
 <p>Calculates the Euclidean distance between two masks.</p>
-<p>Parameters:
-    mask_0 (torch.Tensor): First input mask in BWHC format
-    mask_1 (torch.Tensor): Second input mask in BWHC format</p>
-<p>Returns:
-    tuple[float]: Single-element tuple containing the distance value</p>
+<p>Parameters: mask_0 (torch.Tensor): First input mask in BWHC format mask_1
+(torch.Tensor): Second input mask in BWHC format</p>
+<p>Returns: tuple[float]: Single-element tuple containing the distance value</p>
 <h3 id="return-types_3">Return Types</h3>
 <ul>
 <li><code>FLOAT</code></li>
@@ -1800,15 +1792,12 @@
 
 </div><h2 id="mask2trimap">Mask2Trimap</h2>
 <p>Converts a mask to a trimap representation (foreground, background, unknown regions).</p>
-<p>Parameters:
-    mask (torch.Tensor): Input mask in BWHC format
-    inner_min_threshold (int): Minimum threshold for inner region (default: 200)
-    inner_max_threshold (int): Maximum threshold for inner region (default: 255)
-    outer_min_threshold (int): Minimum threshold for outer region (default: 15)
-    outer_max_threshold (int): Maximum threshold for outer region (default: 240)
-    kernel_size (int): Size of morphological kernel (default: 10)</p>
-<p>Returns:
-    tuple[torch.Tensor, torch.Tensor]: Mask and trimap tensors</p>
+<p>Parameters: mask (torch.Tensor): Input mask in BWHC format inner_min_threshold (int):
+Minimum threshold for inner region (default: 200) inner_max_threshold (int): Maximum
+threshold for inner region (default: 255) outer_min_threshold (int): Minimum threshold
+for outer region (default: 15) outer_max_threshold (int): Maximum threshold for outer
+region (default: 240) kernel_size (int): Size of morphological kernel (default: 10)</p>
+<p>Returns: tuple[torch.Tensor, torch.Tensor]: Mask and trimap tensors</p>
 <h3 id="return-types_4">Return Types</h3>
 <ul>
 <li><code>MASK</code></li>
@@ -2154,11 +2143,9 @@
 
 </div><h2 id="maskbinaryfilter">MaskBinaryFilter</h2>
 <p>Applies binary thresholding to a mask.</p>
-<p>Parameters:
-    mask (torch.Tensor): Input mask in BWHC format
-    threshold (float): Threshold value between 0 and 1 (default: 0.01)</p>
-<p>Returns:
-    tuple[torch.Tensor]: Single-element tuple containing the binary mask</p>
+<p>Parameters: mask (torch.Tensor): Input mask in BWHC format threshold (float): Threshold
+value between 0 and 1 (default: 0.01)</p>
+<p>Returns: tuple[torch.Tensor]: Single-element tuple containing the binary mask</p>
 <h3 id="return-types_5">Return Types</h3>
 <ul>
 <li><code>MASK</code></li>
@@ -2339,10 +2326,8 @@
 
 </div><h2 id="maskinvert">MaskInvert</h2>
 <p>Inverts a mask (1 becomes 0 and vice versa).</p>
-<p>Parameters:
-    mask (torch.Tensor): Input mask in BWHC format</p>
-<p>Returns:
-    tuple[torch.Tensor]: Single-element tuple containing the inverted mask</p>
+<p>Parameters: mask (torch.Tensor): Input mask in BWHC format</p>
+<p>Returns: tuple[torch.Tensor]: Single-element tuple containing the inverted mask</p>
 <h3 id="return-types_6">Return Types</h3>
 <ul>
 <li><code>MASK</code></li>
@@ -2501,14 +2486,11 @@
 
 </div><h2 id="maskgaussianblur">MaskGaussianBlur</h2>
 <p>Applies Gaussian blur to a mask.</p>
-<p>Parameters:
-    image (torch.Tensor): Input mask in BWHC format
-    radius (int): Blur radius (default: 13)
-    sigma (float): Blur sigma/strength (default: 10.5)
-    iterations (int): Number of blur passes (default: 1)
-    only_outline (bool): Whether to blur only the outline (default: False)</p>
-<p>Returns:
-    tuple[torch.Tensor]: Single-element tuple containing the blurred mask</p>
+<p>Parameters: image (torch.Tensor): Input mask in BWHC format radius (int): Blur radius
+(default: 13) sigma (float): Blur sigma/strength (default: 10.5) iterations (int):
+Number of blur passes (default: 1) only_outline (bool): Whether to blur only the outline
+(default: False)</p>
+<p>Returns: tuple[torch.Tensor]: Single-element tuple containing the blurred mask</p>
 <h3 id="return-types_7">Return Types</h3>
 <ul>
 <li><code>MASK</code></li>
@@ -2745,10 +2727,8 @@
 
 </div><h2 id="mask2image">Mask2Image</h2>
 <p>Converts a single-channel mask to a 3-channel image.</p>
-<p>Parameters:
-    mask (torch.Tensor): Input mask in BWHC format</p>
-<p>Returns:
-    tuple[torch.Tensor]: Single-element tuple containing the converted image</p>
+<p>Parameters: mask (torch.Tensor): Input mask in BWHC format</p>
+<p>Returns: tuple[torch.Tensor]: Single-element tuple containing the converted image</p>
 <h3 id="return-types_8">Return Types</h3>
 <ul>
 <li><code>IMAGE</code></li>
@@ -2907,17 +2887,14 @@
 
 </div><h2 id="maskgrowwithblur">MaskGrowWithBlur</h2>
 <p>Expands or contracts a mask with optional blur and tapering effects.</p>
-<p>Parameters:
-    mask (torch.Tensor): Input mask in BWHC format
-    expand (int): Pixels to expand (positive) or contract (negative)
-    incremental_expandrate (float): Rate of expansion per iteration
-    tapered_corners (bool): Whether to taper corners (default: True)
-    flip_input (bool): Whether to invert input before processing (default: False)
-    blur_radius (float): Radius for final blur (default: 0.0)
-    lerp_alpha (float): Linear interpolation factor (default: 1.0)
-    decay_factor (float): Decay factor for expansion (default: 1.0)</p>
-<p>Returns:
-    tuple[torch.Tensor]: Single-element tuple containing the processed mask</p>
+<p>Parameters: mask (torch.Tensor): Input mask in BWHC format expand (int): Pixels to
+expand (positive) or contract (negative) incremental_expandrate (float): Rate of
+expansion per iteration tapered_corners (bool): Whether to taper corners (default: True)
+flip_input (bool): Whether to invert input before processing (default: False)
+blur_radius (float): Radius for final blur (default: 0.0) lerp_alpha (float): Linear
+interpolation factor (default: 1.0) decay_factor (float): Decay factor for expansion
+(default: 1.0)</p>
+<p>Returns: tuple[torch.Tensor]: Single-element tuple containing the processed mask</p>
 <h3 id="return-types_9">Return Types</h3>
 <ul>
 <li><code>MASK</code></li>
@@ -3394,10 +3371,9 @@
 
 </div><h2 id="getmaskshape">GetMaskShape</h2>
 <p>Returns the dimensions of an input mask.</p>
-<p>Parameters:
-    mask (torch.Tensor): Input mask in BWHC format</p>
-<p>Returns:
-    tuple[int, int, int, int, str]: Batch size, width, height, channels, and shape string</p>
+<p>Parameters: mask (torch.Tensor): Input mask in BWHC format</p>
+<p>Returns: tuple[int, int, int, int, str]: Batch size, width, height, channels, and shape
+string</p>
 <h3 id="return-types_10">Return Types</h3>
 <ul>
 <li><code>INT</code></li>
@@ -3560,13 +3536,10 @@
 
 </div><h2 id="maskpreview">MaskPreview</h2>
 <p>Saves a preview of a mask as an image file.</p>
-<p>Parameters:
-    mask (torch.Tensor): Input mask in BWHC format
-    filename_prefix (str): Prefix for the output filename (default: "Signature")
-    prompt (Optional[str]): Optional prompt to include in metadata
-    extra_pnginfo (Optional[dict]): Additional PNG metadata</p>
-<p>Returns:
-    tuple[str, str]: Paths to the saved preview images</p>
+<p>Parameters: mask (torch.Tensor): Input mask in BWHC format filename_prefix (str): Prefix
+for the output filename (default: "Signature") prompt (Optional[str]): Optional prompt
+to include in metadata extra_pnginfo (Optional[dict]): Additional PNG metadata</p>
+<p>Returns: tuple[str, str]: Paths to the saved preview images</p>
 
 
 <div class="doc doc-object doc-class">

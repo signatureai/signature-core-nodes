@@ -833,12 +833,13 @@
 <h1 id="platform_io-nodes">Platform_Io Nodes</h1>
 <h2 id="platforminputimage">PlatformInputImage</h2>
 <p>Handles image input for the platform.</p>
-<p>This class processes image inputs, supporting both single and multiple images.
-It can handle images from URLs or base64 strings and apply post-processing like alpha channel removal.</p>
-<p>Methods:
-    execute(**kwargs): Processes the image input and returns a list of processed images.</p>
-<p>Raises:
-    ValueError: If input values are not of the expected types or if no valid input is found.</p>
+<p>This class processes image inputs, supporting both single and multiple images. It can
+handle images from URLs or base64 strings and apply post-processing like alpha channel
+removal.</p>
+<p>Methods: execute(**kwargs): Processes the image input and returns a list of processed
+images.</p>
+<p>Raises: ValueError: If input values are not of the expected types or if no valid input
+is found.</p>
 
 
 <div class="doc doc-object doc-class">
@@ -1120,11 +1121,10 @@ It can handle images from URLs or base64 strings and apply post-processing like 
 
 </div><h2 id="platforminputconnector">PlatformInputConnector</h2>
 <p>Handles input from external connectors like Google Drive.</p>
-<p>This class manages file downloads from external services using provided tokens and file IDs.</p>
-<p>Methods:
-    execute(**kwargs): Downloads the specified file and returns the file data.</p>
-<p>Raises:
-    ValueError: If input values are not of the expected types.</p>
+<p>This class manages file downloads from external services using provided tokens and file
+IDs.</p>
+<p>Methods: execute(**kwargs): Downloads the specified file and returns the file data.</p>
+<p>Raises: ValueError: If input values are not of the expected types.</p>
 <h3 id="return-types">Return Types</h3>
 <ul>
 <li><code>FILE</code></li>
@@ -1328,10 +1328,9 @@ It can handle images from URLs or base64 strings and apply post-processing like 
 </div><h2 id="platforminputtext">PlatformInputText</h2>
 <p>Handles text input for the platform.</p>
 <p>This class processes text inputs, providing a fallback option if the input is empty.</p>
-<p>Methods:
-    execute(**kwargs): Returns the input text or the fallback if the input is empty.</p>
-<p>Raises:
-    ValueError: If input values are not of the expected types.</p>
+<p>Methods: execute(**kwargs): Returns the input text or the fallback if the input is
+empty.</p>
+<p>Raises: ValueError: If input values are not of the expected types.</p>
 <h3 id="return-types_1">Return Types</h3>
 <ul>
 <li><code>STRING</code></li>
@@ -1511,10 +1510,9 @@ It can handle images from URLs or base64 strings and apply post-processing like 
 </div><h2 id="platforminputnumber">PlatformInputNumber</h2>
 <p>Handles numeric input for the platform.</p>
 <p>This class processes numeric inputs, supporting both integers and floats.</p>
-<p>Methods:
-    execute(**kwargs): Returns the input number, converting it to the specified subtype.</p>
-<p>Raises:
-    ValueError: If input values are not of the expected types.</p>
+<p>Methods: execute(**kwargs): Returns the input number, converting it to the specified
+subtype.</p>
+<p>Raises: ValueError: If input values are not of the expected types.</p>
 
 
 <div class="doc doc-object doc-class">
@@ -1688,10 +1686,8 @@ It can handle images from URLs or base64 strings and apply post-processing like 
 </div><h2 id="platforminputboolean">PlatformInputBoolean</h2>
 <p>Handles boolean input for the platform.</p>
 <p>This class processes boolean inputs.</p>
-<p>Methods:
-    execute(**kwargs): Returns the input boolean value.</p>
-<p>Raises:
-    ValueError: If input values are not of the expected types.</p>
+<p>Methods: execute(**kwargs): Returns the input boolean value.</p>
+<p>Raises: ValueError: If input values are not of the expected types.</p>
 <h3 id="return-types_2">Return Types</h3>
 <ul>
 <li><code>BOOLEAN</code></li>
@@ -1856,12 +1852,12 @@ It can handle images from URLs or base64 strings and apply post-processing like 
 
 </div><h2 id="platformoutput">PlatformOutput</h2>
 <p>Handles output for the platform.</p>
-<p>This class manages the output of various data types, including images, numbers, and strings.
-It supports saving images and generating thumbnails.</p>
-<p>Methods:
-    execute(**kwargs): Processes and saves the output data, returning metadata about the saved files.</p>
-<p>Raises:
-    ValueError: If input values are not of the expected types or if unsupported output types are provided.</p>
+<p>This class manages the output of various data types, including images, numbers, and
+strings. It supports saving images and generating thumbnails.</p>
+<p>Methods: execute(**kwargs): Processes and saves the output data, returning metadata
+about the saved files.</p>
+<p>Raises: ValueError: If input values are not of the expected types or if unsupported
+output types are provided.</p>
 
 
 <div class="doc doc-object doc-class">
