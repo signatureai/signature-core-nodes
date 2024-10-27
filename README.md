@@ -12,66 +12,44 @@ processing, data handling, and workflow management capabilities.
 
 📚 **[View Full Documentation](https://signatureai.github.io/signature-core-nodes/)**
 
-## 🌟 Features
-
-- **Image Processing**
-
-  - Advanced image transformations and filters
-  - Color manipulation and blending modes
-  - Mask generation and operations
-  - Background removal and image composition
-
-- **Data Handling**
-
-  - JSON/Dictionary conversions
-  - File operations
-  - Platform I/O management
-  - Primitive type handling
-
-- **Workflow Management**
-
-  - Custom workflow wrapper
-  - Platform integration
-  - Progress tracking
-  - Error handling
-
-- **Augmentations**
-  - Random crop
-  - Image flipping
-  - Composite augmentations
-  - Batch processing
-
 ## 🚀 Installation
 
-1. Clone this repository into your ComfyUI custom nodes directory:
+1. Navigate to your ComfyUI custom nodes directory:
 
 ```bash
-git clone https://github.com/yourusername/signature-core-nodes.git ComfyUI/custom_nodes/signature-core-nodes
+cd ComfyUI/custom_nodes/
 ```
 
-2. Install the required dependencies:
+2. Clone the repository:
 
 ```bash
-cd ComfyUI/custom_nodes/signature-core-nodes
-pip install -e .
+git clone https://github.com/signatureai/signature-core-nodes.git ComfyUI/custom_nodes/signature-core-nodes
+```
+
+3. Install the required dependencies:
+
+```bash
+pip install -r requirements.txt
 ```
 
 ## 📦 Node Categories
 
-- 🖼️ Image - Image processing and manipulation nodes
-- 🎭 Mask - Mask generation and operations
-- 🔤 Text - Text processing and manipulation nodes
-- 🔢 Numbers - Numerical operations and processing
-- 🔄 Transform - Image transformation tools
-- 🧱 Primitives - Basic data type nodes
+- ⚡ Basic
+  - 🧱 Primitives - Basic data type nodes
+  - 🔢 Numbers - Numerical operations and processing
+  - 🔤 Text - Text processing and manipulation nodes
+  - 📁 File - File handling operations
+  - 🖼️ Image - Basic image handling nodes
+  - 🎭 Mask - Mask generation and operations
+- 🖼️ Image Processing - Advanced image processing and manipulation nodes
 - 🤖 Models - AI model integration nodes
 - 🧠 Logic - Logic operations and control flow
-- 📁 File - File handling operations
-- 🔀 Augmentation - Image augmentation tools
-- 🔌 Platform I/O - Platform integration nodes
-- 📊 Data - Data conversion and handling
-- 🧬 Loras - LoRA model handling and integration
 - 🛠️ Utils - Utility functions
+- 📦 Others
+  - 🔀 Augmentations - Image augmentation tools
+  - 🔌 Platform I/O - Platform integration nodes
+  - 📊 Data - Data conversion and handling
+  - 🧬 Loras - LoRA model handling and integration
 
 ## 💻 Usage
 
@@ -86,14 +64,62 @@ includes proper input validation and error handling.
 3. Process the image using various filter nodes
 4. Export the result using `PlatformOutput` or save directly
 
-## 🛠 Development
+## 📁 Project Structure
 
-The project is structured with clear separation of concerns:
+- `nodes/` - Node implementations
+  - `web/` - Web interface components
+  - `categories.py` - Node category definitions
+  - `shared.py` - Shared utilities and constants
+  - `platform_io.py` - Platform integration
+  - `wrapper.py` - Workflow wrapper functionality
+- `docs/` - Documentation files
+- `scripts/` - Development and build scripts
 
-- `nodes/` - Contains all node implementations
-- `web/` - Web interface components and extensions
-- `categories.py` - Node category definitions
-- `shared.py` - Shared utilities and constants
+## 🛠 Development Setup
+
+1. Install development dependencies:
+
+```bash
+pip install -r dev-requirements.txt
+```
+
+2. Install pre-commit hooks:
+
+```bash
+pre-commit install
+```
+
+The project uses pre-commit hooks for:
+
+- Code formatting and linting
+- Syntax checking
+- Security checks
+- File consistency
+
+3. Generate documentation:
+
+```bash
+python scripts/generate_docs.py
+```
+
+## 📚 Documentation
+
+Documentation is built using MkDocs with the Material theme. To view the documentation
+locally:
+
+1. Install MkDocs and dependencies:
+
+```bash
+pip install mkdocs mkdocs-material
+```
+
+2. Serve the documentation:
+
+```bash
+mkdocs serve
+```
+
+The documentation will be available at `http://localhost:8000`.
 
 ## 🤝 Contributing
 

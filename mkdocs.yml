@@ -28,16 +28,6 @@ theme:
 
 plugins:
   - search
-  - mkdocstrings:
-      default_handler: python
-      handlers:
-        python:
-          paths: ["/resources/repos/ComfyUI/custom_nodes/signature-core-nodes"]
-          options:
-            show_source: true
-            show_root_heading: true
-            heading_level: 2
-            docstring_style: google
 
 markdown_extensions:
   - pymdownx.highlight:
@@ -47,14 +37,40 @@ markdown_extensions:
   - pymdownx.superfences
   - admonition
   - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
 
 nav:
-  - Home: index.md
-  - Nodes:
-      - Data: nodes/data.md
-      - Text: nodes/text.md
-      - File: nodes/file.md
-      - Image: nodes/image.md
-      - Platform IO: nodes/platform_io.md
-      - Models: nodes/models.md
-      - Lora: nodes/lora.md
+  [
+    { "Home": "index.md" },
+    {
+      "Nodes":
+        [
+          {
+            "⚡ Basic":
+              [
+                { "🧱 Primitives": "nodes/primitives.md" },
+                { "🔤 Text": "nodes/text.md" },
+                { "🎭 Mask": "nodes/mask.md" },
+                { "🖼️ Image": "nodes/image.md" },
+                { "📁 File": "nodes/file.md" },
+                { "🔢 Numbers": "nodes/numbers.md" },
+              ],
+          },
+          {
+            "📦 Others":
+              [
+                { "📊 Data": "nodes/data.md" },
+                { "🔀 Augmentations": "nodes/augmentations.md" },
+                { "🔌 Platform IO": "nodes/platform_io.md" },
+                { "🧬 Loras": "nodes/lora.md" },
+              ],
+          },
+          { "🖼️ Image Processing": "nodes/image_processing.md" },
+          { "🛠️ Utils": "nodes/utils.md" },
+          { "🧠 Logic": "nodes/logic.md" },
+          { "🤖 Models": "nodes/models.md" },
+        ],
+    },
+  ]

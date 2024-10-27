@@ -13,6 +13,13 @@ from .shared import BASE_COMFY_DIR
 
 
 class ApplyLoraStack:
+    """
+    A ComfyUI node that applies a stack of LoRA models to a base model and CLIP.
+
+    Takes a model, CLIP, and a LORA_STACK as input and returns the modified model and CLIP
+    with all LoRAs applied in sequence using the specified weights.
+    """
+
     @classmethod
     def INPUT_TYPES(cls):
         return {
@@ -32,7 +39,7 @@ class ApplyLoraStack:
         "CLIP",
     )
     FUNCTION = "execute"
-    CATEGORY = CATEGORY = LORA_CAT
+    CATEGORY = LORA_CAT
 
     def execute(
         self,
@@ -69,6 +76,14 @@ class ApplyLoraStack:
 
 
 class LoraStack:
+    """
+    A ComfyUI node that creates a stack of up to 3 LoRA models with configurable weights.
+
+    Allows users to enable/disable and configure model/CLIP weights for each LoRA.
+    Can optionally extend an existing LORA_STACK input. Returns a LORA_STACK that can be
+    used with ApplyLoraStack.
+    """
+
     @classmethod
     def INPUT_TYPES(cls):
         loras = ["None"] + folder_paths.get_filename_list("loras")
@@ -131,6 +146,13 @@ class LoraStack:
 
 
 class Dict2LoraStack:
+    """
+    A ComfyUI node that converts a list of LoRA dictionaries into a LORA_STACK format.
+
+    Each dictionary should contain 'lora_name' and 'lora_weight' keys.
+    Can optionally extend an existing LORA_STACK input.
+    """
+
     @classmethod
     def INPUT_TYPES(cls):
         inputs = {
@@ -167,6 +189,18 @@ class Dict2LoraStack:
 
 # * Move this to signature dojo
 class SaveLoraCaptions:
+    """
+    A ComfyUI node that saves images and their associated captions for LoRA training.
+
+    Creates a dataset folder structure with:
+    - Images saved as PNG files
+    - Corresponding text files containing captions
+    - Optional prefix/suffix added to captions
+    - Support for multiple captions via newline separation
+
+    Returns the path to the created dataset folder.
+    """
+
     @classmethod
     def INPUT_TYPES(cls):
         return {

@@ -8,7 +8,7 @@ from signature_core.functional.transform import cutout
 from signature_core.img.tensor_image import TensorImage
 from uuid_extensions import uuid7str
 
-from .categories import PLATFROM_IO_CAT
+from .categories import PLATFORM_IO_CAT
 from .shared import BASE_COMFY_DIR, any_type
 
 
@@ -44,7 +44,7 @@ class PlatformInputImage:
 
     RETURN_TYPES = (any_type,)
     FUNCTION = "execute"
-    CATEGORY = PLATFROM_IO_CAT
+    CATEGORY = PLATFORM_IO_CAT
     OUTPUT_IS_LIST = (True,)
 
     def execute(
@@ -137,7 +137,7 @@ class PlatformInputConnector:
 
     RETURN_TYPES = ("FILE",)
     FUNCTION = "execute"
-    CATEGORY = PLATFROM_IO_CAT
+    CATEGORY = PLATFORM_IO_CAT
 
     def execute(
         self,
@@ -192,7 +192,7 @@ class PlatformInputText:
 
     RETURN_TYPES = ("STRING",)
     FUNCTION = "execute"
-    CATEGORY = PLATFROM_IO_CAT
+    CATEGORY = PLATFORM_IO_CAT
 
     def execute(self, **kwargs):
         value = kwargs.get("value")
@@ -232,7 +232,7 @@ class PlatformInputNumber:
 
     RETURN_TYPES = (any_type,)
     FUNCTION = "execute"
-    CATEGORY = PLATFROM_IO_CAT
+    CATEGORY = PLATFORM_IO_CAT
 
     def execute(self, **kwargs):
         value = kwargs.get("value")
@@ -275,7 +275,7 @@ class PlatformInputBoolean:
     RETURN_TYPES = ("BOOLEAN",)
     RETURN_NAMES = ("boolean",)
     FUNCTION = "execute"
-    CATEGORY = PLATFROM_IO_CAT
+    CATEGORY = PLATFORM_IO_CAT
 
     def execute(self, **kwargs):
         value = kwargs.get("value")
@@ -315,11 +315,36 @@ class PlatformOutput:
     OUTPUT_NODE = True
     INPUT_IS_LIST = True
     FUNCTION = "execute"
-    CATEGORY = PLATFROM_IO_CAT
+    CATEGORY = PLATFORM_IO_CAT
 
-    def __save_outputs(
-        self, img, title: str, subtype: str, thumbnail_size: int, output_dir: str, metadata: str = ""
-    ) -> dict | None:
+    def __save_outputs(self, **kwargs) -> dict | None:
+        img = kwargs.get("img")
+        if not isinstance(img, (torch.Tensor, TensorImage)):
+            raise ValueError("Image must be a tensor or TensorImage")
+
+        title = kwargs.get("title", "")
+        if not isinstance(title, str):
+            title = str(title)
+
+        subtype = kwargs.get("subtype", "image")
+        if not isinstance(subtype, str):
+            subtype = str(subtype)
+
+        thumbnail_size = kwargs.get("thumbnail_size", 1024)
+        if not isinstance(thumbnail_size, int):
+            try:
+                thumbnail_size = int(thumbnail_size)
+            except (ValueError, TypeError):
+                thumbnail_size = 1024
+
+        output_dir = kwargs.get("output_dir", "output")
+        if not isinstance(output_dir, str):
+            output_dir = str(output_dir)
+
+        metadata = kwargs.get("metadata", "")
+        if not isinstance(metadata, str):
+            metadata = str(metadata)
+
         current_time_str = datetime.now().strftime("%Y%m%d_%H%M%S")
         file_name = f"signature_{current_time_str}_{uuid7str()}.png"
         save_path = os.path.join(output_dir, file_name)
@@ -327,7 +352,7 @@ class PlatformOutput:
             file_name = f"signature_{current_time_str}_{uuid7str()}_{uuid7str()}.png"
             save_path = os.path.join(output_dir, file_name)
 
-        output_img = TensorImage(img)
+        output_img = img if isinstance(img, TensorImage) else TensorImage(img)
 
         thumbnail_img = output_img.get_resized(thumbnail_size)
         thumbnail_path = save_path.replace(".png", "_thumbnail.jpeg")
@@ -380,7 +405,12 @@ class PlatformOutput:
                     tensor_images = TensorImage.from_BWHC(item.to("cpu"))
                     for img in tensor_images:
                         result = self.__save_outputs(
-                            img, title, main_subtype, thumbnail_size, output_dir, metadata
+                            img=img,
+                            title=title,
+                            subtype=main_subtype,
+                            thumbnail_size=thumbnail_size,
+                            output_dir=output_dir,
+                            metadata=metadata,
                         )
                         if result:
                             results.append(result)

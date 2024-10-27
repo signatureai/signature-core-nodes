@@ -1,11 +1,31 @@
 import ast
+import importlib.util
 import os
 import sys
+import traceback
 from pathlib import Path
+
+base_dir = Path(__file__).parent.parent
+sys.path.insert(0, str(base_dir))
+
+
+# Add this function to dynamically load categories
+def load_categories():
+    categories_path = base_dir / "nodes" / "categories.py"
+    if not categories_path.exists():
+        return {}
+
+    spec = importlib.util.spec_from_file_location("categories", categories_path)
+    if spec is None or spec.loader is None:  # Add this check
+        return {}
+
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    return {name: value for name, value in module.__dict__.items() if name.endswith("_CAT")}
 
 
 def extract_classes_with_docs(content: str) -> list[tuple[str, str, dict]]:
-    """Extract all classes with their docstrings and input/output types."""
     classes = []
     try:
         tree = ast.parse(content)
@@ -27,18 +47,35 @@ def extract_classes_with_docs(content: str) -> list[tuple[str, str, dict]]:
 
 
 def _extract_class_metadata(node: ast.ClassDef) -> dict:
-    """Extract metadata (input types, return types, category) from a class definition."""
     input_types = {}
     return_types = []
     category = None
 
     for item in node.body:
         if isinstance(item, ast.ClassDef) and item.name == "INPUT_TYPES":
-            input_types = extract_input_types(item)
-        elif isinstance(item, ast.Assign):
+            continue
+
+        if not isinstance(item, (ast.FunctionDef, ast.Assign)):
+            continue
+
+        if isinstance(item, ast.FunctionDef):
+            if item.name != "INPUT_TYPES":
+                continue
+            if not any(isinstance(d, ast.Name) and d.id == "classmethod" for d in item.decorator_list):
+                continue
+
+            for stmt in item.body:
+                if not isinstance(stmt, ast.Return):
+                    continue
+                if not isinstance(stmt.value, ast.Dict):
+                    continue
+                input_types = _process_input_types_dict(stmt.value)
+
+        else:  # ast.Assign
             for target in item.targets:
                 if not isinstance(target, ast.Name):
                     continue
+
                 if target.id == "RETURN_TYPES":
                     return_types = extract_return_types(item)
                 elif target.id == "CATEGORY":
@@ -52,20 +89,85 @@ def _extract_class_metadata(node: ast.ClassDef) -> dict:
 
 
 def extract_input_types(node):
-    """Extract input types from INPUT_TYPES classmethod."""
     input_types = {}
     try:
         for item in node.body:
-            if isinstance(item, ast.Return):
-                if isinstance(item.value, ast.Dict):
-                    input_types = ast.literal_eval(item.value)
-    except (ValueError, SyntaxError, TypeError):
-        pass
+            if not isinstance(item, ast.FunctionDef):
+                continue
+
+            for sub_item in item.body:
+                if not isinstance(sub_item, ast.Return):
+                    continue
+
+                if not isinstance(sub_item.value, ast.Dict):
+                    continue
+
+                input_types = _process_input_types_dict(sub_item.value)
+
+    except Exception as _:
+        traceback.print_exc()
+
     return input_types
 
 
+def _process_input_types_dict(dict_node):
+    result = {}
+    try:
+        result = _process_top_level_dict(dict_node)
+    except Exception as e:
+        print(f"Error processing input types dict: {e}")
+        traceback.print_exc()
+    return result
+
+
+def _process_top_level_dict(dict_node):
+    result = {}
+    for key, value in zip(dict_node.keys, dict_node.values):
+        if not isinstance(key, (ast.Constant, ast.Str)):
+            continue
+
+        key_name = key.value if isinstance(key, ast.Constant) else key.s
+        if not isinstance(value, ast.Dict):
+            continue
+
+        result[key_name] = _process_nested_dict(value)
+    return result
+
+
+def _process_nested_dict(dict_node):
+    nested_dict = {}
+    for k, v in zip(dict_node.keys, dict_node.values):
+        if not isinstance(k, (ast.Constant, ast.Str)):
+            continue
+
+        param_name = k.value if isinstance(k, ast.Constant) else k.s
+        if not isinstance(v, ast.Tuple):
+            continue
+
+        param_info = _process_param_info(v)
+        if param_info:
+            nested_dict[param_name] = param_info
+    return nested_dict
+
+
+def _process_param_info(tuple_node):
+    param_info = {}
+    param_info["type"] = (
+        tuple_node.elts[0].value
+        if isinstance(tuple_node.elts[0], ast.Constant)
+        else getattr(tuple_node.elts[0], "s", str(tuple_node.elts[0]))
+    )
+
+    if len(tuple_node.elts) > 1 and isinstance(tuple_node.elts[1], ast.Dict):
+        for opt_k, opt_v in zip(tuple_node.elts[1].keys, tuple_node.elts[1].values):
+            opt_name = opt_k.value if isinstance(opt_k, ast.Constant) else getattr(opt_k, "s", str(opt_k))
+            if isinstance(opt_v, ast.Constant):
+                param_info[opt_name] = opt_v.value
+
+    return param_info
+
+
 def extract_return_types(node):
-    """Extract return types from RETURN_TYPES assignment."""
     try:
         return ast.literal_eval(node.value)
     except (ValueError, SyntaxError, TypeError):
@@ -73,7 +175,6 @@ def extract_return_types(node):
 
 
 def extract_category(node):
-    """Extract category from CATEGORY assignment."""
     try:
         if isinstance(node.value, ast.Name):
             return node.value.id
@@ -83,123 +184,275 @@ def extract_category(node):
 
 
 def create_category_files(nodes_dir: str, docs_dir: str):
-    # Create docs/nodes directory if it doesn't exist
     nodes_docs_dir = os.path.join(docs_dir, "nodes")
     os.makedirs(nodes_docs_dir, exist_ok=True)
 
-    # Process only Python files with documented classes
     for file in os.listdir(nodes_dir):
-        if file.endswith(".py") and file != "__init__.py" and file != "categories.py":
-            module_name = file[:-3]
-            with open(os.path.join(nodes_dir, file)) as f:
+        if not _is_valid_node_file(file):
+            continue
+
+        module_name = file[:-3]
+        content = _read_file_content(os.path.join(nodes_dir, file))
+        classes = extract_classes_with_docs(content)
+
+        if not (classes and any(docstring for _, docstring, _ in classes)):
+            continue
+
+        _write_module_documentation(nodes_docs_dir, module_name, classes, content)
+
+
+def _is_valid_node_file(filename: str) -> bool:
+    return filename.endswith(".py") and filename not in ["__init__.py", "categories.py", "shared.py"]
+
+
+def _read_file_content(filepath: str) -> str:
+    with open(filepath) as f:
+        return f.read()
+
+
+def _write_module_documentation(docs_dir: str, module_name: str, classes: list, content: str):
+    doc_file = os.path.join(docs_dir, f"{module_name}.md")
+    with open(doc_file, "w") as doc:
+        title = module_name.replace("_", " ").title()
+        doc.write(f"# {title} Nodes\n\n")
+
+        for class_name, docstring, metadata in classes:
+            if not docstring:
+                continue
+
+            _write_class_documentation(
+                doc=doc,
+                class_name=class_name,
+                docstring=docstring,
+                metadata=metadata,
+                module_name=module_name,
+                content=content,
+            )
+
+
+def _write_class_documentation(**kwargs):
+    doc = kwargs["doc"]
+    class_name = kwargs["class_name"]
+    docstring = kwargs["docstring"]
+    metadata = kwargs["metadata"]
+    module_name = kwargs["module_name"]
+    content = kwargs["content"]
+
+    doc.write(f"## {class_name}\n\n")
+
+    cleaned_docstring = docstring.strip('"""').strip("'''").strip()
+    doc.write(f"{cleaned_docstring.split('.')[0]}\n\n")
+
+    if metadata["input_types"]:
+        _write_input_documentation(doc, metadata["input_types"])
+
+    if metadata["return_types"]:
+        _write_return_documentation(doc, metadata)
+
+    _write_code_documentation(doc, class_name, module_name, content)
+
+
+def _write_input_documentation(doc, input_types: dict):
+    doc.write("### Inputs\n\n")
+    doc.write("| Group | Name | Type | Default | Extras |\n")
+    doc.write("|-------|------|------|---------|--------|\n")
+
+    for group_name, inputs in input_types.items():
+        for name, type_info in inputs.items():
+            if isinstance(type_info, dict):
+                _write_dict_input(doc, group_name, name, type_info)
+            else:
+                raise ValueError(f"Unknown input type: {type(type_info)}")
+    doc.write("\n")
+
+
+def _write_return_documentation(doc, metadata: dict):
+    doc.write("### Returns\n\n")
+    doc.write("| Name | Type |\n")
+    doc.write("|------|------|\n")
+
+    return_names = metadata.get("return_names", [])
+    for i, return_type in enumerate(metadata["return_types"]):
+        name = return_names[i] if i < len(return_names) else return_type.lower()
+        type_name = "ANY" if return_type == "any_type" else return_type
+        doc.write(f"| {name} | `{type_name}` |\n")
+    doc.write("\n\n")
+
+
+def _write_code_documentation(doc, class_name: str, module_name: str, content: str):
+    doc.write(f'??? note "Pick the code in {module_name}.py"\n\n')
+    doc.write("    ```python\n")
+    tree = ast.parse(content)
+    for node in ast.walk(tree):
+        if isinstance(node, ast.ClassDef) and node.name == class_name:
+            class_source = ast.get_source_segment(content, node)
+            if class_source:
+                lines = class_source.split("\n")
+                min_indent = min(len(line) - len(line.lstrip()) for line in lines if line.strip())
+                cleaned_lines = ["    " + (line[min_indent:] if line.strip() else "") for line in lines]
+                doc.write("\n".join(cleaned_lines) + "\n")
+    doc.write("    ```\n\n")
+
+
+def _write_dict_input(doc, group_name: str, name: str, type_info: dict):
+    type_name = type_info.get("type", "unknown")
+    if "ast.List" in type_name:
+        type_name = "LIST"
+    default = type_info.get("default", "")
+    extras = ", ".join(f"{k}={v}" for k, v in type_info.items() if k not in ["type", "default"])
+    doc.write(f"| {group_name} | {name} | `{type_name}` | {default} | {extras} |\n")
+
+
+def create_mkdocs_config(docs_dir: str):
+    category_usage = {}
+    nodes_dir = base_dir / "nodes"
+    categories = load_categories()
+
+    for file in os.listdir(nodes_dir):
+        if file.endswith(".py") and file not in ["__init__.py", "categories.py", "shared.py"]:
+            with open(nodes_dir / file) as f:
                 content = f.read()
-                classes = extract_classes_with_docs(content)
+                for name, value in categories.items():
+                    if name in content or f"from .categories import {name}" in content:
+                        category_usage[value] = True
 
-                # Only create documentation file if there are documented classes
-                if classes and any(docstring for _, docstring, _ in classes):
-                    doc_file = os.path.join(nodes_docs_dir, f"{module_name}.md")
-                    with open(doc_file, "w") as doc:
-                        doc.write(f"# {module_name.title()} Nodes\n\n")
+    category_tree = {}
+    catalog_keys = list(category_usage.keys())
+    for cat_value in catalog_keys:
+        parts = cat_value.split("/")
+        parts = [p.strip() for p in parts]
 
-                        for class_name, docstring, metadata in classes:
-                            if docstring:  # Only document classes with docstrings
-                                doc.write(f"## {class_name}\n\n")
-                                doc.write(f"{docstring}\n\n")
+        parts = parts[1:]
 
-                                # Document input types
-                                if metadata["input_types"]:
-                                    doc.write("### Input Types\n\n")
-                                    for input_category, inputs in metadata["input_types"].items():
-                                        doc.write(f"#### {input_category}\n\n")
-                                        for name, type_info in inputs.items():
-                                            doc.write(f"- `{name}`: {type_info}\n")
-                                    doc.write("\n")
+        current_level = category_tree
+        for _, part in enumerate(parts[:-1]):
+            if part not in current_level:
+                current_level[part] = {}
+            current_level = current_level[part]
 
-                                # Document return types
-                                if metadata["return_types"]:
-                                    doc.write("### Return Types\n\n")
-                                    for return_type in metadata["return_types"]:
-                                        doc.write(f"- `{return_type}`\n")
-                                    doc.write("\n")
+        last_part = parts[-1].strip()
 
-                                doc.write(f"::: nodes.{module_name}.{class_name}\n\n")
+        nodes_docs_dir = os.path.join(docs_dir, "nodes")
+        existing_docs = {f[:-3]: f for f in os.listdir(nodes_docs_dir) if f.endswith(".md")}
 
+        clean_name = " ".join(last_part.split()[1:] if "️" in last_part else last_part.split())
+        clean_name = clean_name.lower().replace(" ", "_")
 
-def create_mkdocs_config():
-    # Get absolute path to nodes directory
-    base_dir = Path(__file__).parent.parent
-    nodes_path = str(base_dir)
+        variations = [
+            clean_name,
+            clean_name.replace("_", ""),
+            clean_name.split("_", maxsplit=1)[0] if "_" in clean_name else clean_name,
+            "".join(c for c in clean_name if c.isalnum()),
+            clean_name.replace("input", "").replace("output", ""),
+            clean_name.rsplit("_", maxsplit=1)[-1] if "_" in clean_name else clean_name,
+        ]
 
-    return f"""site_name: Signature Nodes Documentation
+        doc_path = None
+        for var in variations:
+            if var in existing_docs:
+                doc_path = f"nodes/{existing_docs[var]}"
+                break
+            for doc_name in existing_docs:
+                if var in doc_name or doc_name in var:
+                    doc_path = f"nodes/{existing_docs[doc_name]}"
+                    break
+            if doc_path:
+                break
+
+        if doc_path:
+            current_level[last_part] = doc_path
+        else:
+            continue
+
+    def build_nav_structure(tree):
+        result = []
+        for key, value in tree.items():
+            if isinstance(value, dict):
+                result.append({key: build_nav_structure(value)})
+            else:
+                result.append({key: value})
+        return result
+
+    nav_structure = [{"Home": "index.md"}, {"Nodes": [*build_nav_structure(category_tree)]}]
+
+    config = f"""site_name: Signature Nodes Documentation
 theme:
-  name: material
-  features:
-    - navigation.instant
-    - navigation.tracking
-    - navigation.sections
-    - navigation.expand
-    - navigation.top
-    - search.highlight
-    - search.share
-    - toc.follow
-  palette:
-    - media: "(prefers-color-scheme: light)"
-      scheme: default
-      primary: indigo
-      accent: indigo
-      toggle:
-        icon: material/brightness-7
-        name: Switch to dark mode
-    - media: "(prefers-color-scheme: dark)"
-      scheme: slate
-      primary: indigo
-      accent: indigo
-      toggle:
-        icon: material/brightness-4
-        name: Switch to light mode
+    name: material
+    features:
+        - navigation.instant
+        - navigation.tracking
+        - navigation.sections
+        - navigation.expand
+        - navigation.top
+        - search.highlight
+        - search.share
+        - toc.follow
+    palette:
+        - media: "(prefers-color-scheme: light)"
+          scheme: default
+          primary: indigo
+          accent: indigo
+          toggle:
+            icon: material/brightness-7
+            name: Switch to dark mode
+        - media: "(prefers-color-scheme: dark)"
+          scheme: slate
+          primary: indigo
+          accent: indigo
+          toggle:
+            icon: material/brightness-4
+            name: Switch to light mode
 
 plugins:
-  - search
-  - mkdocstrings:
-      default_handler: python
-      handlers:
-        python:
-          paths: ["{nodes_path}"]
-          options:
-            show_source: true
-            show_root_heading: true
-            heading_level: 2
-            docstring_style: google
+    - search
 
 markdown_extensions:
-  - pymdownx.highlight:
-      anchor_linenums: true
-  - pymdownx.inlinehilite
-  - pymdownx.snippets
-  - pymdownx.superfences
-  - admonition
-  - pymdownx.details
-  - pymdownx.emoji:
-      emoji_index: !!python/name:materialx.emoji.twemoji
-      emoji_generator: !!python/name:materialx.emoji.to_svg
+    - pymdownx.highlight:
+        anchor_linenums: true
+    - pymdownx.inlinehilite
+    - pymdownx.snippets
+    - pymdownx.superfences
+    - admonition
+    - pymdownx.details
+    - pymdownx.emoji:
+        emoji_index: !!python/name:material.extensions.emoji.twemoji
+        emoji_generator: !!python/name:material.extensions.emoji.to_svg
 
-nav:
-  - Home: index.md
-  - Nodes:
-    - Categories: nodes/categories.md
-    - Data: nodes/data.md
-    - Text: nodes/text.md
-    - File: nodes/file.md
-    - Image: nodes/image.md
-    - Platform IO: nodes/platform_io.md
-    - Models: nodes/models.md
-    - Lora: nodes/lora.md"""
+nav: {nav_structure}"""
+
+    return config
 
 
-def copy_readme_to_index(base_dir: Path):
-    """Copy README.md to docs/index.md with necessary modifications."""
-    readme_path = base_dir / "README.md"
-    index_path = base_dir / "docs" / "index.md"
+def create_category_docs(docs_dir: str):
+    category_usage = {}
+    nodes_dir = os.path.join(docs_dir, "..", "nodes")
+    categories = load_categories()
+
+    for file in os.listdir(nodes_dir):
+        if file.endswith(".py") and file not in ["__init__.py", "categories.py", "shared.py"]:
+            with open(os.path.join(nodes_dir, file)) as f:
+                content = f.read()
+                for name, value in categories.items():
+                    if name in content or f"from .categories import {name}" in content:
+                        category_usage[value] = True
+
+    main_categories = []
+    other_categories = []
+    category_usage_keys = list(category_usage.keys())
+    for cat_value in category_usage_keys:
+        parts = cat_value.split("/")
+        if len(parts) == 2:
+            main_categories.append(cat_value)
+        elif len(parts) == 3 and "📦 Others" in parts[1]:
+            other_categories.append(cat_value)
+
+    main_categories.sort()
+    other_categories.sort()
+
+
+def copy_readme_to_index(project_base_dir: Path):
+    readme_path = project_base_dir / "README.md"
+    index_path = project_base_dir / "docs" / "index.md"
 
     if not readme_path.exists():
         return
@@ -207,41 +460,36 @@ def copy_readme_to_index(base_dir: Path):
     with open(readme_path, encoding="utf-8") as f:
         content = f.read()
 
-    # Replace the title to match documentation
     content = content.replace("# Signature Core for ComfyUI", "# Signature Core Nodes Documentation")
 
-    # Ensure docs directory exists
-    os.makedirs(base_dir / "docs", exist_ok=True)
+    os.makedirs(project_base_dir / "docs", exist_ok=True)
 
-    # Write the modified content to index.md
     with open(index_path, "w", encoding="utf-8") as f:
         f.write(content)
 
 
 def main():
-    base_dir = Path(__file__).parent.parent
-    nodes_dir = base_dir / "nodes"
-    docs_dir = base_dir / "docs"
+    project_base_dir = Path(__file__).parent.parent
+    nodes_dir = project_base_dir / "nodes"
+    docs_dir = project_base_dir / "docs"
 
-    # Update the Python path to include the base directory
-    # We need to modify this part to ensure mkdocs can find the modules
-    sys.path.insert(0, str(base_dir))
+    sys.path.insert(0, str(project_base_dir))
 
-    # Create an empty __init__.py in the nodes directory if it doesn't exist
     init_file = nodes_dir / "__init__.py"
     if not init_file.exists():
         init_file.touch()
 
     os.makedirs(docs_dir, exist_ok=True)
 
-    # Copy README.md to index.md first
-    copy_readme_to_index(base_dir)
+    copy_readme_to_index(project_base_dir)
 
-    # Continue with existing functionality
+    create_category_docs(str(docs_dir))
+
     create_category_files(str(nodes_dir), str(docs_dir))
 
-    with open(base_dir / "mkdocs.yml", "w") as f:
-        f.write(create_mkdocs_config())
+    mkdocs_config = project_base_dir / "mkdocs.yml"
+    with open(mkdocs_config, "w") as f:
+        f.write(create_mkdocs_config(str(docs_dir)))
 
 
 if __name__ == "__main__":

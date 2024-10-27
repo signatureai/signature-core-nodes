@@ -13,7 +13,7 @@ from signature_core.functional.transform import (
 from signature_core.img.tensor_image import TensorImage
 from spandrel import ImageModelDescriptor, ModelLoader  # type: ignore
 
-from .categories import TRANSFORM_CAT
+from .categories import IMAGE_PROCESSING_CAT
 
 
 class AutoCrop:
@@ -56,26 +56,22 @@ class AutoCrop:
     RETURN_NAMES = ("cropped_image", "cropped_mask", "x", "y", "width", "height")
 
     FUNCTION = "execute"
-    CATEGORY = TRANSFORM_CAT
+    CATEGORY = IMAGE_PROCESSING_CAT
 
-    def execute(
-        self,
-        image: torch.Tensor,
-        mask: torch.Tensor,
-        mask_threshold: float,
-        left_padding: int,
-        right_padding: int,
-        top_padding: int,
-        bottom_padding: int,
-    ):
-        img_tensor = TensorImage.from_BWHC(image)
-        mask_tensor = TensorImage.from_BWHC(mask)
+    def execute(self, **kwargs):
+        img_tensor = TensorImage.from_BWHC(kwargs["image"])
+        mask_tensor = TensorImage.from_BWHC(kwargs["mask"])
         if img_tensor.shape[1] != 3:
             img_tensor = rgba_to_rgb(img_tensor)
 
-        padding = (left_padding, right_padding, top_padding, bottom_padding)
+        padding = (
+            kwargs["left_padding"],
+            kwargs["right_padding"],
+            kwargs["top_padding"],
+            kwargs["bottom_padding"],
+        )
         img_result, mask_result, min_x, min_y, width, height = auto_crop(
-            img_tensor, mask_tensor, mask_threshold=mask_threshold, padding=padding
+            img_tensor, mask_tensor, mask_threshold=kwargs["mask_threshold"], padding=padding
         )
         output_img = TensorImage(img_result).get_BWHC()
         output_mask = TensorImage(mask_result).get_BWHC()
@@ -117,16 +113,14 @@ class Rescale:
         "MASK",
     )
     FUNCTION = "execute"
-    CATEGORY = TRANSFORM_CAT
+    CATEGORY = IMAGE_PROCESSING_CAT
 
-    def execute(
-        self,
-        image: torch.Tensor | None = None,
-        mask: torch.Tensor | None = None,
-        factor: float = 2.0,
-        interpolation: str = "nearest",
-        antialias: bool = True,
-    ):
+    def execute(self, **kwargs):
+        image = kwargs.get("image")
+        mask = kwargs.get("mask")
+        if not isinstance(image, torch.Tensor) and not isinstance(mask, torch.Tensor):
+            raise ValueError("Either image or mask must be provided")
+
         input_image = (
             TensorImage.from_BWHC(image)
             if isinstance(image, torch.Tensor)
@@ -137,8 +131,18 @@ class Rescale:
             if isinstance(mask, torch.Tensor)
             else TensorImage(torch.zeros((1, 1, 1, 1)))
         )
-        output_image = rescale(input_image, factor, interpolation, antialias).get_BWHC()
-        output_mask = rescale(input_mask, factor, interpolation, antialias).get_BWHC()
+        output_image = rescale(
+            input_image,
+            kwargs.get("factor", 2.0),
+            kwargs.get("interpolation", "nearest"),
+            kwargs.get("antialias", True),
+        ).get_BWHC()
+        output_mask = rescale(
+            input_mask,
+            kwargs.get("factor", 2.0),
+            kwargs.get("interpolation", "nearest"),
+            kwargs.get("antialias", True),
+        ).get_BWHC()
 
         return (
             output_image,
@@ -185,18 +189,17 @@ class Resize:
         "MASK",
     )
     FUNCTION = "execute"
-    CATEGORY = TRANSFORM_CAT
+    CATEGORY = IMAGE_PROCESSING_CAT
 
-    def execute(
-        self,
-        image: torch.Tensor | None = None,
-        mask: torch.Tensor | None = None,
-        width: int = 1024,
-        height: int = 1024,
-        mode: str = "default",
-        interpolation: str = "nearest",
-        antialias: bool = True,
-    ):
+    def execute(self, **kwargs):
+        width = kwargs.get("width", 1024)
+        height = kwargs.get("height", 1024)
+        mode = kwargs.get("mode", "default")
+        interpolation = kwargs.get("interpolation", "nearest")
+        antialias = kwargs.get("antialias", True)
+        image = kwargs.get("image", None)
+        mask = kwargs.get("mask", None)
+
         input_image = (
             TensorImage.from_BWHC(image)
             if isinstance(image, torch.Tensor)
@@ -234,15 +237,14 @@ class Rotate:
         "MASK",
     )
     FUNCTION = "execute"
-    CATEGORY = TRANSFORM_CAT
+    CATEGORY = IMAGE_PROCESSING_CAT
 
-    def execute(
-        self,
-        image: torch.Tensor | None = None,
-        mask: torch.Tensor | None = None,
-        angle: float = 0.0,
-        zoom_to_fit: bool = False,
-    ):
+    def execute(self, **kwargs):
+        image = kwargs.get("image", None)
+        mask = kwargs.get("mask", None)
+        angle = kwargs.get("angle", 0.0)
+        zoom_to_fit = kwargs.get("zoom_to_fit", False)
+
         input_image = (
             TensorImage.from_BWHC(image)
             if isinstance(image, torch.Tensor)
@@ -285,9 +287,15 @@ class Cutout:
     RETURN_TYPES = ("IMAGE", "IMAGE")
     RETURN_NAMES = ("rgb", "rgba")
     FUNCTION = "execute"
-    CATEGORY = TRANSFORM_CAT
+    CATEGORY = IMAGE_PROCESSING_CAT
 
-    def execute(self, image: torch.Tensor, mask: torch.Tensor):
+    def execute(self, **kwargs):
+        image = kwargs.get("image")
+        mask = kwargs.get("mask")
+
+        if not isinstance(image, torch.Tensor) or not isinstance(mask, torch.Tensor):
+            raise ValueError("Either image or mask must be provided")
+
         tensor_image = TensorImage.from_BWHC(image)
         tensor_mask = TensorImage.from_BWHC(mask, image.device)
 
@@ -321,8 +329,8 @@ class UpscaleImage:
 
     RETURN_TYPES = ("IMAGE",)
     RETURN_NAMES = ("IMAGE",)
-    FUNCTION = "upscale"
-    CATEGORY = TRANSFORM_CAT
+    FUNCTION = "execute"
+    CATEGORY = IMAGE_PROCESSING_CAT
 
     def load_model(self, model_name):
         model_path = folder_paths.get_full_path("upscale_models", model_name)
@@ -336,7 +344,30 @@ class UpscaleImage:
 
         return out
 
-    def upscale_with_model(self, upscale_model, image, device, tile: int = 512, overlap=32) -> torch.Tensor:
+    def upscale_with_model(self, **kwargs) -> torch.Tensor:
+        upscale_model = kwargs.get("upscale_model")
+        image = kwargs.get("image")
+        device = kwargs.get("device")
+        tile = kwargs.get("tile", 512)
+        overlap = kwargs.get("overlap", 32)
+
+        if upscale_model is None:
+            raise ValueError("upscale_model is required")
+        if image is None:
+            raise ValueError("image is required")
+        if device is None:
+            raise ValueError("device is required")
+        if not isinstance(tile, int):
+            raise ValueError("tile must be an integer")
+        if not isinstance(overlap, int):
+            raise ValueError("overlap must be an integer")
+        if not hasattr(upscale_model, "model"):
+            raise ValueError("upscale_model must have a model attribute")
+        if not hasattr(upscale_model, "scale"):
+            raise ValueError("upscale_model must have a scale attribute")
+        if not isinstance(image, torch.Tensor):
+            raise ValueError("image must be a torch.Tensor")
+
         memory_required = model_management.module_size(upscale_model.model)
         memory_required += (tile * tile * 3) * image.element_size() * max(upscale_model.scale, 1.0) * 384.0
         memory_required += image.nelement() * image.element_size()
@@ -371,20 +402,18 @@ class UpscaleImage:
         s = torch.clamp(s.movedim(-3, -1), min=0, max=1.0)  # type: ignore
         return s
 
-    def upscale(
-        self,
-        image,
-        upscale_model,
-        mode="rescale",
-        resampling_method="bilinear",
-        rescale_factor=2,
-        resize_size=1024,
-        tiled_size=512,
-    ):
+    def execute(self, image, upscale_model, **kwargs):
         # Load upscale model
         up_model = self.load_model(upscale_model)
         device = model_management.get_torch_device()
         up_model.to(device)
+
+        # Get kwargs with defaults
+        mode = kwargs.get("mode", "rescale")
+        resampling_method = kwargs.get("resampling_method", "bilinear")
+        rescale_factor = kwargs.get("rescale_factor", 2)
+        resize_size = kwargs.get("resize_size", 1024)
+        tiled_size = kwargs.get("tiled_size", 512)
 
         # target size
         _, H, W, _ = image.shape
@@ -392,7 +421,9 @@ class UpscaleImage:
         current_size = max(H, W)
         up_image = image
         while current_size < target_size:
-            step = self.upscale_with_model(up_model, up_image, device=device, tile=tiled_size)
+            step = self.upscale_with_model(
+                upscale_model=up_model, image=up_image, device=device, tile=tiled_size
+            )
             del up_image
             up_image = step.to("cpu")
             _, H, W, _ = up_image.shape
