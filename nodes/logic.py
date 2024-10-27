@@ -5,17 +5,26 @@ from .shared import any_type
 
 
 class LogicSwitch:
-    """Switches between two values based on a boolean condition.
+    """Switches between two input values based on a boolean condition.
 
-    This class returns one of two values depending on the boolean condition provided.
-
-    Methods:
-        execute(**kwargs): Returns the 'true' value if the condition is True, otherwise returns the 'false' value.
+    A logic gate that selects between two inputs of any type based on a boolean condition. When the
+    condition is True, it returns the 'true' value; otherwise, it returns the 'false' value. This node
+    is useful for creating conditional workflows and dynamic value selection.
 
     Args:
-        condition (bool): The condition to evaluate.
-        true: The value to return if the condition is True.
-        false: The value to return if the condition is False.
+        condition (bool): The boolean condition that determines which value to return.
+            Defaults to False if not provided.
+        true (Any): The value to return when the condition is True. Can be of any type.
+        false (Any): The value to return when the condition is False. Can be of any type.
+
+    Returns:
+        tuple[Any]: A single-element tuple containing either the 'true' or 'false' value based on
+            the condition.
+
+    Notes:
+        - The node accepts inputs of any type, making it versatile for different data types
+        - Both 'true' and 'false' values must be provided
+        - The condition is automatically cast to boolean, with None being treated as False
     """
 
     @classmethod
@@ -42,20 +51,34 @@ class LogicSwitch:
 
 
 class LogicCompare:
-    """Compares two values using a specified operator.
+    """Compares two values using equality operators and handles various data types.
 
-    This class compares two input values using either 'equal' or 'not_equal' operators and returns a boolean result.
-
-    Methods:
-        execute(**kwargs): Returns True if the comparison is successful, otherwise False.
+    A comparison node that evaluates two inputs using either equality or inequality operators.
+    Supports comparison of primitive types, tensors, and mixed data types with special handling for
+    shape mismatches in tensors.
 
     Args:
-        input_a: The first value to compare.
-        input_b: The second value to compare.
-        operator (str): The comparison operator ('equal' or 'not_equal').
+        input_a (Any): First value for comparison. Can be of any type.
+        input_b (Any): Second value for comparison. Can be of any type.
+        operator (str): The comparison operator to use. Must be one of:
+            - 'equal': Tests if inputs are equal
+            - 'not_equal': Tests if inputs are not equal
+
+    Returns:
+        tuple[bool]: A single-element tuple containing the boolean result of the comparison.
 
     Raises:
-        ValueError: If any input is None or if the operator is invalid.
+        ValueError: If any input is None or if the operator is not one of the valid options.
+
+    Notes:
+        - Handles tensor comparisons with automatic shape adjustment
+        - Different types are always considered unequal
+        - For tensors with different shapes:
+            * Tensors are flattened to 1D
+            * Only the overlapping portions are compared
+            * All elements must satisfy the condition for True result
+        - None values are handled specially: None equals None, but nothing else
+        - Lists and tuples are compared element-wise with all elements must match
     """
 
     @classmethod

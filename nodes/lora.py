@@ -13,11 +13,25 @@ from .shared import BASE_COMFY_DIR
 
 
 class ApplyLoraStack:
-    """
-    A ComfyUI node that applies a stack of LoRA models to a base model and CLIP.
+    """Applies multiple LoRA models sequentially to a base model and CLIP in ComfyUI.
 
-    Takes a model, CLIP, and a LORA_STACK as input and returns the modified model and CLIP
-    with all LoRAs applied in sequence using the specified weights.
+    This node takes a base model, CLIP, and a stack of LoRA models as input. It applies each LoRA
+    in the stack sequentially using specified weights for both model and CLIP components.
+
+    Args:
+        model (MODEL): The base Stable Diffusion model to modify
+        clip (CLIP): The CLIP model to modify
+        lora_stack (LORA_STACK): A list of tuples containing (lora_name, model_weight, clip_weight)
+
+    Returns:
+        tuple:
+            - MODEL: The modified Stable Diffusion model with all LoRAs applied
+            - CLIP: The modified CLIP model with all LoRAs applied
+
+    Notes:
+        - LoRAs are applied in sequence, with each modification building on previous changes
+        - If lora_stack is None, returns the original model and CLIP unchanged
+        - Uses ComfyUI's built-in LoRA loading and application mechanisms
     """
 
     @classmethod
@@ -76,12 +90,26 @@ class ApplyLoraStack:
 
 
 class LoraStack:
-    """
-    A ComfyUI node that creates a stack of up to 3 LoRA models with configurable weights.
+    """Creates a configurable stack of up to 3 LoRA models with adjustable weights.
 
-    Allows users to enable/disable and configure model/CLIP weights for each LoRA.
-    Can optionally extend an existing LORA_STACK input. Returns a LORA_STACK that can be
-    used with ApplyLoraStack.
+    Provides a user interface to enable/disable and configure up to three LoRA models with independent
+    weights for both model and CLIP components. Can extend an existing LORA_STACK.
+
+    Args:
+        switch_1/2/3 (str): "On" or "Off" to enable/disable each LoRA
+        lora_name_1/2/3 (str): Names of LoRA models to use
+        model_weight_1/2/3 (float): Weight multipliers for model component (-10.0 to 10.0)
+        clip_weight_1/2/3 (float): Weight multipliers for CLIP component (-10.0 to 10.0)
+        lora_stack (LORA_STACK, optional): Existing stack to extend
+
+    Returns:
+        tuple:
+            - LORA_STACK: List of tuples (lora_name, model_weight, clip_weight)
+
+    Notes:
+        - Each LoRA can be independently enabled/disabled
+        - Weights can be negative for inverse effects
+        - Only enabled LoRAs with valid names (not "None") are included in output
     """
 
     @classmethod
@@ -146,11 +174,27 @@ class LoraStack:
 
 
 class Dict2LoraStack:
-    """
-    A ComfyUI node that converts a list of LoRA dictionaries into a LORA_STACK format.
+    """Converts a list of LoRA configuration dictionaries into a LORA_STACK format.
 
-    Each dictionary should contain 'lora_name' and 'lora_weight' keys.
-    Can optionally extend an existing LORA_STACK input.
+    Transforms a list of dictionaries containing LoRA configurations into the tuple format required
+    for LORA_STACK operations. Can optionally extend an existing stack.
+
+    Args:
+        lora_dicts (LIST): List of dictionaries, each containing:
+            - lora_name (str): Name of the LoRA model
+            - lora_weight (float): Weight to apply to both model and CLIP
+        lora_stack (LORA_STACK, optional): Existing stack to extend
+
+    Returns:
+        tuple:
+            - LORA_STACK: List of tuples (lora_name, model_weight, clip_weight)
+
+    Raises:
+        ValueError: If lora_dicts is not a list
+
+    Notes:
+        - Uses same weight for both model and CLIP components
+        - Filters out any "None" entries when extending existing stack
     """
 
     @classmethod
@@ -189,16 +233,32 @@ class Dict2LoraStack:
 
 # * Move this to signature dojo
 class SaveLoraCaptions:
-    """
-    A ComfyUI node that saves images and their associated captions for LoRA training.
+    """Saves images and captions in a format suitable for LoRA training.
 
-    Creates a dataset folder structure with:
-    - Images saved as PNG files
-    - Corresponding text files containing captions
-    - Optional prefix/suffix added to captions
-    - Support for multiple captions via newline separation
+    Creates a structured dataset directory containing images and their corresponding caption files,
+    with support for multiple captions and optional text modifications.
 
-    Returns the path to the created dataset folder.
+    Args:
+        dataset_name (str): Name for the dataset folder
+        repeats (int): Number of times to repeat the dataset (min: 1)
+        images (IMAGE): Tensor containing the images to save
+        labels (str): Caption text, multiple captions separated by newlines
+        prefix (str, optional): Text to add before each caption
+        suffix (str, optional): Text to add after each caption
+
+    Returns:
+        tuple:
+            - str: Path to the created dataset folder
+
+    Raises:
+        ValueError: If any input parameters are of incorrect type
+
+    Notes:
+        - Creates folder structure: comfy/loras_datasets/dataset_name_uuid/repeats_dataset_name/
+        - Saves images as PNG files with corresponding .txt caption files
+        - Supports multiple captions via newline separation
+        - Includes UUID in folder name for uniqueness
+        - Creates parent directories if they don't exist
     """
 
     @classmethod

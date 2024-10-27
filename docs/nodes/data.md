@@ -2,7 +2,11 @@
 
 ## JsonToDict
 
-Converts a JSON string to a Python dictionary
+Converts JSON strings to Python dictionaries for workflow integration.
+
+A node that takes JSON-formatted strings and parses them into Python dictionaries,
+enabling seamless data integration within the workflow. Handles nested JSON structures
+and validates input format.
 
 ### Inputs
 
@@ -16,25 +20,36 @@ Converts a JSON string to a Python dictionary
 | ---- | ------ |
 | dict | `DICT` |
 
-??? note "Pick the code in data.py"
+??? note "Source code in data.py"
 
     ```python
     class JsonToDict:
-        """Converts a JSON string to a Python dictionary.
+        """Converts JSON strings to Python dictionaries for workflow integration.
 
-        This class parses a JSON-formatted string and converts it into a Python dictionary.
-
-        Methods:
-            execute(**kwargs): Parses the JSON string and returns the resulting dictionary.
+        A node that takes JSON-formatted strings and parses them into Python dictionaries, enabling
+        seamless data integration within the workflow. Handles nested JSON structures and validates
+        input format.
 
         Args:
-            json_str (str): The JSON string to be converted.
+            json_str (str): The JSON-formatted input string to parse.
+                Must be a valid JSON string conforming to standard JSON syntax.
+                Can represent simple key-value pairs or complex nested structures.
 
         Returns:
-            tuple: A tuple containing the resulting dictionary.
+            tuple[dict]: A single-element tuple containing:
+                - dict: The parsed Python dictionary representing the JSON structure.
+                       Preserves all nested objects, arrays, and primitive values.
 
         Raises:
-            ValueError: If the input is not a string.
+            ValueError: When json_str is not a string type.
+            json.JSONDecodeError: When the input string contains invalid JSON syntax.
+
+        Notes:
+            - Accepts any valid JSON format including objects, arrays, and primitive values
+            - Empty JSON objects ('{}') are valid inputs and return empty dictionaries
+            - Preserves all JSON data types: objects, arrays, strings, numbers, booleans, null
+            - Does not support JSON streaming or parsing multiple JSON objects
+            - Unicode characters are properly handled and preserved
         """
 
         @classmethod
@@ -55,11 +70,16 @@ Converts a JSON string to a Python dictionary
                 raise ValueError("Json string must be a string")
             json_dict = json.loads(json_str)
             return (json_dict,)
+
+
     ```
 
 ## DictToJson
 
-Converts a Python dictionary to a JSON string
+Converts Python dictionaries to JSON strings for data interchange.
+
+A node that serializes Python dictionaries into JSON-formatted strings, facilitating
+data export and communication with external systems that require JSON format.
 
 ### Inputs
 
@@ -73,22 +93,36 @@ Converts a Python dictionary to a JSON string
 | ------ | -------- |
 | string | `STRING` |
 
-??? note "Pick the code in data.py"
+??? note "Source code in data.py"
 
     ```python
     class DictToJson:
-        """Converts a Python dictionary to a JSON string.
+        """Converts Python dictionaries to JSON strings for data interchange.
 
-        This class serializes a Python dictionary into a JSON-formatted string.
-
-        Methods:
-            execute(**kwargs): Serializes the dictionary and returns the resulting JSON string.
+        A node that serializes Python dictionaries into JSON-formatted strings, facilitating data
+        export and communication with external systems that require JSON format.
 
         Args:
-            dict (dict): The dictionary to be converted.
+            dict (dict): The Python dictionary to serialize.
+                Can contain nested dictionaries, lists, and primitive Python types.
+                All values must be JSON-serializable (dict, list, str, int, float, bool, None).
 
         Returns:
-            tuple: A tuple containing the resulting JSON string.
+            tuple[str]: A single-element tuple containing:
+                - str: The JSON-formatted string representation of the input dictionary.
+                      Follows standard JSON syntax and escaping rules.
+
+        Raises:
+            TypeError: When dict contains values that cannot be serialized to JSON.
+            ValueError: When dict is not a dictionary type.
+
+        Notes:
+            - All dictionary keys are converted to strings in the output JSON
+            - Complex Python objects (datetime, custom classes) must be pre-converted to basic types
+            - Output is compact JSON without extra whitespace or formatting
+            - Handles nested structures of any depth
+            - Unicode characters are properly escaped in the output
+            - Circular references are not supported and will raise TypeError
         """
 
         @classmethod
@@ -107,11 +141,17 @@ Converts a Python dictionary to a JSON string
             json_dict = kwargs.get("dict")
             json_str = json.dumps(json_dict)
             return (json_str,)
+
+
     ```
 
 ## GetImageListItem
 
-Retrieves an image from a list by index
+Extracts a single image from an image list by index.
+
+A node designed for batch image processing that allows selective access to individual
+images within a collection, enabling targeted processing of specific images in a
+sequence.
 
 ### Inputs
 
@@ -130,26 +170,39 @@ Retrieves an image from a list by index
 | g    | `G`  |
 | e    | `E`  |
 
-??? note "Pick the code in data.py"
+??? note "Source code in data.py"
 
     ```python
     class GetImageListItem:
-        """Retrieves an image from a list by index.
+        """Extracts a single image from an image list by index.
 
-        This class accesses a list of images and retrieves the image at the specified index.
-
-        Methods:
-            execute(**kwargs): Returns the image at the specified index.
+        A node designed for batch image processing that allows selective access to individual images
+        within a collection, enabling targeted processing of specific images in a sequence.
 
         Args:
-            images (list): The list of images.
-            index (int): The index of the image to retrieve.
+            images (list[Image]): The list of image objects to select from.
+                Must be a valid list containing compatible image objects.
+                Can be any length, but must not be empty.
+            index (int): The zero-based index of the desired image.
+                Must be a non-negative integer within the list bounds.
+                Defaults to 0 (first image).
 
         Returns:
-            tuple: A tuple containing the retrieved image.
+            tuple[Image]: A single-element tuple containing:
+                - Image: The selected image object from the specified index position.
 
         Raises:
-            ValueError: If the index is not an integer or if images is not a list.
+            ValueError: When index is not an integer or images is not a list.
+            IndexError: When index is outside the valid range for the image list.
+            TypeError: When images list contains invalid image objects.
+
+        Notes:
+            - Uses zero-based indexing (0 = first image)
+            - Does not support negative indices
+            - Returns a single image even from multi-image batches
+            - Preserves the original image data without modifications
+            - Thread-safe for concurrent access
+            - Memory efficient as it references rather than copies the image
         """
 
         @classmethod
@@ -177,11 +230,16 @@ Retrieves an image from a list by index
             index = kwargs.get("index")
             image = images[index]
             return (image,)
+
+
     ```
 
 ## GetListItem
 
-Retrieves an item from a list by index and returns its type
+Retrieves and types items from any list by index position.
+
+A versatile node that provides access to list elements while also determining their
+Python type, enabling dynamic type handling and conditional processing in workflows.
 
 ### Inputs
 
@@ -190,26 +248,39 @@ Retrieves an item from a list by index and returns its type
 | required | list  | `LIST` |         |        |
 | required | index | `INT`  | 0       |        |
 
-??? note "Pick the code in data.py"
+??? note "Source code in data.py"
 
     ```python
     class GetListItem:
-        """Retrieves an item from a list by index and returns its type.
+        """Retrieves and types items from any list by index position.
 
-        This class accesses a list and retrieves the item at the specified index, also returning the item's type.
-
-        Methods:
-            execute(**kwargs): Returns the item and its type.
+        A versatile node that provides access to list elements while also determining their Python
+        type, enabling dynamic type handling and conditional processing in workflows.
 
         Args:
-            list (list): The list to access.
-            index (int): The index of the item to retrieve.
+            list (list): The source list to extract items from.
+                Can contain elements of any type, including mixed types.
+                Must be a valid Python list, not empty.
+            index (int): The zero-based index of the desired item.
+                Must be a non-negative integer within the list bounds.
+                Defaults to 0 (first item).
 
         Returns:
-            tuple: A tuple containing the item and its type as a string.
+            tuple[Any, str]: A tuple containing:
+                - Any: The retrieved item from the specified index position.
+                - str: The Python type name of the retrieved item (e.g., 'str', 'int', 'dict').
 
         Raises:
-            ValueError: If the index is not an integer or if the list is not a list.
+            ValueError: When index is not an integer or list parameter is not a list.
+            IndexError: When index is outside the valid range for the list.
+
+        Notes:
+            - Supports lists containing any Python type, including custom classes
+            - Type name is derived from the object's __class__.__name__
+            - Does not support negative indices
+            - Thread-safe for concurrent access
+            - Preserves original data without modifications
+            - Handles nested data structures (lists within lists, dictionaries, etc.)
         """
 
         @classmethod
@@ -236,11 +307,16 @@ Retrieves an item from a list by index and returns its type
             item = list_obj[index]
             item_type = type(item).__name__
             return (item, item_type)
+
+
     ```
 
 ## GetDictValue
 
-Retrieves a value from a dictionary by key and returns its type
+Retrieves and types dictionary values using string keys.
+
+A node that provides key-based access to dictionary values while determining their
+Python type, enabling dynamic type handling and conditional processing in workflows.
 
 ### Inputs
 
@@ -249,27 +325,40 @@ Retrieves a value from a dictionary by key and returns its type
 | required | dict | `DICT`   |         |        |
 | required | key  | `STRING` |         |        |
 
-??? note "Pick the code in data.py"
+??? note "Source code in data.py"
 
     ```python
     class GetDictValue:
-        """Retrieves a value from a dictionary by key and returns its type.
+        """Retrieves and types dictionary values using string keys.
 
-        This class accesses a dictionary and retrieves the value
-        associated with the specified key, also returning the value's type.
-
-        Methods:
-            execute(**kwargs): Returns the value and its type.
+        A node that provides key-based access to dictionary values while determining their Python
+        type, enabling dynamic type handling and conditional processing in workflows.
 
         Args:
-            dict (dict): The dictionary to access.
-            key (str): The key of the value to retrieve.
+            dict (dict): The source dictionary to extract values from.
+                Must be a valid Python dictionary.
+                Can contain values of any type and nested structures.
+            key (str): The lookup key for value retrieval.
+                Must be a string type.
+                Case-sensitive and must match exactly.
+                Defaults to empty string.
 
         Returns:
-            tuple: A tuple containing the value and its type as a string.
+            tuple[Any, str]: A tuple containing:
+                - Any: The value associated with the specified key.
+                - str: The Python type name of the retrieved value (e.g., 'str', 'int', 'dict').
 
         Raises:
-            ValueError: If the key is not a string or if the dict is not a dictionary.
+            ValueError: When key is not a string or dict parameter is not a dictionary.
+            KeyError: When the specified key doesn't exist in the dictionary.
+
+        Notes:
+            - Supports dictionaries containing any Python type, including custom classes
+            - Type name is derived from the object's __class__.__name__
+            - Returns None for missing keys instead of raising KeyError
+            - Thread-safe for concurrent access
+            - Preserves original data without modifications
+            - Handles nested data structures (dictionaries within dictionaries, lists, etc.)
         """
 
         @classmethod
@@ -296,4 +385,5 @@ Retrieves a value from a dictionary by key and returns its type
             value = dict_obj.get(key)
             value_type = type(value).__name__
             return (value, value_type)
+
     ```

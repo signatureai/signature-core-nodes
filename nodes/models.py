@@ -14,18 +14,28 @@ from .categories import MODELS_CAT
 
 
 class MagicEraser(SaveImage):
-    """Removes content from an image based on a mask using the Lama inpainting model.
+    """Removes unwanted content from images using the Lama inpainting model.
 
-    Parameters:
-        image (torch.Tensor): Input image in BWHC format
-        mask (torch.Tensor): Mask indicating areas to erase
-        preview (str): Whether to save preview images ("on" or "off")
-        filename_prefix (str, optional): Prefix for saved files
-        prompt (str, optional): Optional prompt for metadata
-        extra_pnginfo (dict, optional): Additional PNG metadata
+    This class provides functionality to erase and reconstruct image regions based on a provided mask.
+    The Lama model intelligently fills in the masked areas with contextually appropriate content.
+
+    Args:
+        image (torch.Tensor): Input image tensor in BWHC (Batch, Width, Height, Channel) format.
+        mask (torch.Tensor): Binary mask tensor in BWHC format where 1 indicates areas to erase.
+        preview (str): Controls preview image generation. Options:
+            - "on": Saves preview images
+            - "off": No preview images
+        filename_prefix (str, optional): Prefix to use for saved output files. Defaults to "Signature".
+        prompt (str, optional): Text prompt for metadata. Defaults to None.
+        extra_pnginfo (dict, optional): Additional metadata to save with output images. Defaults to None.
 
     Returns:
-        tuple[torch.Tensor]: Single-element tuple containing the processed image
+        tuple[torch.Tensor]: Single-element tuple containing the processed image in BWHC format.
+
+    Notes:
+        - The model automatically handles memory cleanup after processing
+        - Temporary files are saved with random suffixes to prevent naming conflicts
+        - Preview images are saved at compression level 4 for balance of quality and size
     """
 
     def __init__(self):
@@ -49,15 +59,22 @@ class MagicEraser(SaveImage):
     FUNCTION = "execute"
     CATEGORY = MODELS_CAT
 
-    def execute(
-        self,
-        image: torch.Tensor,
-        mask: torch.Tensor,
-        preview: str,
-        filename_prefix="Signature",
-        prompt=None,
-        extra_pnginfo=None,
-    ):
+    def execute(self, **kwargs):
+        image = kwargs.get("image")
+        if not isinstance(image, torch.Tensor):
+            raise ValueError("Image must be a torch.Tensor")
+
+        mask = kwargs.get("mask")
+        if not isinstance(mask, torch.Tensor):
+            raise ValueError("Mask must be a torch.Tensor")
+
+        preview = kwargs.get("preview", "off")
+        if preview not in ["on", "off"]:
+            raise ValueError("Preview must be 'on' or 'off'")
+
+        filename_prefix = kwargs.get("filename_prefix", "Signature")
+        prompt = kwargs.get("prompt")
+        extra_pnginfo = kwargs.get("extra_pnginfo")
         model = Lama()
         input_image = TensorImage.from_BWHC(image)
         input_mask = TensorImage.from_BWHC(mask)
@@ -73,17 +90,27 @@ class MagicEraser(SaveImage):
 
 
 class Unblur(SaveImage):
-    """Reduces blur in an image using the SeeMore model.
+    """Enhances image clarity by reducing blur using the SeeMore model.
 
-    Parameters:
-        image (torch.Tensor): Input image in BWHC format
-        preview (str): Whether to save preview images ("on" or "off")
-        filename_prefix (str, optional): Prefix for saved files
-        prompt (str, optional): Optional prompt for metadata
-        extra_pnginfo (dict, optional): Additional PNG metadata
+    This class implements image deblurring functionality using the SeeMore neural network model.
+    It's effective for correcting motion blur, out-of-focus areas, and general image softness.
+
+    Args:
+        image (torch.Tensor): Input image tensor in BWHC (Batch, Width, Height, Channel) format.
+        preview (str): Controls preview image generation. Options:
+            - "on": Saves preview images
+            - "off": No preview images
+        filename_prefix (str, optional): Prefix to use for saved output files. Defaults to "Signature".
+        prompt (str, optional): Text prompt for metadata. Defaults to None.
+        extra_pnginfo (dict, optional): Additional metadata to save with output images. Defaults to None.
 
     Returns:
-        tuple[torch.Tensor]: Single-element tuple containing the unblurred image
+        tuple[torch.Tensor]: Single-element tuple containing the unblurred image in BWHC format.
+
+    Notes:
+        - The model automatically handles memory cleanup after processing
+        - Temporary files are saved with random suffixes to prevent naming conflicts
+        - Preview images are saved at compression level 4 for balance of quality and size
     """
 
     def __init__(self):
@@ -106,9 +133,18 @@ class Unblur(SaveImage):
     FUNCTION = "execute"
     CATEGORY = MODELS_CAT
 
-    def execute(
-        self, image: torch.Tensor, preview: str, filename_prefix="Signature", prompt=None, extra_pnginfo=None
-    ):
+    def execute(self, **kwargs):
+        image = kwargs.get("image")
+        if not isinstance(image, torch.Tensor):
+            raise ValueError("Image must be a torch.Tensor")
+
+        preview = kwargs.get("preview")
+        if preview not in ["on", "off"]:
+            raise ValueError("Preview must be either 'on' or 'off'")
+
+        filename_prefix = kwargs.get("filename_prefix", "Signature")
+        prompt = kwargs.get("prompt")
+        extra_pnginfo = kwargs.get("extra_pnginfo")
         model = SeeMore()
         input_image = TensorImage.from_BWHC(image)
         output_image = model.forward(input_image)
@@ -124,18 +160,37 @@ class Unblur(SaveImage):
 
 
 class BackgroundRemoval(SaveImage):
-    """Removes the background from an image using various AI models.
+    """Separates foreground subjects from image backgrounds using AI segmentation models.
 
-    Parameters:
-        image (torch.Tensor): Input image in BWHC format
-        model_name (str): Model to use ("inspyrenet", "rmbg14", "isnet_general", "fakepng")
-        preview (str): Preview mode ("mask", "rgba", "none")
-        filename_prefix (str, optional): Prefix for saved files
-        prompt (str, optional): Optional prompt for metadata
-        extra_pnginfo (dict, optional): Additional PNG metadata
+    This class provides multiple AI models for background removal, offering different approaches and
+    quality levels for various use cases. It can output both masked and RGBA versions of the results.
+
+    Args:
+        image (torch.Tensor): Input image tensor in BWHC (Batch, Width, Height, Channel) format.
+        model_name (str): The AI model to use for segmentation. Options:
+            - "inspyrenet": General-purpose segmentation
+            - "rmbg14": Optimized for human subjects
+            - "isnet_general": Balanced approach for various subjects
+            - "fakepng": Fast but lower quality option
+        preview (str): Controls preview output type. Options:
+            - "mask": Shows the segmentation mask
+            - "rgba": Shows the transparent background result
+            - "none": No preview
+        filename_prefix (str, optional): Prefix to use for saved output files. Defaults to "Signature".
+        prompt (str, optional): Text prompt for metadata. Defaults to None.
+        extra_pnginfo (dict, optional): Additional metadata to save with output images. Defaults to None.
 
     Returns:
-        tuple[torch.Tensor, torch.Tensor, torch.Tensor]: RGBA, RGB, and mask versions of the processed image
+        tuple[torch.Tensor, torch.Tensor, torch.Tensor]: A tuple containing:
+            - rgba: Image with transparent background in BWHC format
+            - rgb: Original image with background in BWHC format
+            - mask: Binary segmentation mask in BWHC format
+
+    Notes:
+        - The model automatically handles memory cleanup after processing
+        - Temporary files are saved with random suffixes to prevent naming conflicts
+        - Preview images are saved at compression level 4 for balance of quality and size
+        - Different models may perform better on different types of images
     """
 
     def __init__(self):
@@ -160,15 +215,29 @@ class BackgroundRemoval(SaveImage):
     FUNCTION = "execute"
     CATEGORY = MODELS_CAT
 
-    def execute(
-        self,
-        image: torch.Tensor,
-        model_name: str,
-        preview: str,
-        filename_prefix="Signature",
-        prompt=None,
-        extra_pnginfo=None,
-    ):
+    def execute(self, **kwargs):
+        image = kwargs.get("image")
+        if not isinstance(image, torch.Tensor):
+            raise ValueError("Image must be a torch.Tensor")
+
+        model_name = kwargs.get("model_name")
+        if not isinstance(model_name, str):
+            raise ValueError("Model name must be a string")
+        if model_name not in ["inspyrenet", "rmbg14", "isnet_general", "fakepng"]:
+            raise ValueError("Invalid model name")
+
+        preview = kwargs.get("preview")
+        if not isinstance(preview, str):
+            raise ValueError("Preview must be a string")
+        if preview not in ["mask", "rgba", "none"]:
+            raise ValueError("Invalid preview type")
+
+        filename_prefix = kwargs.get("filename_prefix", "Signature")
+        if not isinstance(filename_prefix, str):
+            raise ValueError("Filename prefix must be a string")
+
+        prompt = kwargs.get("prompt")
+        extra_pnginfo = kwargs.get("extra_pnginfo")
 
         model = SalientObjectDetection(model_name=model_name)
         input_image = TensorImage.from_BWHC(image)

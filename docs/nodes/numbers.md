@@ -2,7 +2,11 @@
 
 ## IntClamp
 
-Clamps an integer within a specified range
+Clamps an integer value between specified minimum and maximum bounds.
+
+This class provides functionality to constrain an integer input within a defined range.
+If the input number is less than the minimum value, it returns the minimum value. If
+it's greater than the maximum value, it returns the maximum value.
 
 ### Inputs
 
@@ -18,19 +22,30 @@ Clamps an integer within a specified range
 | ---- | ----- |
 | int  | `INT` |
 
-??? note "Pick the code in numbers.py"
+??? note "Source code in numbers.py"
 
     ```python
     class IntClamp:
-        """Clamps an integer within a specified range.
+        """Clamps an integer value between specified minimum and maximum bounds.
 
-        This class ensures that an integer input is clamped between a minimum and maximum value.
+        This class provides functionality to constrain an integer input within a defined range. If the input
+        number is less than the minimum value, it returns the minimum value. If it's greater than the
+        maximum value, it returns the maximum value.
 
-        Methods:
-            execute(**kwargs): Returns the clamped integer value.
+        Args:
+            number (int): The input integer to be clamped.
+            min_value (int): The minimum allowed value.
+            max_value (int): The maximum allowed value.
+
+        Returns:
+            tuple[int]: A single-element tuple containing the clamped integer value.
 
         Raises:
-            ValueError: If the input values are not integers.
+            ValueError: If any of the inputs (number, min_value, max_value) are not integers.
+
+        Notes:
+            - The input range is limited by MAX_INT constant
+            - The returned value is always wrapped in a tuple to maintain consistency with the node system
         """
 
         @classmethod
@@ -76,11 +91,17 @@ Clamps an integer within a specified range
             if number > max_value:
                 return (max_value,)
             return (number,)
+
+
     ```
 
 ## FloatClamp
 
-Clamps a float within a specified range
+Clamps a floating-point value between specified minimum and maximum bounds.
+
+This class provides functionality to constrain a float input within a defined range. If
+the input number is less than the minimum value, it returns the minimum value. If it's
+greater than the maximum value, it returns the maximum value.
 
 ### Inputs
 
@@ -96,19 +117,30 @@ Clamps a float within a specified range
 | ----- | ------- |
 | float | `FLOAT` |
 
-??? note "Pick the code in numbers.py"
+??? note "Source code in numbers.py"
 
     ```python
     class FloatClamp:
-        """Clamps a float within a specified range.
+        """Clamps a floating-point value between specified minimum and maximum bounds.
 
-        This class ensures that a float input is clamped between a minimum and maximum value.
+        This class provides functionality to constrain a float input within a defined range. If the input
+        number is less than the minimum value, it returns the minimum value. If it's greater than the
+        maximum value, it returns the maximum value.
 
-        Methods:
-            execute(**kwargs): Returns the clamped float value.
+        Args:
+            number (float): The input float to be clamped.
+            min_value (float): The minimum allowed value.
+            max_value (float): The maximum allowed value.
+
+        Returns:
+            tuple[float]: A single-element tuple containing the clamped float value.
 
         Raises:
-            ValueError: If the input values are not floats.
+            ValueError: If any of the inputs (number, min_value, max_value) are not floats.
+
+        Notes:
+            - The input range is limited by MAX_FLOAT constant
+            - The returned value is always wrapped in a tuple to maintain consistency with the node system
         """
 
         @classmethod
@@ -155,11 +187,17 @@ Clamps a float within a specified range
             if number > max_value:
                 return (max_value,)
             return (number,)
+
+
     ```
 
 ## Float2Int
 
-Converts a float to an integer
+Converts a floating-point number to an integer through truncation.
+
+This class handles the conversion of float values to integers by removing the decimal
+portion. The conversion is performed using Python's built-in int() function, which
+truncates towards zero.
 
 ### Inputs
 
@@ -173,19 +211,27 @@ Converts a float to an integer
 | ---- | ----- |
 | int  | `INT` |
 
-??? note "Pick the code in numbers.py"
+??? note "Source code in numbers.py"
 
     ```python
     class Float2Int:
-        """Converts a float to an integer.
+        """Converts a floating-point number to an integer through truncation.
 
-        This class converts a floating-point number to an integer by truncating the decimal part.
+        This class handles the conversion of float values to integers by removing the decimal portion.
+        The conversion is performed using Python's built-in int() function, which truncates towards zero.
 
-        Methods:
-            execute(**kwargs): Returns the integer representation of the float.
+        Args:
+            number (float): The floating-point number to convert to an integer.
+
+        Returns:
+            tuple[int]: A single-element tuple containing the converted integer value.
 
         Raises:
             ValueError: If the input value is not a float.
+
+        Notes:
+            - Decimal portions are truncated, not rounded
+            - The returned value is always wrapped in a tuple to maintain consistency with the node system
         """
 
         @classmethod
@@ -205,11 +251,16 @@ Converts a float to an integer
             if not isinstance(number, float):
                 raise ValueError("Number must be a float")
             return (int(number),)
+
+
     ```
 
 ## Int2Float
 
-Converts an integer to a float
+Converts an integer to a floating-point number.
+
+This class handles the conversion of integer values to floating-point numbers using
+Python's built-in float() function.
 
 ### Inputs
 
@@ -223,19 +274,27 @@ Converts an integer to a float
 | ----- | ------- |
 | float | `FLOAT` |
 
-??? note "Pick the code in numbers.py"
+??? note "Source code in numbers.py"
 
     ```python
     class Int2Float:
-        """Converts an integer to a float.
+        """Converts an integer to a floating-point number.
 
-        This class converts an integer to a floating-point number.
+        This class handles the conversion of integer values to floating-point numbers using Python's
+        built-in float() function.
 
-        Methods:
-            execute(**kwargs): Returns the float representation of the integer.
+        Args:
+            number (int): The integer to convert to a float.
+
+        Returns:
+            tuple[float]: A single-element tuple containing the converted float value.
 
         Raises:
             ValueError: If the input value is not an integer.
+
+        Notes:
+            - The conversion is exact as all integers can be represented precisely as floats
+            - The returned value is always wrapped in a tuple to maintain consistency with the node system
         """
 
         @classmethod
@@ -255,11 +314,17 @@ Converts an integer to a float
             if not isinstance(number, int):
                 raise ValueError("Number must be an integer")
             return (float(number),)
+
+
     ```
 
 ## IntOperator
 
-Performs arithmetic operations on two floats and returns an integer
+Performs arithmetic operations on two floats and returns an integer result.
+
+This class supports basic arithmetic operations between two floating-point numbers and
+returns the result as an integer. The supported operations are addition, subtraction,
+multiplication, and division.
 
 ### Inputs
 
@@ -275,20 +340,31 @@ Performs arithmetic operations on two floats and returns an integer
 | ---- | ----- |
 | int  | `INT` |
 
-??? note "Pick the code in numbers.py"
+??? note "Source code in numbers.py"
 
     ```python
     class IntOperator:
-        """Performs arithmetic operations on two floats and returns an integer.
+        """Performs arithmetic operations on two floats and returns an integer result.
 
-        This class supports basic arithmetic operations (+, -, *, /) on two float inputs
-        and returns the result as an integer.
+        This class supports basic arithmetic operations between two floating-point numbers and returns
+        the result as an integer. The supported operations are addition, subtraction, multiplication,
+        and division.
 
-        Methods:
-            execute(**kwargs): Returns the result of the arithmetic operation.
+        Args:
+            left (float): The left operand for the arithmetic operation.
+            right (float): The right operand for the arithmetic operation.
+            operator (str): The arithmetic operator to use ('+', '-', '*', or '/').
+
+        Returns:
+            tuple[int]: A single-element tuple containing the result of the operation as an integer.
 
         Raises:
-            ValueError: If the input values are not floats or if the operator is unsupported.
+            ValueError: If either operand is not a float or if the operator is not supported.
+
+        Notes:
+            - Division results are converted to integers
+            - The returned value is always wrapped in a tuple to maintain consistency with the node system
+            - Input values are limited by MAX_FLOAT constant
         """
 
         @classmethod
@@ -331,11 +407,16 @@ Performs arithmetic operations on two floats and returns an integer
                 return (left / right,)
 
             raise ValueError(f"Unsupported operator: {operator}")
+
+
     ```
 
 ## FloatOperator
 
-Performs arithmetic operations on two floats
+Performs arithmetic operations on two floating-point numbers.
+
+This class supports basic arithmetic operations between two floating-point numbers. The
+supported operations are addition, subtraction, multiplication, and division.
 
 ### Inputs
 
@@ -351,19 +432,30 @@ Performs arithmetic operations on two floats
 | ----- | ------- |
 | float | `FLOAT` |
 
-??? note "Pick the code in numbers.py"
+??? note "Source code in numbers.py"
 
     ```python
     class FloatOperator:
-        """Performs arithmetic operations on two floats.
+        """Performs arithmetic operations on two floating-point numbers.
 
-        This class supports basic arithmetic operations (+, -, *, /) on two float inputs.
+        This class supports basic arithmetic operations between two floating-point numbers. The supported
+        operations are addition, subtraction, multiplication, and division.
 
-        Methods:
-            execute(**kwargs): Returns the result of the arithmetic operation.
+        Args:
+            left (float): The left operand for the arithmetic operation.
+            right (float): The right operand for the arithmetic operation.
+            operator (str): The arithmetic operator to use ('+', '-', '*', or '/').
+
+        Returns:
+            tuple[float]: A single-element tuple containing the result of the operation.
 
         Raises:
-            ValueError: If the input values are not floats or if the operator is unsupported.
+            ValueError: If either operand is not a float or if the operator is not supported.
+
+        Notes:
+            - Division by zero will raise a Python exception
+            - The returned value is always wrapped in a tuple to maintain consistency with the node system
+            - Input values are limited by MAX_FLOAT constant
         """
 
         @classmethod
@@ -406,11 +498,16 @@ Performs arithmetic operations on two floats
                 return (left / right,)
 
             raise ValueError(f"Unsupported operator: {operator}")
+
+
     ```
 
 ## IntMinMax
 
-Finds the minimum or maximum of two integers
+Determines the minimum or maximum value between two integers.
+
+This class compares two integer inputs and returns either the smaller or larger value
+based on the specified mode of operation.
 
 ### Inputs
 
@@ -426,19 +523,28 @@ Finds the minimum or maximum of two integers
 | ---- | ----- |
 | int  | `INT` |
 
-??? note "Pick the code in numbers.py"
+??? note "Source code in numbers.py"
 
     ```python
     class IntMinMax:
-        """Finds the minimum or maximum of two integers.
+        """Determines the minimum or maximum value between two integers.
 
-        This class returns either the minimum or maximum of two integer inputs based on the specified mode.
+        This class compares two integer inputs and returns either the smaller or larger value based on
+        the specified mode of operation.
 
-        Methods:
-            execute(**kwargs): Returns the minimum or maximum integer.
+        Args:
+            a (int): The first integer to compare.
+            b (int): The second integer to compare.
+            mode (str): The comparison mode ('min' or 'max').
+
+        Returns:
+            tuple[int]: A single-element tuple containing either the minimum or maximum value.
 
         Raises:
-            ValueError: If the input values are not integers or if the mode is unsupported.
+            ValueError: If either input is not an integer or if the mode is not supported.
+
+        Notes:
+            - The returned value is always wrapped in a tuple to maintain consistency with the node system
         """
 
         @classmethod
@@ -470,11 +576,16 @@ Finds the minimum or maximum of two integers
             if mode == "max":
                 return (max(a, b),)
             raise ValueError(f"Unsupported mode: {mode}")
+
+
     ```
 
 ## FloatMinMax
 
-Finds the minimum or maximum of two floats
+Determines the minimum or maximum value between two floating-point numbers.
+
+This class compares two float inputs and returns either the smaller or larger value
+based on the specified mode of operation.
 
 ### Inputs
 
@@ -490,19 +601,28 @@ Finds the minimum or maximum of two floats
 | ----- | ------- |
 | float | `FLOAT` |
 
-??? note "Pick the code in numbers.py"
+??? note "Source code in numbers.py"
 
     ```python
     class FloatMinMax:
-        """Finds the minimum or maximum of two floats.
+        """Determines the minimum or maximum value between two floating-point numbers.
 
-        This class returns either the minimum or maximum of two float inputs based on the specified mode.
+        This class compares two float inputs and returns either the smaller or larger value based on
+        the specified mode of operation.
 
-        Methods:
-            execute(**kwargs): Returns the minimum or maximum float.
+        Args:
+            a (float): The first float to compare.
+            b (float): The second float to compare.
+            mode (str): The comparison mode ('min' or 'max').
+
+        Returns:
+            tuple[float]: A single-element tuple containing either the minimum or maximum value.
 
         Raises:
-            ValueError: If the input values are not floats or if the mode is unsupported.
+            ValueError: If either input is not a float or if the mode is not supported.
+
+        Notes:
+            - The returned value is always wrapped in a tuple to maintain consistency with the node system
         """
 
         @classmethod
@@ -534,11 +654,16 @@ Finds the minimum or maximum of two floats
             if mode == "max":
                 return (max(a, b),)
             raise ValueError(f"Unsupported mode: {mode}")
+
+
     ```
 
 ## RandomNumber
 
-Generates a random integer and its float representation
+Generates a random integer and its floating-point representation.
+
+This class produces a random integer between 0 and MAX_INT and provides both the integer
+value and its floating-point equivalent.
 
 ### Inputs
 
@@ -552,16 +677,22 @@ Generates a random integer and its float representation
 | int   | `INT`   |
 | float | `FLOAT` |
 
-??? note "Pick the code in numbers.py"
+??? note "Source code in numbers.py"
 
     ```python
     class RandomNumber:
-        """Generates a random integer and its float representation.
+        """Generates a random integer and its floating-point representation.
 
-        This class generates a random integer within a specified range and provides its float representation.
+        This class produces a random integer between 0 and MAX_INT and provides both the integer value
+        and its floating-point equivalent.
 
-        Methods:
-            execute(): Returns a tuple containing the random integer and its float representation.
+        Returns:
+            tuple[int, float]: A tuple containing the random integer and its float representation.
+
+        Notes:
+            - The random value is regenerated each time IS_CHANGED is called
+            - The maximum value is limited by MAX_INT constant
+            - No parameters are required for this operation
         """
 
         @classmethod
@@ -589,11 +720,17 @@ Generates a random integer and its float representation
         @classmethod
         def IS_CHANGED(cls):  # type: ignore
             return RandomNumber.get_random()
+
+
     ```
 
 ## MathOperator
 
-Evaluates mathematical expressions using variables and operators
+Evaluates mathematical expressions with support for variables and multiple operators.
+
+This class provides a powerful expression evaluator that supports variables (a, b, c, d)
+and various mathematical operations. It can handle arithmetic, comparison, and logical
+operations.
 
 ### Inputs
 
@@ -612,19 +749,36 @@ Evaluates mathematical expressions using variables and operators
 | int   | `INT`   |
 | float | `FLOAT` |
 
-??? note "Pick the code in numbers.py"
+??? note "Source code in numbers.py"
 
     ```python
     class MathOperator:
-        """Evaluates mathematical expressions using variables and operators.
+        """Evaluates mathematical expressions with support for variables and multiple operators.
 
-        This class evaluates mathematical expressions that can include variables (a, b, c, d) and a variety of operators.
+        This class provides a powerful expression evaluator that supports variables (a, b, c, d) and
+        various mathematical operations. It can handle arithmetic, comparison, and logical operations.
 
-        Methods:
-            execute(**kwargs): Returns the result of the evaluated expression as both an integer and a float.
+        Args:
+            a (float, optional): Value for variable 'a'. Defaults to 0.0.
+            b (float, optional): Value for variable 'b'. Defaults to 0.0.
+            c (float, optional): Value for variable 'c'. Defaults to 0.0.
+            d (float, optional): Value for variable 'd'. Defaults to 0.0.
+            value (str): The mathematical expression to evaluate.
+
+        Returns:
+            tuple[int, float]: A tuple containing both integer and float representations of the result.
 
         Raises:
             ValueError: If the expression contains unsupported operations or invalid syntax.
+
+        Notes:
+            - Supports standard arithmetic operators: +, -, *, /, //, %, **
+            - Supports comparison operators: ==, !=, <, <=, >, >=
+            - Supports logical operators: and, or, not
+            - Supports bitwise XOR operator: ^
+            - Includes functions: min(), max(), round(), sum(), len()
+            - Variables are limited by MAX_FLOAT constant
+            - NaN results are converted to 0.0
         """
 
         @classmethod
@@ -737,5 +891,6 @@ Evaluates mathematical expressions using variables and operators
             return (
                 round(result),  # type: ignore
                 result,
-            )
+            )  # type: ignore
+
     ```

@@ -17,25 +17,40 @@ from .categories import IMAGE_PROCESSING_CAT
 
 
 class AutoCrop:
-    """Automatically crops an image based on a mask.
+    """Automatically crops an image based on a mask content.
 
-    Parameters:
-        image (torch.Tensor): Input image in BWHC format
-        mask (torch.Tensor): Input mask in BWHC format
-        mask_threshold (float): Threshold for mask detection (0.0-1.0)
-        left_padding (int): Additional padding on left side
-        right_padding (int): Additional padding on right side
-        top_padding (int): Additional padding on top
-        bottom_padding (int): Additional padding on bottom
+    This node detects non-zero regions in a mask and crops both the image and mask
+    to those regions, with optional padding. Useful for removing empty space around
+    subjects or focusing on specific masked areas.
+
+    Args:
+        image (torch.Tensor): Input image tensor in BWHC format with values in range [0, 1]
+        mask (torch.Tensor): Input mask tensor in BWHC format with values in range [0, 1]
+        mask_threshold (float): Minimum mask value to consider as content (0.0-1.0)
+        left_padding (int): Additional pixels to include on the left side
+        right_padding (int): Additional pixels to include on the right side
+        top_padding (int): Additional pixels to include on the top
+        bottom_padding (int): Additional pixels to include on the bottom
 
     Returns:
-        tuple[torch.Tensor, torch.Tensor, int, int, int, int]:
-            - Cropped image
-            - Cropped mask
-            - X coordinate of crop
-            - Y coordinate of crop
-            - Width of crop
-            - Height of crop
+        tuple:
+            - cropped_image (torch.Tensor): Cropped image in BWHC format
+            - cropped_mask (torch.Tensor): Cropped mask in BWHC format
+            - x (int): X-coordinate of crop start in original image
+            - y (int): Y-coordinate of crop start in original image
+            - width (int): Width of cropped region
+            - height (int): Height of cropped region
+
+    Raises:
+        ValueError: If mask and image dimensions don't match
+        RuntimeError: If no content is found in mask above threshold
+
+    Notes:
+        - Input tensors should be in BWHC format (Batch, Width, Height, Channels)
+        - Mask should be single-channel
+        - All padding values must be non-negative
+        - If mask is empty above threshold, may return minimal crop
+        - Coordinates are returned relative to original image
     """
 
     @classmethod
@@ -80,17 +95,42 @@ class AutoCrop:
 
 
 class Rescale:
-    """Rescales an image and mask by a given factor.
+    """Rescales images and masks by a specified factor while preserving aspect ratio.
 
-    Parameters:
-        image (torch.Tensor, optional): Input image in BWHC format
-        mask (torch.Tensor, optional): Input mask in BWHC format
-        factor (float): Scale factor (default: 2.0)
-        interpolation (str): Interpolation method (default: "nearest")
-        antialias (bool): Whether to use antialiasing (default: True)
+    Provides flexible rescaling of images and masks with support for various interpolation
+    methods and optional antialiasing. Useful for uniform scaling operations where
+    maintaining aspect ratio is important.
+
+    Args:
+        image (torch.Tensor, optional): Input image in BWHC format with values in range [0, 1]
+        mask (torch.Tensor, optional): Input mask in BWHC format with values in range [0, 1]
+        factor (float): Scale multiplier (0.01-100.0)
+        interpolation (str): Resampling method to use:
+            - "nearest": Nearest neighbor (sharp, blocky)
+            - "nearest-exact": Nearest neighbor without rounding
+            - "bilinear": Linear interpolation (smooth)
+            - "bicubic": Cubic interpolation (smoother)
+            - "box": Box sampling (good for downscaling)
+            - "hamming": Hamming windowed sampling
+            - "lanczos": Lanczos resampling (sharp, fewer artifacts)
+        antialias (bool): Whether to apply antialiasing when downscaling
 
     Returns:
-        tuple[torch.Tensor, torch.Tensor]: Rescaled image and mask
+        tuple:
+            - image (torch.Tensor): Rescaled image in BWHC format
+            - mask (torch.Tensor): Rescaled mask in BWHC format
+
+    Raises:
+        ValueError: If neither image nor mask is provided
+        ValueError: If invalid interpolation method specified
+        RuntimeError: If input tensors have invalid dimensions
+
+    Notes:
+        - At least one of image or mask must be provided
+        - Output maintains the same number of channels as input
+        - Antialiasing is recommended when downscaling to prevent artifacts
+        - All interpolation methods preserve the value range [0, 1]
+        - Memory usage scales quadratically with factor
     """
 
     @classmethod
@@ -151,19 +191,48 @@ class Rescale:
 
 
 class Resize:
-    """Resizes an image and mask to specified dimensions.
+    """Resizes images and masks to specific dimensions with multiple sizing modes.
 
-    Parameters:
-        image (torch.Tensor, optional): Input image in BWHC format
-        mask (torch.Tensor, optional): Input mask in BWHC format
-        width (int): Target width (default: 1024)
-        height (int): Target height (default: 1024)
-        mode (str): Resize mode ("STRETCH", "FIT", "FILL", "ASPECT")
-        interpolation (str): Interpolation method (default: "nearest")
-        antialias (bool): Whether to use antialiasing (default: True)
+    A versatile resizing node that supports multiple modes for handling aspect ratio
+    and provides fine control over interpolation methods. Suitable for preparing
+    images for specific size requirements while maintaining quality.
+
+    Args:
+        image (torch.Tensor, optional): Input image in BWHC format with values in range [0, 1]
+        mask (torch.Tensor, optional): Input mask in BWHC format with values in range [0, 1]
+        width (int): Target width in pixels (32-40960)
+        height (int): Target height in pixels (32-40960)
+        mode (str): How to handle aspect ratio:
+            - "STRETCH": Force to exact dimensions, may distort
+            - "FIT": Fit within dimensions, may be smaller
+            - "FILL": Fill dimensions, may crop
+            - "ASPECT": Preserve aspect ratio, fit longest side
+        interpolation (str): Resampling method:
+            - "bilinear": Linear interpolation (smooth)
+            - "nearest": Nearest neighbor (sharp)
+            - "bicubic": Cubic interpolation (smoother)
+            - "area": Area averaging (good for downscaling)
+        antialias (bool): Whether to apply antialiasing when downscaling
 
     Returns:
-        tuple[torch.Tensor, torch.Tensor]: Resized image and mask
+        tuple:
+            - image (torch.Tensor): Resized image in BWHC format
+            - mask (torch.Tensor): Resized mask in BWHC format
+
+    Raises:
+        ValueError: If neither image nor mask is provided
+        ValueError: If dimensions are out of valid range
+        ValueError: If invalid mode or interpolation method
+        RuntimeError: If input tensors have invalid dimensions
+
+    Notes:
+        - At least one of image or mask must be provided
+        - Output maintains the same number of channels as input
+        - STRETCH mode may distort image proportions
+        - FIT mode ensures no cropping but may not fill target size
+        - FILL mode ensures target size but may crop content
+        - ASPECT mode preserves proportions using longest edge
+        - Antialiasing recommended when downscaling
     """
 
     @classmethod
@@ -220,6 +289,38 @@ class Resize:
 
 
 class Rotate:
+    """Rotates images and masks by a specified angle with optional zoom adjustment.
+
+    Performs rotation of images and masks with control over whether to zoom to fit
+    the entire rotated content. Useful for reorienting content while managing the
+    trade-off between content preservation and output size.
+
+    Args:
+        image (torch.Tensor, optional): Input image in BWHC format with values in range [0, 1]
+        mask (torch.Tensor, optional): Input mask in BWHC format with values in range [0, 1]
+        angle (float): Rotation angle in degrees (0-360)
+        zoom_to_fit (bool): Whether to zoom out to show all rotated content
+
+    Returns:
+        tuple:
+            - image (torch.Tensor): Rotated image in BWHC format
+            - mask (torch.Tensor): Rotated mask in BWHC format
+
+    Raises:
+        ValueError: If neither image nor mask is provided
+        ValueError: If angle is outside valid range
+        RuntimeError: If input tensors have invalid dimensions
+
+    Notes:
+        - At least one of image or mask must be provided
+        - Rotation is performed counterclockwise
+        - When zoom_to_fit is False, corners may be clipped
+        - When zoom_to_fit is True, output may be larger
+        - Interpolation is bilinear for smooth results
+        - Empty areas after rotation are filled with black
+        - Maintains aspect ratio of input
+    """
+
     @classmethod
     def INPUT_TYPES(cls):
         return {
@@ -265,14 +366,34 @@ class Rotate:
 
 
 class Cutout:
-    """Cuts out a portion of an image based on a mask.
+    """Creates masked cutouts from images with both RGB and RGBA outputs.
 
-    Parameters:
-        image (torch.Tensor): Input image in BWHC format
-        mask (torch.Tensor): Mask defining the cutout area
+    Extracts portions of an image based on a mask, providing both RGB and RGBA
+    versions of the result. Useful for isolating subjects or creating transparent
+    cutouts for compositing.
+
+    Args:
+        image (torch.Tensor): Input image in BWHC format with values in range [0, 1]
+        mask (torch.Tensor): Binary or continuous mask in BWHC format with values in range [0, 1]
 
     Returns:
-        tuple[torch.Tensor, torch.Tensor]: RGB and RGBA versions of the cutout image
+        tuple:
+            - rgb (torch.Tensor): Masked image in RGB format (BWHC)
+            - rgba (torch.Tensor): Masked image in RGBA format (BWHC)
+
+    Raises:
+        ValueError: If either image or mask is not provided
+        ValueError: If input tensors have mismatched dimensions
+        RuntimeError: If input tensors have invalid dimensions
+
+    Notes:
+        - Mask values determine transparency in RGBA output
+        - RGB output has masked areas filled with black
+        - RGBA output preserves partial mask values as alpha
+        - Input image must be 3 channels (RGB)
+        - Input mask must be 1 channel
+        - Output maintains original image resolution
+        - All non-zero mask values are considered for cutout
     """
 
     @classmethod
@@ -311,6 +432,49 @@ class Cutout:
 
 
 class UpscaleImage:
+    """AI-powered image upscaling with tiled processing and flexible scaling modes.
+
+    A comprehensive image upscaling node that leverages AI models for high-quality image enlargement.
+    Supports both factor-based rescaling and target size resizing while efficiently managing GPU
+    memory through tiled processing. Compatible with various AI upscaling models and includes
+    multiple resampling methods for final adjustments.
+
+    Args:
+        image (torch.Tensor): Input image tensor in BCHW format with values in range [0, 1].
+        upscale_model (str): Filename of the AI upscaling model to use.
+        mode (str): Scaling mode, either:
+            - "rescale": Scale relative to original size by a factor
+            - "resize": Scale to a specific target size
+        rescale_factor (float, optional): Scaling multiplier when using "rescale" mode.
+            Defaults to 2.0.
+        resize_size (int, optional): Target size in pixels for longest edge when using "resize" mode.
+            Defaults to 1024.
+        resampling_method (str, optional): Final resampling method for precise size adjustment.
+            Options: "bilinear", "nearest", "bicubic", "area". Defaults to "bilinear".
+        tiled_size (int, optional): Size of processing tiles in pixels. Larger tiles use more GPU memory.
+            Defaults to 512.
+
+    Returns:
+        tuple[torch.Tensor]: Single-element tuple containing:
+            - image (torch.Tensor): Upscaled image in BCHW format with values in range [0, 1]
+
+    Raises:
+        ValueError: If the upscale model is invalid or incompatible
+        RuntimeError: If GPU memory is insufficient even with minimum tile size
+        TypeError: If input tensors are of incorrect type
+
+    Notes:
+        - Models are loaded from the "upscale_models" directory
+        - Processing is done in tiles to manage GPU memory efficiently
+        - For large upscaling factors, multiple passes may be performed
+        - The aspect ratio is always preserved in "resize" mode
+        - If GPU memory is insufficient, tile size is automatically reduced
+        - Tiled processing may show slight seams with some models
+        - Final output is always clamped to [0, 1] range
+        - Model scale factor is automatically detected and respected
+        - Progress bar shows processing status for large images
+    """
+
     @classmethod
     def INPUT_TYPES(cls):  # type: ignore
         resampling_methods = ["bilinear", "nearest", "bicubic", "area"]

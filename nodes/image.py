@@ -13,15 +13,30 @@ from .categories import IMAGE_CAT
 
 
 class ImageBaseColor:
-    """Creates a solid color image of specified dimensions.
+    """Creates a solid color image with specified dimensions.
 
-    Parameters:
-        hex_color (str): Hex color code (e.g., "#FFFFFF")
-        width (int): Width of the output image
-        height (int): Height of the output image
+    This node generates a uniform color image using a hex color code. The output is a tensor in BWHC
+    format (Batch, Width, Height, Channels) with the specified dimensions.
+
+    Args:
+        hex_color (str): Hex color code in format "#RRGGBB" (e.g., "#FFFFFF" for white)
+        width (int): Width of the output image in pixels
+        height (int): Height of the output image in pixels
 
     Returns:
-        tuple[torch.Tensor]: Single-element tuple containing a BWHC format tensor
+        tuple[torch.Tensor]: Single-element tuple containing:
+            - tensor: Image in BWHC format with shape (1, height, width, 3)
+
+    Raises:
+        ValueError: If width or height are not integers
+        ValueError: If hex_color is not a string
+        ValueError: If hex_color is not in valid "#RRGGBB" format
+
+    Notes:
+        - The output tensor values are normalized to range [0, 1]
+        - Alpha channel is not supported
+        - The batch dimension is always 1
+        - RGB values are extracted from hex color and converted to float32
     """
 
     @classmethod
@@ -65,16 +80,32 @@ class ImageBaseColor:
 
 
 class ImageGaussianBlur:
-    """Applies Gaussian blur to an input image.
+    """Applies Gaussian blur filter to an input image.
 
-    Parameters:
-        image (torch.Tensor): Input image in BWHC format
-        radius (int): Blur radius (default: 13)
-        sigma (float): Blur sigma/strength (default: 10.5)
-        interations (int): Number of blur passes (default: 1)
+    This node performs Gaussian blur using a configurable kernel size and sigma value. Multiple passes
+    can be applied for stronger blur effects. The blur is applied uniformly across all color channels.
+
+    Args:
+        image (torch.Tensor): Input image tensor in BWHC format
+        radius (int): Blur kernel radius in pixels (kernel size = 2 * radius + 1)
+        sigma (float): Standard deviation for Gaussian kernel, controls blur strength
+        iterations (int): Number of times to apply the blur filter sequentially
 
     Returns:
-        tuple[torch.Tensor]: Single-element tuple containing the blurred image
+        tuple[torch.Tensor]: Single-element tuple containing:
+            - tensor: Blurred image in BWHC format with same shape as input
+
+    Raises:
+        ValueError: If image is not a torch.Tensor
+        ValueError: If radius is not an integer
+        ValueError: If sigma is not a float
+        ValueError: If iterations is not an integer
+
+    Notes:
+        - Larger radius and sigma values produce stronger blur effects
+        - Multiple iterations can create smoother results but increase processing time
+        - Input image dimensions and batch size are preserved in output
+        - Processing is done on GPU if input tensor is on GPU
     """
 
     @classmethod
@@ -111,16 +142,32 @@ class ImageGaussianBlur:
 
 
 class ImageUnsharpMask:
-    """Applies unsharp mask filter to sharpen an image.
+    """Enhances image sharpness using unsharp mask technique.
 
-    Parameters:
+    This node applies an unsharp mask filter to enhance edge details in the image. It works by
+    subtracting a blurred version of the image from the original, creating a sharpening effect.
+
+    Args:
         image (torch.Tensor): Input image in BWHC format
-        radius (int): Sharpening radius (default: 3)
-        sigma (float): Sharpening strength (default: 1.5)
-        interations (int): Number of sharpening passes (default: 1)
+        radius (int): Size of the blur kernel used in the unsharp mask
+        sigma (float): Strength of the blur in the unsharp mask calculation
+        iterations (int): Number of times to apply the sharpening effect
 
     Returns:
-        tuple[torch.Tensor]: Single-element tuple containing the sharpened image
+        tuple[torch.Tensor]: Single-element tuple containing:
+            - tensor: Sharpened image in BWHC format with same shape as input
+
+    Raises:
+        ValueError: If image is not a torch.Tensor
+        ValueError: If radius is not an integer
+        ValueError: If sigma is not a float
+        ValueError: If iterations is not an integer
+
+    Notes:
+        - Higher sigma values create stronger sharpening effects
+        - Multiple iterations can create more pronounced sharpening but may introduce artifacts
+        - The process preserves the original image dimensions and color range
+        - Works on all color channels independently
     """
 
     @classmethod
@@ -159,12 +206,27 @@ class ImageUnsharpMask:
 class ImageSoftLight:
     """Applies soft light blend mode between two images.
 
-    Parameters:
-        top (torch.Tensor): Top layer image in BWHC format
-        bottom (torch.Tensor): Bottom layer image in BWHC format
+    Implements the soft light blending mode similar to photo editing software. The effect creates a
+    subtle, soft lighting effect based on the interaction between the top and bottom layers.
+
+    Args:
+        top (torch.Tensor): Top layer image in BWHC format, acts as the blend layer
+        bottom (torch.Tensor): Bottom layer image in BWHC format, acts as the base layer
 
     Returns:
-        tuple[torch.Tensor]: Single-element tuple containing the blended image
+        tuple[torch.Tensor]: Single-element tuple containing:
+            - tensor: Blended image in BWHC format with same shape as inputs
+
+    Raises:
+        ValueError: If top is not a torch.Tensor
+        ValueError: If bottom is not a torch.Tensor
+        ValueError: If input tensors have different shapes
+
+    Notes:
+        - Both input images must have the same dimensions
+        - The blend preserves the original image dimensions and color range
+        - The effect is similar to soft light blend mode in photo editing software
+        - Processing is done on GPU if input tensors are on GPU
     """
 
     @classmethod
@@ -195,13 +257,26 @@ class ImageSoftLight:
 
 
 class ImageAverage:
-    """Calculates the color average of an input image.
+    """Calculates the average color of an input image.
 
-    Parameters:
-        image (torch.Tensor): Input image in BWHC format
+    Computes the mean color values across all pixels in the image, resulting in a uniform color
+    image representing the average color of the input.
+
+    Args:
+        image (torch.Tensor): Input image in BWHC format to calculate average from
 
     Returns:
-        tuple[torch.Tensor]: Single-element tuple containing the averaged image
+        tuple[torch.Tensor]: Single-element tuple containing:
+            - tensor: Uniform color image in BWHC format with same shape as input
+
+    Raises:
+        ValueError: If image is not a torch.Tensor
+
+    Notes:
+        - Output maintains the same dimensions as input but with uniform color
+        - Calculation is performed per color channel
+        - Useful for color analysis or creating color-matched solid backgrounds
+        - Preserves the original batch size
     """
 
     @classmethod
@@ -226,14 +301,29 @@ class ImageAverage:
 
 
 class ImageSubtract:
-    """Subtracts one image from another (absolute difference).
+    """Computes the absolute difference between two images.
 
-    Parameters:
+    Performs pixel-wise subtraction between two images and takes the absolute value of the result,
+    useful for comparing images or creating difference maps.
+
+    Args:
         image_0 (torch.Tensor): First image in BWHC format
-        image_1 (torch.Tensor): Second image in BWHC format
+        image_1 (torch.Tensor): Second image in BWHC format to subtract from first image
 
     Returns:
-        tuple[torch.Tensor]: Single-element tuple containing the difference image
+        tuple[torch.Tensor]: Single-element tuple containing:
+            - tensor: Difference image in BWHC format with same shape as inputs
+
+    Raises:
+        ValueError: If image_0 is not a torch.Tensor
+        ValueError: If image_1 is not a torch.Tensor
+        ValueError: If input tensors have different shapes
+
+    Notes:
+        - Both input images must have the same dimensions
+        - Output values represent absolute differences between corresponding pixels
+        - Useful for change detection or image comparison
+        - Result is always positive due to absolute value operation
     """
 
     @classmethod
@@ -264,20 +354,36 @@ class ImageSubtract:
 
 
 class ImageTranspose:
-    """Transforms an overlay image onto a base image with various adjustments.
+    """Transforms and composites an overlay image onto a base image.
 
-    Parameters:
+    Provides comprehensive image composition capabilities including resizing, positioning, rotation,
+    and edge feathering of an overlay image onto a base image.
+
+    Args:
         image (torch.Tensor): Base image in BWHC format
         image_overlay (torch.Tensor): Overlay image in BWHC format
         width (int): Target width for overlay (-1 for original size)
         height (int): Target height for overlay (-1 for original size)
-        X (int): Horizontal offset
-        Y (int): Vertical offset
-        rotation (int): Rotation angle in degrees
-        feathering (int): Edge feathering amount
+        X (int): Horizontal offset in pixels from left edge
+        Y (int): Vertical offset in pixels from top edge
+        rotation (int): Rotation angle in degrees (-360 to 360)
+        feathering (int): Edge feathering radius in pixels (0-100)
 
     Returns:
-        tuple[torch.Tensor, torch.Tensor]: RGB and RGBA versions of the composited image
+        tuple[torch.Tensor, torch.Tensor]: Two-element tuple containing:
+            - tensor: Composited image in RGB format
+            - tensor: Composited image in RGBA format with transparency
+
+    Raises:
+        ValueError: If any input parameters are not of correct type
+        ValueError: If rotation is outside valid range
+        ValueError: If feathering is outside valid range
+
+    Notes:
+        - Supports both RGB and RGBA overlay images
+        - Automatically handles padding and cropping
+        - Feathering creates smooth edges around the overlay
+        - All transformations preserve aspect ratio when specified
     """
 
     def __init__(self):
@@ -391,15 +497,38 @@ class ImageTranspose:
 
 
 class ImageList2Batch:
-    """Converts a list of images into a batched tensor, handling different image sizes.
+    """Converts a list of individual images into a batched tensor.
 
-    Parameters:
-        images (list[torch.Tensor]): List of input images
-        mode (str): Resize mode ('STRETCH', 'FIT', 'FILL', 'ASPECT')
-        interpolation (str): Interpolation method for resizing
+    Combines multiple images into a single batched tensor, handling different input sizes through
+    various resize modes. Supports multiple interpolation methods for optimal quality.
+
+    Args:
+        images (list[torch.Tensor]): List of input images in BWHC format
+        mode (str): Resize mode for handling different image sizes:
+            - 'STRETCH': Stretches images to match largest dimensions
+            - 'FIT': Fits images within largest dimensions, maintaining aspect ratio
+            - 'FILL': Fills to largest dimensions, maintaining aspect ratio with cropping
+            - 'ASPECT': Preserves aspect ratio with padding
+        interpolation (str): Interpolation method for resizing:
+            - 'bilinear': Smooth interpolation suitable for most cases
+            - 'nearest': Nearest neighbor, best for pixel art
+            - 'bicubic': High-quality interpolation
+            - 'area': Best for downscaling
 
     Returns:
-        tuple[torch.Tensor]: Single-element tuple containing the batched images
+        tuple[torch.Tensor]: Single-element tuple containing:
+            - tensor: Batched images in BWHC format
+
+    Raises:
+        ValueError: If images is not a list
+        ValueError: If mode is not a valid option
+        ValueError: If interpolation is not a valid option
+
+    Notes:
+        - All images in output batch will have same dimensions
+        - Original image qualities are preserved as much as possible
+        - Memory efficient processing for large batches
+        - GPU acceleration is automatically used when available
     """
 
     @classmethod
@@ -453,13 +582,26 @@ class ImageList2Batch:
 
 
 class ImageBatch2List:
-    """Converts a batched tensor of images into a list of individual images.
+    """Splits a batched tensor of images into individual images.
 
-    Parameters:
+    Converts a batch of images stored in a single tensor into a list of separate image tensors,
+    useful for processing images individually after batch operations.
+
+    Args:
         image (torch.Tensor): Batched input images in BWHC format
 
     Returns:
-        tuple[list[torch.Tensor]]: Single-element tuple containing list of images
+        tuple[list[torch.Tensor]]: Single-element tuple containing:
+            - list: Individual images, each in BWHC format with batch size 1
+
+    Raises:
+        ValueError: If image is not a torch.Tensor
+
+    Notes:
+        - Each output image maintains original dimensions and channels
+        - Output images have batch dimension of 1
+        - Useful for post-processing individual images after batch operations
+        - Memory efficient as it uses views when possible
     """
 
     @classmethod
@@ -481,13 +623,31 @@ class ImageBatch2List:
 
 
 class GetImageShape:
-    """Returns the dimensions of an input image.
+    """Analyzes and returns the dimensions of an input image.
 
-    Parameters:
-        image (torch.Tensor): Input image in BWHC format
+    Extracts and returns detailed shape information from an input image tensor, providing both
+    individual dimensions and a formatted string representation.
+
+    Args:
+        image (torch.Tensor): Input image in BWHC format to analyze
 
     Returns:
-        tuple[int, int, int, int, str]: Batch size, width, height, channels, and shape string
+        tuple[int, int, int, int, str]: Five-element tuple containing:
+            - int: Batch size (B dimension)
+            - int: Width in pixels
+            - int: Height in pixels
+            - int: Number of channels (typically 3 for RGB, 4 for RGBA)
+            - str: Formatted string showing complete shape (B,W,H,C)
+
+    Raises:
+        ValueError: If image is not a torch.Tensor
+        ValueError: If image does not have exactly 4 dimensions
+
+    Notes:
+        - Useful for debugging and dynamic processing
+        - Shape string provides human-readable format
+        - Can handle both RGB and RGBA images
+        - Validates correct tensor format
     """
 
     @classmethod

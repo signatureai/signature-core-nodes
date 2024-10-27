@@ -2,7 +2,11 @@
 
 ## Float
 
-Represents a floating-point number input
+A node that handles floating-point number inputs with configurable parameters.
+
+This node provides functionality for processing floating-point numbers within a
+specified range and step size. It can be used as a basic input node in computational
+graphs where decimal number precision is required.
 
 ### Inputs
 
@@ -16,17 +20,30 @@ Represents a floating-point number input
 | ----- | ------- |
 | float | `FLOAT` |
 
-??? note "Pick the code in primitives.py"
+??? note "Source code in primitives.py"
 
     ```python
     class Float:
-        """Represents a floating-point number input.
+        """A node that handles floating-point number inputs with configurable parameters.
 
-        This class provides a node for handling floating-point number inputs with
-        specified default, minimum, maximum, and step values.
+        This node provides functionality for processing floating-point numbers within a specified range
+        and step size. It can be used as a basic input node in computational graphs where decimal
+        number precision is required.
 
-        Methods:
-            execute(value): Returns the input floating-point value as a tuple.
+        Args:
+            value (float): The input floating-point number to process.
+                          Default: 0
+                          Min: -18446744073709551615
+                          Max: 18446744073709551615
+                          Step: 0.01
+
+        Returns:
+            tuple[float]: A single-element tuple containing the processed float value.
+
+        Notes:
+            - The node maintains the exact input value without any transformation
+            - The step value of 0.01 provides two decimal places of precision by default
+            - The min/max values correspond to the 64-bit integer limits
         """
 
         @classmethod
@@ -47,11 +64,17 @@ Represents a floating-point number input
 
         def execute(self, value):
             return (value,)
+
+
     ```
 
 ## Int
 
-Represents an integer input
+A node that handles integer number inputs with configurable parameters.
+
+This node provides functionality for processing integer numbers within a specified range
+and step size. It can be used as a basic input node in computational graphs where whole
+number values are required.
 
 ### Inputs
 
@@ -65,16 +88,30 @@ Represents an integer input
 | ---- | ----- |
 | int  | `INT` |
 
-??? note "Pick the code in primitives.py"
+??? note "Source code in primitives.py"
 
     ```python
     class Int:
-        """Represents an integer input.
+        """A node that handles integer number inputs with configurable parameters.
 
-        This class provides a node for handling integer inputs with specified default, minimum, maximum, and step values.
+        This node provides functionality for processing integer numbers within a specified range
+        and step size. It can be used as a basic input node in computational graphs where whole
+        number values are required.
 
-        Methods:
-            execute(value): Returns the input integer value as a tuple.
+        Args:
+            value (int): The input integer number to process.
+                        Default: 0
+                        Min: -18446744073709551615
+                        Max: 18446744073709551615
+                        Step: 1
+
+        Returns:
+            tuple[int]: A single-element tuple containing the processed integer value.
+
+        Notes:
+            - The node maintains the exact input value without any transformation
+            - The step value of 1 ensures whole number increments
+            - The min/max values correspond to the 64-bit integer limits
         """
 
         @classmethod
@@ -95,11 +132,16 @@ Represents an integer input
 
         def execute(self, value):
             return (value,)
+
+
     ```
 
 ## String
 
-Represents a single-line string input
+A node that handles single-line string inputs.
+
+This node provides functionality for processing single-line text input. It can be used
+as a basic input node in computational graphs where text processing is required.
 
 ### Inputs
 
@@ -113,16 +155,26 @@ Represents a single-line string input
 | ------ | -------- |
 | string | `STRING` |
 
-??? note "Pick the code in primitives.py"
+??? note "Source code in primitives.py"
 
     ```python
     class String:
-        """Represents a single-line string input.
+        """A node that handles single-line string inputs.
 
-        This class provides a node for handling single-line string inputs with a specified default value.
+        This node provides functionality for processing single-line text input. It can be used as a
+        basic input node in computational graphs where text processing is required.
 
-        Methods:
-            execute(value): Returns the input string value as a tuple.
+        Args:
+            value (str): The input string to process.
+                        Default: "" (empty string)
+
+        Returns:
+            tuple[str]: A single-element tuple containing the processed string value.
+
+        Notes:
+            - The node maintains the exact input value without any transformation
+            - Newline characters are not preserved in the input field
+            - Suitable for short text inputs or commands
         """
 
         @classmethod
@@ -140,34 +192,26 @@ Represents a single-line string input
 
         def execute(self, value):
             return (value,)
-    ```
 
-## StringMultiline
 
-Represents a multi-line string input
-
-### Inputs
-
-| Group    | Name  | Type     | Default | Extras         |
-| -------- | ----- | -------- | ------- | -------------- |
-| required | value | `STRING` |         | multiline=True |
-
-### Returns
-
-| Name   | Type     |
-| ------ | -------- |
-| string | `STRING` |
-
-??? note "Pick the code in primitives.py"
-
-    ```python
     class StringMultiline:
-        """Represents a multi-line string input.
+        """A node that handles multi-line string inputs.
 
-        This class provides a node for handling multi-line string inputs with a specified default value.
+        This node provides functionality for processing multi-line text input. It can be used as a
+        basic input node in computational graphs where larger text blocks or formatted text
+        processing is required.
 
-        Methods:
-            execute(value): Returns the input multi-line string value as a tuple.
+        Args:
+            value (str): The input multi-line string to process.
+                        Default: "" (empty string)
+
+        Returns:
+            tuple[str]: A single-element tuple containing the processed multi-line string value.
+
+        Notes:
+            - The node maintains the exact input value without any transformation
+            - Newline characters are preserved in the input
+            - Suitable for longer text inputs, code blocks, or formatted text
         """
 
         @classmethod
@@ -185,11 +229,78 @@ Represents a multi-line string input
 
         def execute(self, value):
             return (value,)
+
+
+    ```
+
+## StringMultiline
+
+A node that handles multi-line string inputs.
+
+This node provides functionality for processing multi-line text input. It can be used as
+a basic input node in computational graphs where larger text blocks or formatted text
+processing is required.
+
+### Inputs
+
+| Group    | Name  | Type     | Default | Extras         |
+| -------- | ----- | -------- | ------- | -------------- |
+| required | value | `STRING` |         | multiline=True |
+
+### Returns
+
+| Name   | Type     |
+| ------ | -------- |
+| string | `STRING` |
+
+??? note "Source code in primitives.py"
+
+    ```python
+    class StringMultiline:
+        """A node that handles multi-line string inputs.
+
+        This node provides functionality for processing multi-line text input. It can be used as a
+        basic input node in computational graphs where larger text blocks or formatted text
+        processing is required.
+
+        Args:
+            value (str): The input multi-line string to process.
+                        Default: "" (empty string)
+
+        Returns:
+            tuple[str]: A single-element tuple containing the processed multi-line string value.
+
+        Notes:
+            - The node maintains the exact input value without any transformation
+            - Newline characters are preserved in the input
+            - Suitable for longer text inputs, code blocks, or formatted text
+        """
+
+        @classmethod
+        def INPUT_TYPES(cls):  # type: ignore
+            return {
+                "required": {
+                    "value": ("STRING", {"default": "", "multiline": True}),
+                },
+            }
+
+        RETURN_TYPES = ("STRING",)
+        RETURN_NAMES = ("string",)
+        FUNCTION = "execute"
+        CATEGORY = PRIMITIVES_CAT
+
+        def execute(self, value):
+            return (value,)
+
+
     ```
 
 ## Boolean
 
-Represents a boolean input
+A node that handles boolean inputs.
+
+This node provides functionality for processing boolean (True/False) values. It can be
+used as a basic input node in computational graphs where conditional logic is required.
 
 ### Inputs
 
@@ -203,16 +314,26 @@ Represents a boolean input
 | ------- | --------- |
 | boolean | `BOOLEAN` |
 
-??? note "Pick the code in primitives.py"
+??? note "Source code in primitives.py"
 
     ```python
     class Boolean:
-        """Represents a boolean input.
+        """A node that handles boolean inputs.
 
-        This class provides a node for handling boolean inputs with a specified default value.
+        This node provides functionality for processing boolean (True/False) values. It can be used
+        as a basic input node in computational graphs where conditional logic is required.
 
-        Methods:
-            execute(value): Returns the input boolean value as a tuple.
+        Args:
+            value (bool): The input boolean value to process.
+                         Default: False
+
+        Returns:
+            tuple[bool]: A single-element tuple containing the processed boolean value.
+
+        Notes:
+            - The node maintains the exact input value without any transformation
+            - Typically displayed as a checkbox in user interfaces
+            - Useful for conditional branching in node graphs
         """
 
         @classmethod
@@ -230,4 +351,5 @@ Represents a boolean input
 
         def execute(self, value):
             return (value,)
+
     ```

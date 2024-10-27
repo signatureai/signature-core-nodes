@@ -22,15 +22,27 @@ from .shared import MAX_INT
 
 
 class BaseMask:
-    """Creates a basic binary mask of specified dimensions.
+    """Creates a basic binary mask with specified dimensions.
 
-    Parameters:
-        color (str): Either "white" or "black" to set mask color
-        width (int): Width of the output mask (default: 1024)
-        height (int): Height of the output mask (default: 1024)
+    A utility class that generates a simple binary mask (black or white) with user-defined dimensions.
+    The mask is returned in BWHC (Batch, Width, Height, Channel) format.
+
+    Args:
+        color (str): The mask color. Options:
+            - "white": Creates a mask filled with ones
+            - "black": Creates a mask filled with zeros
+        width (int): Width of the output mask in pixels. Default: 1024
+        height (int): Height of the output mask in pixels. Default: 1024
 
     Returns:
-        tuple[torch.Tensor]: Single-element tuple containing a binary mask in BWHC format
+        tuple[torch.Tensor]: A single-element tuple containing the binary mask tensor in BWHC format
+
+    Raises:
+        None
+
+    Notes:
+        - The output mask will have dimensions (1, 1, height, width) before BWHC conversion
+        - All values in the mask are either 0 (black) or 1 (white)
     """
 
     @classmethod
@@ -60,17 +72,33 @@ class BaseMask:
 
 
 class MaskMorphology:
-    """Applies morphological operations to a mask.
+    """Applies morphological operations to transform mask shapes and boundaries.
 
-    Parameters:
-        mask (torch.Tensor): Input mask in BWHC format
-        operation (str): One of: "dilation", "erosion", "opening", "closing",
-                        "gradient", "top_hat", "bottom_hat"
-        kernel_size (int): Size of the morphological kernel (default: 1)
-        iterations (int): Number of times to apply the operation (default: 5)
+    Provides various morphological operations to modify mask shapes through kernel-based transformations.
+    Supports multiple iterations for stronger effects.
+
+    Args:
+        mask (torch.Tensor): Input mask tensor in BWHC format
+        operation (str): Morphological operation to apply. Options:
+            - "dilation": Expands mask regions
+            - "erosion": Shrinks mask regions
+            - "opening": Erosion followed by dilation
+            - "closing": Dilation followed by erosion
+            - "gradient": Difference between dilation and erosion
+            - "top_hat": Difference between input and opening
+            - "bottom_hat": Difference between closing and input
+        kernel_size (int): Size of the morphological kernel. Default: 1
+        iterations (int): Number of times to apply the operation. Default: 5
 
     Returns:
-        tuple[torch.Tensor]: Single-element tuple containing the processed mask
+        tuple[torch.Tensor]: A single-element tuple containing the processed mask in BWHC format
+
+    Raises:
+        ValueError: If mask is not a valid torch.Tensor or if operation is invalid
+
+    Notes:
+        - Larger kernel sizes and more iterations result in stronger morphological effects
+        - Operations are performed using the TensorImage wrapper class for format consistency
     """
 
     @classmethod
@@ -133,15 +161,30 @@ class MaskMorphology:
 
 
 class MaskBitwise:
-    """Performs bitwise operations between two masks.
+    """Performs bitwise logical operations between two binary masks.
 
-    Parameters:
+    Converts masks to 8-bit format and applies various bitwise operations, useful for combining
+    or comparing mask regions.
+
+    Args:
         mask_1 (torch.Tensor): First input mask in BWHC format
         mask_2 (torch.Tensor): Second input mask in BWHC format
-        mode (str): One of: "and", "or", "xor", "left_shift", "right_shift"
+        mode (str): Bitwise operation to apply. Options:
+            - "and": Intersection of masks
+            - "or": Union of masks
+            - "xor": Exclusive OR of masks
+            - "left_shift": Left bit shift using mask_2 as shift amount
+            - "right_shift": Right bit shift using mask_2 as shift amount
 
     Returns:
-        tuple[torch.Tensor]: Single-element tuple containing the resulting mask
+        tuple[torch.Tensor]: A single-element tuple containing the resulting mask in BWHC format
+
+    Raises:
+        ValueError: If mode is not one of the supported operations
+
+    Notes:
+        - Masks are converted to 8-bit (0-255) before operations and back to float (0-1) after
+        - Shift operations use the second mask values as the number of bits to shift
     """
 
     @classmethod
@@ -183,14 +226,25 @@ class MaskBitwise:
 
 
 class MaskDistance:
-    """Calculates the Euclidean distance between two masks.
+    """Calculates the Euclidean distance between two binary masks.
 
-    Parameters:
+    Computes the average pixel-wise Euclidean distance between two masks, useful for comparing
+    mask similarity or differences.
+
+    Args:
         mask_0 (torch.Tensor): First input mask in BWHC format
         mask_1 (torch.Tensor): Second input mask in BWHC format
 
     Returns:
-        tuple[float]: Single-element tuple containing the distance value
+        tuple[float]: A single-element tuple containing the computed distance value
+
+    Raises:
+        ValueError: If either mask_0 or mask_1 is not a valid torch.Tensor
+
+    Notes:
+        - Distance is calculated as the root mean square difference between mask pixels
+        - Output is normalized and returned as a single float value
+        - Smaller values indicate more similar masks
     """
 
     @classmethod
@@ -213,18 +267,30 @@ class MaskDistance:
 
 
 class Mask2Trimap:
-    """Converts a mask to a trimap representation (foreground, background, unknown regions).
+    """Converts a binary mask into a trimap representation with three distinct regions.
 
-    Parameters:
-        mask (torch.Tensor): Input mask in BWHC format
-        inner_min_threshold (int): Minimum threshold for inner region (default: 200)
-        inner_max_threshold (int): Maximum threshold for inner region (default: 255)
-        outer_min_threshold (int): Minimum threshold for outer region (default: 15)
-        outer_max_threshold (int): Maximum threshold for outer region (default: 240)
-        kernel_size (int): Size of morphological kernel (default: 10)
+    Creates a trimap by identifying definite foreground, definite background, and uncertain regions
+    using threshold values and morphological operations.
+
+    Args:
+        mask (torch.Tensor): Input binary mask in BWHC format
+        inner_min_threshold (int): Minimum threshold for inner/foreground region. Default: 200
+        inner_max_threshold (int): Maximum threshold for inner/foreground region. Default: 255
+        outer_min_threshold (int): Minimum threshold for outer/background region. Default: 15
+        outer_max_threshold (int): Maximum threshold for outer/background region. Default: 240
+        kernel_size (int): Size of morphological kernel for region processing. Default: 10
 
     Returns:
-        tuple[torch.Tensor, torch.Tensor]: Mask and trimap tensors
+        tuple[torch.Tensor, torch.Tensor]: Tuple containing:
+            - Processed mask in BWHC format
+            - Trimap tensor with foreground, background, and uncertain regions
+
+    Raises:
+        ValueError: If mask is not a valid torch.Tensor
+
+    Notes:
+        - Output trimap has values: 0 (background), 0.5 (uncertain), 1 (foreground)
+        - Kernel size affects the smoothness of region boundaries
     """
 
     @classmethod
@@ -295,14 +361,25 @@ class Mask2Trimap:
 
 
 class MaskBinaryFilter:
-    """Applies binary thresholding to a mask.
+    """Applies binary thresholding to convert a grayscale mask into a binary mask.
 
-    Parameters:
+    Converts all values above threshold to 1 and below threshold to 0, creating a strict
+    binary mask.
+
+    Args:
         mask (torch.Tensor): Input mask in BWHC format
-        threshold (float): Threshold value between 0 and 1 (default: 0.01)
+        threshold (float): Threshold value for binary conversion. Default: 0.01
 
     Returns:
         tuple[torch.Tensor]: Single-element tuple containing the binary mask
+
+    Raises:
+        ValueError: If mask is not a valid torch.Tensor
+
+    Notes:
+        - Values > threshold become 1.0
+        - Values ≤ threshold become 0.0
+        - Useful for cleaning up masks with intermediate values
     """
 
     @classmethod
@@ -327,13 +404,23 @@ class MaskBinaryFilter:
 
 
 class MaskInvert:
-    """Inverts a mask (1 becomes 0 and vice versa).
+    """Inverts a binary mask by flipping all values.
 
-    Parameters:
+    Creates a negative version of the input mask where white becomes black and vice versa.
+
+    Args:
         mask (torch.Tensor): Input mask in BWHC format
 
     Returns:
         tuple[torch.Tensor]: Single-element tuple containing the inverted mask
+
+    Raises:
+        ValueError: If mask is not a valid torch.Tensor
+
+    Notes:
+        - Each pixel value is subtracted from 1.0
+        - Useful for creating negative space masks
+        - Preserves the mask's dimensions and format
     """
 
     @classmethod
@@ -356,17 +443,27 @@ class MaskInvert:
 
 
 class MaskGaussianBlur:
-    """Applies Gaussian blur to a mask.
+    """Applies Gaussian blur to soften mask edges and create smooth transitions.
 
-    Parameters:
+    Implements a configurable Gaussian blur with control over blur radius, strength, and iterations.
+
+    Args:
         image (torch.Tensor): Input mask in BWHC format
-        radius (int): Blur radius (default: 13)
-        sigma (float): Blur sigma/strength (default: 10.5)
-        iterations (int): Number of blur passes (default: 1)
-        only_outline (bool): Whether to blur only the outline (default: False)
+        radius (int): Blur kernel radius. Default: 13
+        sigma (float): Blur strength/standard deviation. Default: 10.5
+        iterations (int): Number of blur passes to apply. Default: 1
+        only_outline (bool): Whether to blur only the mask edges. Default: False
 
     Returns:
         tuple[torch.Tensor]: Single-element tuple containing the blurred mask
+
+    Raises:
+        ValueError: If image is not a valid torch.Tensor
+
+    Notes:
+        - Larger radius values create wider blur effects
+        - Multiple iterations can create stronger blur effects
+        - Sigma controls the falloff of the blur effect
     """
 
     @classmethod
@@ -392,13 +489,23 @@ class MaskGaussianBlur:
 
 
 class Mask2Image:
-    """Converts a single-channel mask to a 3-channel image.
+    """Converts a single-channel mask into a three-channel grayscale image.
 
-    Parameters:
-        mask (torch.Tensor): Input mask in BWHC format
+    Duplicates the mask's intensity values across three channels to create a grayscale image.
+
+    Args:
+        mask (torch.Tensor): Input single-channel mask in BWHC format
 
     Returns:
-        tuple[torch.Tensor]: Single-element tuple containing the converted image
+        tuple[torch.Tensor]: Single-element tuple containing the three-channel image
+
+    Raises:
+        ValueError: If mask is not a valid torch.Tensor
+
+    Notes:
+        - Output has identical values in R, G, and B channels
+        - Useful for visualization or processing requiring three-channel input
+        - Preserves the original mask's intensity values
     """
 
     @classmethod
@@ -421,20 +528,30 @@ class Mask2Image:
 
 
 class MaskGrowWithBlur:
-    """Expands or contracts a mask with optional blur and tapering effects.
+    """Expands or contracts a mask with controllable blur and tapering effects.
 
-    Parameters:
+    Provides fine control over mask growth with options for smooth transitions and edge effects.
+
+    Args:
         mask (torch.Tensor): Input mask in BWHC format
-        expand (int): Pixels to expand (positive) or contract (negative)
-        incremental_expandrate (float): Rate of expansion per iteration
-        tapered_corners (bool): Whether to taper corners (default: True)
-        flip_input (bool): Whether to invert input before processing (default: False)
-        blur_radius (float): Radius for final blur (default: 0.0)
-        lerp_alpha (float): Linear interpolation factor (default: 1.0)
-        decay_factor (float): Decay factor for expansion (default: 1.0)
+        expand (int): Pixels to grow (positive) or shrink (negative). Default: 0
+        incremental_expandrate (float): Growth rate per iteration. Default: 0.0
+        tapered_corners (bool): Enable corner softening. Default: True
+        flip_input (bool): Invert input before processing. Default: False
+        blur_radius (float): Final blur amount. Default: 0.0
+        lerp_alpha (float): Blend factor for transitions. Default: 1.0
+        decay_factor (float): Growth decay rate. Default: 1.0
 
     Returns:
         tuple[torch.Tensor]: Single-element tuple containing the processed mask
+
+    Raises:
+        ValueError: If inputs are invalid types or values
+
+    Notes:
+        - Positive expand values grow the mask, negative values shrink it
+        - Decay factor controls how growth diminishes over iterations
+        - Blur radius affects the final edge smoothness
     """
 
     @classmethod
@@ -553,13 +670,28 @@ class MaskGrowWithBlur:
 
 
 class GetMaskShape:
-    """Returns the dimensions of an input mask.
+    """Analyzes and returns the dimensional information of a mask tensor.
 
-    Parameters:
+    Extracts and returns the shape parameters of the input mask for analysis or debugging.
+
+    Args:
         mask (torch.Tensor): Input mask in BWHC format
 
     Returns:
-        tuple[int, int, int, int, str]: Batch size, width, height, channels, and shape string
+        tuple[int, int, int, int, str]: Tuple containing:
+            - Batch size
+            - Width
+            - Height
+            - Number of channels
+            - String representation of shape
+
+    Raises:
+        ValueError: If mask is not a valid torch.Tensor
+
+    Notes:
+        - Handles both 3D and 4D tensor inputs
+        - Useful for debugging and validation
+        - Returns dimensions in a consistent order regardless of input format
     """
 
     @classmethod
@@ -582,16 +714,27 @@ class GetMaskShape:
 
 
 class MaskPreview(SaveImage):
-    """Saves a preview of a mask as an image file.
+    """Generates and saves a visual preview of a mask as an image file.
 
-    Parameters:
+    Converts mask data to a viewable image format and saves it with optional metadata.
+
+    Args:
         mask (torch.Tensor): Input mask in BWHC format
-        filename_prefix (str): Prefix for the output filename (default: "Signature")
-        prompt (Optional[str]): Optional prompt to include in metadata
-        extra_pnginfo (Optional[dict]): Additional PNG metadata
+        filename_prefix (str): Prefix for the output filename. Default: "Signature"
+        prompt (Optional[str]): Optional prompt text to include in metadata
+        extra_pnginfo (Optional[dict]): Additional PNG metadata to include
 
     Returns:
-        tuple[str, str]: Paths to the saved preview images
+        tuple[str, str]: Tuple containing paths to the saved preview images
+
+    Raises:
+        ValueError: If mask is not a valid torch.Tensor
+        IOError: If unable to save the preview image
+
+    Notes:
+        - Saves to temporary directory with random suffix
+        - Converts mask to RGB/RGBA format for viewing
+        - Includes compression level 4 for storage efficiency
     """
 
     def __init__(self):

@@ -2,7 +2,11 @@
 
 ## RandomCropAugmentation
 
-Applies a random crop augmentation to an image
+Applies random crop augmentation to images with configurable dimensions and frequency.
+
+This node performs random cropping operations on input images. It allows precise control
+over the crop dimensions through minimum and maximum window sizes, target dimensions,
+and application probability.
 
 ### Inputs
 
@@ -21,27 +25,38 @@ Applies a random crop augmentation to an image
 | ------------ | -------------- |
 | augmentation | `AUGMENTATION` |
 
-??? note "Pick the code in augmentations.py"
+??? note "Source code in augmentations.py"
 
     ```python
     class RandomCropAugmentation:
-        """Applies a random crop augmentation to an image.
+        """Applies random crop augmentation to images with configurable dimensions and frequency.
 
-        This class performs a random crop on an image based on specified dimensions and percentage.
-
-        Methods:
-            execute(**kwargs): Applies the random crop augmentation and returns the augmented image.
+        This node performs random cropping operations on input images. It allows precise control over the
+        crop dimensions through minimum and maximum window sizes, target dimensions, and application
+        probability.
 
         Args:
-            height (int): The height of the image.
-            width (int): The width of the image.
-            min_window (int): The minimum window size for cropping.
-            max_window (int): The maximum window size for cropping.
-            percent (float): The percentage of the image to crop.
-            augmentation: An optional existing augmentation to apply.
+            height (int): Target height for the crop operation. Must be at least 32 and a multiple of 32.
+            width (int): Target width for the crop operation. Must be at least 32 and a multiple of 32.
+            min_window (int): Minimum size of the crop window. Must be a multiple of 32.
+            max_window (int): Maximum size of the crop window. Must be a multiple of 32.
+            percent (float): Probability of applying the crop, from 0.0 to 1.0.
+            augmentation (AUGMENTATION, optional): Existing augmentation to chain with. Defaults to None.
 
         Returns:
-            tuple: The augmented image.
+            tuple: Contains a single element:
+                augmentation (AUGMENTATION): The configured crop augmentation operation.
+
+        Raises:
+            ValueError: If any dimension parameters are not multiples of 32.
+            ValueError: If min_window is larger than max_window.
+            ValueError: If percent is not between 0.0 and 1.0.
+
+        Notes:
+            - Window size is randomly selected between min_window and max_window for each operation
+            - Can be chained with other augmentations through the augmentation parameter
+            - All dimension parameters must be multiples of 32 for proper operation
+            - Setting percent to 1.0 ensures the crop is always applied
         """
 
         @classmethod
@@ -76,11 +91,17 @@ Applies a random crop augmentation to an image
             augmentation = kwargs.get("augmentation")
             augmentation = random_crop_augmentation(height, width, min_window, max_window, percent, augmentation)
             return (augmentation,)
+
+
     ```
 
 ## FlipAugmentation
 
-Applies a flip augmentation to an image
+Applies horizontal or vertical flip augmentation to images with configurable
+probability.
+
+This node performs random flip transformations on input images. It supports both
+horizontal and vertical flip operations with adjustable probability of application.
 
 ### Inputs
 
@@ -96,24 +117,35 @@ Applies a flip augmentation to an image
 | ------------ | -------------- |
 | augmentation | `AUGMENTATION` |
 
-??? note "Pick the code in augmentations.py"
+??? note "Source code in augmentations.py"
 
     ```python
     class FlipAugmentation:
-        """Applies a flip augmentation to an image.
+        """Applies horizontal or vertical flip augmentation to images with configurable probability.
 
-        This class performs a horizontal or vertical flip on an image based on the specified direction and percentage.
-
-        Methods:
-            execute(**kwargs): Applies the flip augmentation and returns the augmented image.
+        This node performs random flip transformations on input images. It supports both horizontal and
+        vertical flip operations with adjustable probability of application.
 
         Args:
-            flip (str): The direction of the flip ('horizontal' or 'vertical').
-            percent (float): The percentage of the image to flip.
-            augmentation: An optional existing augmentation to apply.
+            flip (str): Direction of flip operation, either:
+                - "horizontal": Flips image left to right
+                - "vertical": Flips image top to bottom
+            percent (float): Probability of applying the flip, from 0.0 to 1.0.
+            augmentation (AUGMENTATION, optional): Existing augmentation to chain with. Defaults to None.
 
         Returns:
-            tuple: The augmented image.
+            tuple: Contains a single element:
+                augmentation (AUGMENTATION): The configured flip augmentation operation.
+
+        Raises:
+            ValueError: If flip direction is not "horizontal" or "vertical".
+            ValueError: If percent is not between 0.0 and 1.0.
+
+        Notes:
+            - Flip direction cannot be changed after initialization
+            - Setting percent to 0.5 applies the flip to approximately half of all samples
+            - Can be chained with other augmentations through the augmentation parameter
+            - Transformations are applied consistently when used with ComposeAugmentation
         """
 
         @classmethod
@@ -139,11 +171,18 @@ Applies a flip augmentation to an image
             augmentation = kwargs.get("augmentation")
             augmentation = flip_augmentation(flip, percent, augmentation)
             return (augmentation,)
+
+
     ```
 
 ## ComposeAugmentation
 
-Composes multiple augmentations and applies them to an image and mask
+Combines and applies multiple augmentation operations with consistent random
+transformations.
+
+This node orchestrates the application of multiple augmentation operations to images and
+masks. It provides control over sample generation and reproducibility through seed
+management.
 
 ### Inputs
 
@@ -162,27 +201,39 @@ Composes multiple augmentations and applies them to an image and mask
 | image | `IMAGE` |
 | mask  | `MASK`  |
 
-??? note "Pick the code in augmentations.py"
+??? note "Source code in augmentations.py"
 
     ```python
     class ComposeAugmentation:
-        """Composes multiple augmentations and applies them to an image and mask.
+        """Combines and applies multiple augmentation operations with consistent random transformations.
 
-        This class combines multiple augmentations and applies them to an image and mask,
-        supporting multiple samples and random seeds.
-
-        Methods:
-            execute(**kwargs): Applies the composed augmentations and returns the augmented images and masks.
+        This node orchestrates the application of multiple augmentation operations to images and masks. It
+        provides control over sample generation and reproducibility through seed management.
 
         Args:
-            augmentation: The augmentation to apply.
-            samples (int): The number of samples to generate.
-            seed (int): The random seed for augmentation.
-            image: The input image to augment.
-            mask: The input mask to augment.
+            augmentation (AUGMENTATION): The augmentation operation or chain to apply.
+            samples (int): Number of augmented versions to generate. Must be >= 1.
+            seed (int): Random seed for reproducible results. Use -1 for random seeding.
+                Valid range: -1 to 10000000000000000.
+            image (IMAGE, optional): Input image to augment. Defaults to None.
+            mask (MASK, optional): Input mask to augment. Defaults to None.
 
         Returns:
-            tuple: Lists of augmented images and masks.
+            tuple: Contains two elements:
+                images (List[IMAGE]): List of augmented versions of the input image.
+                masks (List[MASK]): List of augmented versions of the input mask.
+
+        Raises:
+            ValueError: If neither image nor mask is provided.
+            ValueError: If samples is less than 1.
+            ValueError: If seed is outside valid range.
+
+        Notes:
+            - At least one of image or mask must be provided
+            - All augmentations are applied consistently to both image and mask
+            - Output is always returned as lists, even when samples=1
+            - Using a fixed seed ensures reproducible augmentations
+            - Supports chaining multiple augmentations through the augmentation parameter
         """
 
         @classmethod
@@ -241,4 +292,5 @@ Composes multiple augmentations and applies them to an image and mask
                 node_image,
                 node_mask,
             )
+
     ```

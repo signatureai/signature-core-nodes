@@ -2,7 +2,10 @@
 
 ## ImageFromWeb
 
-Loads an image from a URL
+Fetches and converts web images to ComfyUI-compatible tensors.
+
+Downloads an image from a URL and processes it into ComfyUI's expected tensor format.
+Handles both RGB and RGBA images with automatic mask generation for transparency.
 
 ### Inputs
 
@@ -17,17 +20,34 @@ Loads an image from a URL
 | image | `IMAGE` |
 | mask  | `MASK`  |
 
-??? note "Pick the code in file.py"
+??? note "Source code in file.py"
 
     ```python
     class ImageFromWeb:
-        """Loads an image from a URL.
+        """Fetches and converts web images to ComfyUI-compatible tensors.
 
-        Parameters:
-            url (str): URL of the image to load
+        Downloads an image from a URL and processes it into ComfyUI's expected tensor format. Handles both RGB
+        and RGBA images with automatic mask generation for transparency.
+
+        Args:
+            url (str): Direct URL to the image file (PNG, JPG, JPEG, WebP).
 
         Returns:
-            tuple[torch.Tensor, torch.Tensor]: Image tensor in BWHC format and mask
+            tuple[torch.Tensor, torch.Tensor]:
+                - image: BWHC format tensor, normalized to [0,1] range
+                - mask: BWHC format tensor for transparency/alpha channel
+
+        Raises:
+            ValueError: If URL is invalid, inaccessible, or not a string
+            HTTPError: If image download fails
+            IOError: If image format is unsupported
+
+        Notes:
+            - Automatically converts images to float32 format
+            - RGB images get a mask of ones
+            - RGBA images use alpha channel as mask
+            - Supports standard web image formats
+            - Image dimensions are preserved
         """
 
         @classmethod
@@ -44,11 +64,16 @@ Loads an image from a URL
                 raise ValueError("URL must be a string")
             img_arr = TensorImage.from_web(url)
             return image_array_to_tensor(img_arr)
+
+
     ```
 
 ## ImageFromBase64
 
-Converts a base64 string to an image
+Converts base64 image strings to ComfyUI-compatible tensors.
+
+Processes base64-encoded image data into tensor format suitable for ComfyUI operations.
+Handles both RGB and RGBA images with proper mask generation.
 
 ### Inputs
 
@@ -63,17 +88,34 @@ Converts a base64 string to an image
 | image | `IMAGE` |
 | mask  | `MASK`  |
 
-??? note "Pick the code in file.py"
+??? note "Source code in file.py"
 
     ```python
     class ImageFromBase64:
-        """Converts a base64 string to an image.
+        """Converts base64 image strings to ComfyUI-compatible tensors.
 
-        Parameters:
-            base64 (str): Base64-encoded image string
+        Processes base64-encoded image data into tensor format suitable for ComfyUI operations. Handles
+        both RGB and RGBA images with proper mask generation.
+
+        Args:
+            base64 (str): Raw base64-encoded image string without data URL prefix.
 
         Returns:
-            tuple[torch.Tensor, torch.Tensor]: Image tensor in BWHC format and mask
+            tuple[torch.Tensor, torch.Tensor]:
+                - image: BWHC format tensor, normalized to [0,1] range
+                - mask: BWHC format tensor for transparency/alpha channel
+
+        Raises:
+            ValueError: If base64 string is invalid or not a string
+            IOError: If decoded image format is unsupported
+            binascii.Error: If base64 decoding fails
+
+        Notes:
+            - Converts decoded images to float32 format
+            - RGB images get a mask of ones
+            - RGBA images use alpha channel as mask
+            - Supports common image formats (PNG, JPG, JPEG)
+            - Original image dimensions are preserved
         """
 
         @classmethod
@@ -90,11 +132,16 @@ Converts a base64 string to an image
                 raise ValueError("Base64 must be a string")
             img_arr = TensorImage.from_base64(base64)
             return image_array_to_tensor(img_arr)
+
+
     ```
 
 ## Base64FromImage
 
-Converts an image to a base64 string
+Converts ComfyUI image tensors to base64-encoded strings.
+
+Transforms image tensors from ComfyUI's format into base64-encoded strings, suitable for
+web transmission or storage in text format.
 
 ### Inputs
 
@@ -108,17 +155,32 @@ Converts an image to a base64 string
 | ------ | -------- |
 | string | `STRING` |
 
-??? note "Pick the code in file.py"
+??? note "Source code in file.py"
 
     ```python
     class Base64FromImage:
-        """Converts an image to a base64 string.
+        """Converts ComfyUI image tensors to base64-encoded strings.
 
-        Parameters:
-            image (torch.Tensor): Input image in BWHC format
+        Transforms image tensors from ComfyUI's format into base64-encoded strings, suitable for web
+        transmission or storage in text format.
+
+        Args:
+            image (torch.Tensor): BWHC format tensor with values in [0,1] range.
 
         Returns:
-            tuple[str]: Base64-encoded string representation of the image
+            tuple[str]:
+                - base64_str: PNG-encoded image as base64 string without data URL prefix
+
+        Raises:
+            ValueError: If input is not a tensor or has invalid format
+            RuntimeError: If tensor conversion or encoding fails
+
+        Notes:
+            - Output is always PNG encoded
+            - Preserves alpha channel if present
+            - No data URL prefix in output
+            - Maintains original image quality
+            - Suitable for web APIs and storage
         """
 
         @classmethod
@@ -137,11 +199,16 @@ Converts an image to a base64 string
             images = TensorImage.from_BWHC(image)
             output = images.get_base64()
             return (output,)
+
+
     ```
 
 ## FileLoader
 
-Loads file data from a string value
+Processes string input into ComfyUI-compatible file data.
+
+Converts JSON-formatted string data into file references with proper paths for ComfyUI
+processing. Handles both single files and multiple files separated by '&&'.
 
 ### Inputs
 
@@ -155,17 +222,32 @@ Loads file data from a string value
 | ---- | ------ |
 | file | `FILE` |
 
-??? note "Pick the code in file.py"
+??? note "Source code in file.py"
 
     ```python
     class FileLoader:
-        """Loads file data from a string value.
+        """Processes string input into ComfyUI-compatible file data.
 
-        Parameters:
-            value (str): Input string containing file data (JSON format)
+        Converts JSON-formatted string data into file references with proper paths for ComfyUI processing.
+        Handles both single files and multiple files separated by '&&'.
+
+        Args:
+            value (str): JSON-formatted string containing file data.
 
         Returns:
-            tuple[list]: List of file data with updated paths
+            tuple[list]:
+                - files: List of dictionaries with file data and updated paths
+
+        Raises:
+            ValueError: If input is not a string
+            json.JSONDecodeError: If JSON parsing fails
+            KeyError: If required file data fields are missing
+
+        Notes:
+            - Automatically prepends ComfyUI input folder path
+            - Supports multiple files via '&&' separator
+            - Preserves original file metadata
+            - Updates file paths for ComfyUI compatibility
         """
 
         @classmethod
@@ -198,11 +280,16 @@ Loads file data from a string value
                     data[i] = item
 
             return (data,)
+
+
     ```
 
 ## FolderLoader
 
-Loads file data from a folder path
+Processes folder paths into ComfyUI-compatible file data.
+
+Converts folder path information into properly formatted file references for ComfyUI
+processing. Supports both single and multiple folder paths.
 
 ### Inputs
 
@@ -216,17 +303,32 @@ Loads file data from a folder path
 | ---- | ------ |
 | file | `FILE` |
 
-??? note "Pick the code in file.py"
+??? note "Source code in file.py"
 
     ```python
     class FolderLoader:
-        """Loads file data from a folder path.
+        """Processes folder paths into ComfyUI-compatible file data.
 
-        Parameters:
-            value (str): Input string containing folder path data
+        Converts folder path information into properly formatted file references for ComfyUI processing.
+        Supports both single and multiple folder paths.
+
+        Args:
+            value (str): JSON-formatted string containing folder path data.
 
         Returns:
-            tuple[list]: List of file data with updated paths from the folder
+            tuple[list]:
+                - files: List of dictionaries with file data and updated paths
+
+        Raises:
+            ValueError: If input is not a string
+            json.JSONDecodeError: If JSON parsing fails
+            KeyError: If required folder data fields are missing
+
+        Notes:
+            - Automatically prepends ComfyUI input folder path
+            - Supports multiple folders via '&&' separator
+            - Maintains folder structure information
+            - Updates all paths for ComfyUI compatibility
         """
 
         @classmethod
@@ -258,19 +360,162 @@ Loads file data from a folder path
                     item["name"] = os.path.join(input_folder, name)
                     data[i] = item
             return (data,)
+
+
+    ```
+
+## File2ImageList
+
+Converts file references to a list of image tensors.
+
+Processes a list of file references, extracting and converting supported image files
+into ComfyUI-compatible tensor format.
+
+### Inputs
+
+| Group    | Name  | Type   | Default | Extras |
+| -------- | ----- | ------ | ------- | ------ |
+| required | files | `FILE` |         |        |
+
+### Returns
+
+| Name  | Type    |
+| ----- | ------- |
+| image | `IMAGE` |
+
+??? note "Source code in file.py"
+
+    ```python
+    class File2ImageList:
+        """Converts file references to a list of image tensors.
+
+        Processes a list of file references, extracting and converting supported image files into
+        ComfyUI-compatible tensor format.
+
+        Args:
+            files (list): List of file dictionaries with type and path information.
+
+        Returns:
+            tuple[list[torch.Tensor]]:
+                - images: List of BWHC format tensors from valid image files
+
+        Raises:
+            ValueError: If input is not a list
+            IOError: If image loading fails
+            RuntimeError: If tensor conversion fails
+
+        Notes:
+            - Supports PNG, JPG, JPEG, TIFF, BMP formats
+            - Skips non-image files
+            - Maintains original image properties
+            - Returns empty list if no valid images
+        """
+
+        @classmethod
+        def INPUT_TYPES(cls):  # type: ignore
+            return {
+                "required": {
+                    "files": ("FILE", {"default": ""}),
+                },
+            }
+
+        RETURN_TYPES = ("IMAGE",)
+        FUNCTION = "execute"
+        CATEGORY = FILE_CAT
+        OUTPUT_IS_LIST = (True,)
+
+        def execute(self, **kwargs):
+            files = kwargs.get("files")
+            if not isinstance(files, list):
+                raise ValueError("Files must be a list")
+            images_list = []
+            for file in files:
+                mimetype = file["type"]
+                extension = file["name"].lower().split(".")[-1]
+                possible_extensions = ["png", "jpg", "jpeg", "tiff", "tif", "bmp"]
+                if mimetype.startswith("image") and extension in possible_extensions:
+                    images_list.append(TensorImage.from_local(file["name"]).get_BWHC())
+
+            return (images_list,)
+
+
+    ```
+
+## File2List
+
+Converts file input to a standardized list format.
+
+Processes file input data into a consistent list format for further ComfyUI operations.
+
+### Inputs
+
+| Group    | Name  | Type   | Default | Extras |
+| -------- | ----- | ------ | ------- | ------ |
+| required | files | `FILE` |         |        |
+
+### Returns
+
+| Name | Type   |
+| ---- | ------ |
+| list | `LIST` |
+
+??? note "Source code in file.py"
+
+    ```python
+    class File2List:
+        """Converts file input to a standardized list format.
+
+        Processes file input data into a consistent list format for further ComfyUI operations.
+
+        Args:
+            files (list): List of file dictionaries.
+
+        Returns:
+            tuple[list]:
+                - files: Processed list of file data
+
+        Raises:
+            ValueError: If input is not a list
+
+        Notes:
+            - Preserves original file metadata
+            - Maintains file order
+            - No file validation performed
+            - Suitable for further processing
+        """
+
+        @classmethod
+        def INPUT_TYPES(cls):  # type: ignore
+            return {
+                "required": {
+                    "files": ("FILE", {"default": ""}),
+                },
+            }
+
+        RETURN_TYPES = ("LIST",)
+        FUNCTION = "execute"
+        CATEGORY = FILE_CAT
+
+        def execute(self, **kwargs):
+            files = kwargs.get("files")
+            if not isinstance(files, list):
+                raise ValueError("Files must be a list")
+            return (files,)
+
+
     ```
 
 ## Rotate
 
-Rotates an image and mask by a specified angle
+Rotates an image and mask by a specified angle.
 
-??? note "Pick the code in file.py"
+??? note "Source code in file.py"
 
     ```python
     class Rotate:
         """Rotates an image and mask by a specified angle.
 
-        Parameters:
+        Args:
             image (torch.Tensor, optional): Input image in BWHC format
             mask (torch.Tensor, optional): Input mask in BWHC format
             angle (float): Rotation angle in degrees (0-360)
@@ -279,19 +524,21 @@ Rotates an image and mask by a specified angle
         Returns:
             tuple[torch.Tensor, torch.Tensor]: Rotated image and mask
         """
+
+
     ```
 
 ## MaskGaussianBlur
 
-Applies Gaussian blur to a mask
+Applies Gaussian blur to a mask.
 
-??? note "Pick the code in file.py"
+??? note "Source code in file.py"
 
     ```python
     class MaskGaussianBlur:
         """Applies Gaussian blur to a mask.
 
-        Parameters:
+        Args:
             image (torch.Tensor): Input mask in BWHC format
             radius (int): Blur radius (default: 13)
             sigma (float): Blur sigma/strength (default: 10.5)
@@ -301,4 +548,5 @@ Applies Gaussian blur to a mask
         Returns:
             tuple[torch.Tensor]: Single-element tuple containing the blurred mask
         """
+
     ```

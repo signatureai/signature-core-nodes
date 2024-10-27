@@ -7,13 +7,25 @@ from .shared import any_type
 
 
 class TextPreview:
-    """Generates a preview of text inputs.
+    """Processes and generates a preview of text inputs, supporting both strings and tensors.
 
-    This class takes a list of text inputs and generates a single string preview.
-    If the input is a torch.Tensor, it includes the tensor's shape in the preview.
+    This node takes a list of text inputs and generates a formatted preview string. For tensor inputs,
+    it includes shape information in the preview. The node is designed to handle multiple input types
+    and provide a consistent preview format.
+
+    Args:
+        text (Any): A list of text inputs that can be strings, tensors, or other objects that can be
+            converted to strings.
 
     Returns:
-        dict: A dictionary containing the preview text under the 'ui' key and the result as a tuple.
+        dict: A dictionary containing:
+            - ui (dict): UI-specific data with the preview text under the 'text' key
+            - result (tuple): A tuple containing the generated preview string
+
+    Notes:
+        - Tensor inputs are displayed with their shape information
+        - Multiple inputs are separated by newlines
+        - None values are skipped in the preview generation
     """
 
     @classmethod
@@ -45,16 +57,25 @@ class TextPreview:
 
 
 class TextCase:
-    """Changes the case of a given text.
+    """Transforms text case according to specified formatting rules.
 
-    This class provides functionality to convert text to lower, upper, capitalize, or title case.
+    A utility node that provides various case transformation options for input text, including
+    lowercase, uppercase, capitalization, and title case conversion.
 
     Args:
-        text (str): The input text to be transformed.
-        case (str): The case transformation to apply ('lower', 'upper', 'capitalize', 'title').
+        text (str): The input text to be transformed. Required.
+        case (str): The case transformation to apply. Must be one of:
+            - 'lower': Convert text to lowercase
+            - 'upper': Convert text to uppercase
+            - 'capitalize': Capitalize the first character
+            - 'title': Convert text to title case
 
     Returns:
-        tuple: The transformed text.
+        tuple[str]: A single-element tuple containing the transformed text.
+
+    Notes:
+        - Empty input text will result in an empty string output
+        - The transformation preserves any existing spacing and special characters
     """
 
     @classmethod
@@ -86,16 +107,24 @@ class TextCase:
 
 
 class TextTrim:
-    """Trims whitespace from text.
+    """Removes whitespace from text according to specified trimming rules.
 
-    This class trims whitespace from the left, right, or both sides of the input text.
+    A utility node that trims whitespace from text input, offering options to remove whitespace
+    from the beginning, end, or both sides of the text.
 
     Args:
-        text (str): The input text to be trimmed.
-        trim_type (str): The type of trim to apply ('both', 'left', 'right').
+        text (str): The input text to be trimmed. Required.
+        trim_type (str): The type of trimming to apply. Must be one of:
+            - 'both': Trim whitespace from both ends
+            - 'left': Trim whitespace from the start
+            - 'right': Trim whitespace from the end
 
     Returns:
-        tuple: The trimmed text.
+        tuple[str]: A single-element tuple containing the trimmed text.
+
+    Notes:
+        - Whitespace includes spaces, tabs, and newlines
+        - Empty input text will result in an empty string output
     """
 
     @classmethod
@@ -124,16 +153,22 @@ class TextTrim:
 
 
 class TextSplit:
-    """Splits text into a list based on a delimiter.
+    """Splits text into a list of segments using a specified delimiter.
 
-    This class splits the input text into a list of strings using the specified delimiter.
+    A utility node that divides input text into multiple segments based on a delimiter,
+    creating a list of substrings.
 
     Args:
-        text (str): The input text to be split.
-        delimiter (str): The delimiter to use for splitting the text.
+        text (str): The input text to be split. Required.
+        delimiter (str): The character or string to use as the splitting point. Defaults to space.
 
     Returns:
-        tuple: A list of split text segments.
+        tuple[list[str]]: A single-element tuple containing a list of split text segments.
+
+    Notes:
+        - Empty input text will result in a list with one empty string
+        - If the delimiter is not found, the result will be a single-element list
+        - Consecutive delimiters will result in empty strings in the output list
     """
 
     @classmethod
@@ -157,17 +192,23 @@ class TextSplit:
 
 
 class TextRegexReplace:
-    """Performs regex-based text replacement.
+    """Performs pattern-based text replacement using regular expressions.
 
-    This class uses regular expressions to find and replace patterns in the input text.
+    A powerful text processing node that uses regex patterns to find and replace text patterns,
+    supporting complex pattern matching and replacement operations.
 
     Args:
-        text (str): The input text to be processed.
-        pattern (str): The regex pattern to search for.
-        replacement (str): The string to replace the pattern with.
+        text (str): The input text to process. Required.
+        pattern (str): The regular expression pattern to match. Required.
+        replacement (str): The string to use as replacement for matched patterns. Required.
 
     Returns:
-        tuple: The text after regex replacement.
+        tuple[str]: A single-element tuple containing the processed text.
+
+    Notes:
+        - Invalid regex patterns will cause errors
+        - Empty pattern or replacement strings are allowed
+        - Supports all Python regex syntax including groups and backreferences
     """
 
     @classmethod
@@ -192,17 +233,23 @@ class TextRegexReplace:
 
 
 class TextFindReplace:
-    """Finds and replaces text.
+    """Performs simple text replacement without regex support.
 
-    This class finds a specified substring in the input text and replaces it with another substring.
+    A straightforward text processing node that replaces all occurrences of a substring with
+    another substring, using exact matching.
 
     Args:
-        text (str): The input text to be processed.
-        find (str): The substring to find.
-        replace (str): The substring to replace with.
+        text (str): The input text to process. Defaults to empty string.
+        find (str): The substring to search for. Defaults to empty string.
+        replace (str): The substring to replace matches with. Defaults to empty string.
 
     Returns:
-        tuple: The text after find and replace.
+        tuple[str]: A single-element tuple containing the processed text.
+
+    Notes:
+        - Case-sensitive matching
+        - All occurrences of the 'find' string will be replaced
+        - Empty strings for any parameter are handled safely
     """
 
     @classmethod
@@ -227,16 +274,22 @@ class TextFindReplace:
 
 
 class TextConcatenate:
-    """Concatenates two text strings.
+    """Combines two text strings into a single string.
 
-    This class concatenates two input text strings into a single string.
+    A basic text manipulation node that joins two input strings together in sequence,
+    without any separator between them.
 
     Args:
-        text1 (str): The first text string.
-        text2 (str): The second text string.
+        text1 (str): The first text string to concatenate. Defaults to empty string.
+        text2 (str): The second text string to concatenate. Defaults to empty string.
 
     Returns:
-        tuple: The concatenated text.
+        tuple[str]: A single-element tuple containing the concatenated text.
+
+    Notes:
+        - No separator is added between the strings
+        - Empty strings are handled safely
+        - The result will be the direct combination of text1 followed by text2
     """
 
     @classmethod

@@ -88,28 +88,6 @@ def _extract_class_metadata(node: ast.ClassDef) -> dict:
     }
 
 
-def extract_input_types(node):
-    input_types = {}
-    try:
-        for item in node.body:
-            if not isinstance(item, ast.FunctionDef):
-                continue
-
-            for sub_item in item.body:
-                if not isinstance(sub_item, ast.Return):
-                    continue
-
-                if not isinstance(sub_item.value, ast.Dict):
-                    continue
-
-                input_types = _process_input_types_dict(sub_item.value)
-
-    except Exception as _:
-        traceback.print_exc()
-
-    return input_types
-
-
 def _process_input_types_dict(dict_node):
     result = {}
     try:
@@ -235,13 +213,26 @@ def _write_class_documentation(**kwargs):
     class_name = kwargs["class_name"]
     docstring = kwargs["docstring"]
     metadata = kwargs["metadata"]
-    module_name = kwargs["module_name"]
-    content = kwargs["content"]
+    module_name = kwargs["module_name"]  # Add this line to extract module_name
+    content = kwargs["content"]  # Add this line to extract content
 
     doc.write(f"## {class_name}\n\n")
 
+    # Clean and split the docstring
     cleaned_docstring = docstring.strip('"""').strip("'''").strip()
-    doc.write(f"{cleaned_docstring.split('.')[0]}\n\n")
+    sections = cleaned_docstring.split("\n\n")
+
+    # Write description paragraphs (everything before the first "key: value" pattern)
+    description = []
+    for section in sections:
+        # If the section doesn't contain ": " or starts with a known keyword, treat it as description
+        if not any(section.startswith(k + ":") for k in ["Args", "Returns", "Raises", "Notes"]):
+            description.append(section.strip())
+        else:
+            break
+
+    # Write description paragraphs
+    doc.write("\n\n".join(description) + "\n\n")
 
     if metadata["input_types"]:
         _write_input_documentation(doc, metadata["input_types"])
@@ -280,17 +271,60 @@ def _write_return_documentation(doc, metadata: dict):
 
 
 def _write_code_documentation(doc, class_name: str, module_name: str, content: str):
-    doc.write(f'??? note "Pick the code in {module_name}.py"\n\n')
-    doc.write("    ```python\n")
     tree = ast.parse(content)
+
+    # Source code section
+    doc.write(f'??? note "Source code in {module_name}.py"\n\n')
+    doc.write("    ```python\n")
     for node in ast.walk(tree):
-        if isinstance(node, ast.ClassDef) and node.name == class_name:
-            class_source = ast.get_source_segment(content, node)
-            if class_source:
-                lines = class_source.split("\n")
-                min_indent = min(len(line) - len(line.lstrip()) for line in lines if line.strip())
-                cleaned_lines = ["    " + (line[min_indent:] if line.strip() else "") for line in lines]
-                doc.write("\n".join(cleaned_lines) + "\n")
+        if not isinstance(node, ast.ClassDef) or node.name != class_name:
+            continue
+
+        try:
+            # Find the class in the original source by line matching
+            lines = content.split("\n")
+            class_lines = []
+            in_class = False
+            class_indent = None
+
+            for line in lines:
+                stripped = line.lstrip()
+                current_indent = len(line) - len(stripped)
+
+                if f"class {class_name}" in line:
+                    in_class = True
+                    class_indent = current_indent
+                    class_lines.append(stripped)
+                    continue
+
+                if not in_class:
+                    continue
+
+                if stripped and class_indent is not None and current_indent <= class_indent:
+                    # We've reached the end of the class
+                    break
+
+                if not stripped:
+                    class_lines.append("")
+                    continue
+
+                # Remove only the class-level indentation
+                if class_indent is not None:
+                    remaining_indent = current_indent - class_indent
+                    class_lines.append(" " * remaining_indent + stripped)
+                else:
+                    class_lines.append(stripped)
+
+            if class_lines:
+                # Add markdown code block indentation (4 spaces) to each line
+                indented_lines = ["    " + line if line else "" for line in class_lines]
+                doc.write("\n".join(indented_lines) + "\n")
+            else:
+                doc.write(f"    class {class_name}:\n        # Source code extraction failed\n")
+
+        except Exception as e:
+            print(f"Warning: Could not extract source for class {class_name}: {e}")
+            doc.write(f"    class {class_name}:\n        # Source code extraction failed\n")
     doc.write("    ```\n\n")
 
 
@@ -388,20 +422,10 @@ theme:
         - search.share
         - toc.follow
     palette:
-        - media: "(prefers-color-scheme: light)"
-          scheme: default
-          primary: indigo
-          accent: indigo
-          toggle:
-            icon: material/brightness-7
-            name: Switch to dark mode
-        - media: "(prefers-color-scheme: dark)"
-          scheme: slate
-          primary: indigo
-          accent: indigo
-          toggle:
-            icon: material/brightness-4
-            name: Switch to light mode
+        # Force dark mode
+        scheme: slate
+        primary: indigo
+        accent: indigo
 
 plugins:
     - search

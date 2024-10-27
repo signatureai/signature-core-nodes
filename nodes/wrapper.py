@@ -113,6 +113,35 @@ class Workflow:
 
 
 class Wrapper:
+    """A wrapper class for handling workflow execution and communication with a remote server.
+
+    This class provides functionality to execute workflows, process inputs/outputs, and handle
+    communication with a remote server. It supports uploading files, running workflow jobs, and
+    processing various types of data including images, masks, and primitive types.
+
+    Args:
+        data (str, optional): JSON string containing workflow configuration and execution parameters.
+            Default is an empty string.
+
+    Returns:
+        tuple: A tuple of length 20 containing processed outputs from the workflow execution.
+            Each element can be of any type (images, numbers, strings, etc.) or None.
+
+    Raises:
+        Exception:
+            - If communication with the server fails after multiple retries
+            - If the workflow execution encounters an error
+            - If required parameters (base_url, workflow_api, token) are missing or invalid
+
+    Notes:
+        The class provides several key features:
+        - Uses a placeholder server for local execution
+        - Supports various input types including IMAGE, MASK, INT, FLOAT, BOOLEAN, and STRING
+        - Handles tensor image conversions and S3 uploads
+        - Manages memory by cleaning up models and cache after execution
+        - Uses progress bars to track workflow execution
+        - Implements retry logic for handling communication issues
+    """
 
     def upload_file(self, base_url, file_path: str, token: str) -> dict:
         url = f"{base_url}/assets/upload"

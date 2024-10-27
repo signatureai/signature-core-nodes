@@ -1,0 +1,380 @@
+# Wrapper Nodes
+
+## Wrapper
+
+A wrapper class for handling workflow execution and communication with a remote server.
+
+This class provides functionality to execute workflows, process inputs/outputs, and
+handle communication with a remote server. It supports uploading files, running workflow
+jobs, and processing various types of data including images, masks, and primitive types.
+
+??? note "Source code in wrapper.py"
+
+    ```python
+    class Wrapper:
+        """A wrapper class for handling workflow execution and communication with a remote server.
+
+        This class provides functionality to execute workflows, process inputs/outputs, and handle
+        communication with a remote server. It supports uploading files, running workflow jobs, and
+        processing various types of data including images, masks, and primitive types.
+
+        Args:
+            data (str, optional): JSON string containing workflow configuration and execution parameters.
+                Default is an empty string.
+
+        Returns:
+            tuple: A tuple of length 20 containing processed outputs from the workflow execution.
+                Each element can be of any type (images, numbers, strings, etc.) or None.
+
+        Raises:
+            Exception:
+                - If communication with the server fails after multiple retries
+                - If the workflow execution encounters an error
+                - If required parameters (base_url, workflow_api, token) are missing or invalid
+
+        Notes:
+            The class provides several key features:
+            - Uses a placeholder server for local execution
+            - Supports various input types including IMAGE, MASK, INT, FLOAT, BOOLEAN, and STRING
+            - Handles tensor image conversions and S3 uploads
+            - Manages memory by cleaning up models and cache after execution
+            - Uses progress bars to track workflow execution
+            - Implements retry logic for handling communication issues
+        """
+
+        def upload_file(self, base_url, file_path: str, token: str) -> dict:
+            url = f"{base_url}/assets/upload"
+            headers = {
+                "Content-Type": "application/json",
+                "Access-Control-Allow-Origin": "*",
+                "Authorization": "Bearer " + token,
+            }
+            output = {}
+            with httpx.Client() as client:
+                try:
+                    with open(file_path, "rb") as file:
+                        files = {"file": file}
+                        response = client.post(url, headers=headers, files=files, timeout=3)
+                        if response.status_code == 200:
+                            buffer = response.content
+                            output = json.loads(buffer)
+                except Exception as e:
+                    console.log(e)
+            return output
+
+        def get_workflow(self, base_url: str, workflow_id: str, token: str) -> dict:
+            url = f"{base_url}/workflows/{workflow_id}"
+            headers = {
+                "Content-Type": "application/json",
+                "Access-Control-Allow-Origin": "*",
+                "Authorization": "Bearer " + token,
+            }
+            output = {}
+            with httpx.Client() as client:
+                try:
+                    response = client.get(url, headers=headers, timeout=3)
+                    if response.status_code == 200:
+                        buffer = response.content
+                        output = json.loads(buffer)
+                except Exception as e:
+                    console.log(e)
+            return output
+
+        def run_workflow_job(self, base_url, org_id: str, workflow: Workflow, token: str) -> list:
+            def process_data_chunk(chunk: str, nodes_ids: list) -> dict | None:
+                cleaned_chunk = chunk.strip()
+                if cleaned_chunk.startswith("data:"):
+                    cleaned_chunk = cleaned_chunk[len("data:") :].strip()
+
+                try:
+                    data = json.loads(cleaned_chunk)
+                    data_type = data.get("type")
+                    if data_type == "execution_cached":
+                        cached_nodes_ids = data["data"].get("nodes")
+                        remaining_ids = list(set(nodes_ids) - set(cached_nodes_ids))
+                        return {"remaining_ids": remaining_ids}
+                    if data_type == "executing":
+                        node_id = data["data"].get("node")
+                        remaining_ids = list(set(nodes_ids) - {node_id})
+                        return {"remaining_ids": remaining_ids}
+                    if data_type == "executed":
+                        output = data["data"].get("output")
+                        if output is None:
+                            return None
+                        if "signature_output" in output:
+                            signature_output = output["signature_output"]
+                            # console.log(f"Signature output: {signature_output}")
+                            for item in signature_output:
+                                title = item.get("title")
+                                value = item.get("value")
+                                # console.log(f"======== Title: {title}, Value: {value}")
+                                return {"output": {"title": title, "value": value}}
+                    elif data_type == "execution_error":
+                        error = data["data"]
+                        return {"error": error}
+                    elif data_type == "status":
+                        status = data["data"].get("status")
+                        if isinstance(status, dict):
+                            queue_remaining = status.get("exec_info", None).get("queue_remaining")
+                            return {"queue": max(0, int(queue_remaining) - 1)}
+                    else:
+                        return {"waiting": "no communication yet"}
+                        # elif status == "finished":
+                        #     # console.log("Workflow finished!")
+                        #     return {"finished": True}
+
+                except json.JSONDecodeError:
+                    console.log(f"JSON decode error: {cleaned_chunk}")
+                return None
+
+            url = f"{base_url}/generate-signature"
+            # queue_url = f"{base_url}/queue"
+
+            headers = {
+                "accept": "application/json",
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {token}",
+                "X-Org-Id": org_id,
+            }
+            total_nodes = list(workflow.data.keys())
+            total_steps = len(total_nodes)
+            remaining_ids = total_nodes
+            workflow_data = json.dumps(workflow.data)
+            params = {"data": {"client_id": uuid7str(), "workflow": workflow_data}}
+            outputs = []
+            try:
+                data = json.dumps(params)
+                pbar = ProgressBar(total_steps)  # type: ignore
+                with httpx.Client() as client:
+                    prompt_id = client.post(url, data=data, headers=headers).json()  # type: ignore
+                    # queue = client.get(queue_url, headers=headers).json()
+                    # console.log(f"Queue: {queue}")
+                    stream_url = f"{url}/{prompt_id}"
+                    base_retrys = 20
+                    retrys = base_retrys
+                    with client.stream(method="GET", url=stream_url, headers=headers, timeout=9000000) as stream:
+                        for chunk in stream.iter_lines():
+                            if not chunk:
+                                continue
+
+                            result = process_data_chunk(chunk, remaining_ids)
+                            if result is None:
+                                retrys -= 1
+                                console.log(f"Remaining retrys: {retrys}")
+                            elif "error" in result:
+                                error = result["error"]
+                                raise Exception(error)
+                            elif "output" in result:
+                                retrys = base_retrys
+                                outputs.append(result["output"])
+                            elif "remaining_ids" in result:
+                                retrys = base_retrys
+                                remaining_ids = result["remaining_ids"]
+                                step = total_steps - len(remaining_ids)
+                                pbar.update_absolute(step, total_steps)
+                            elif "queue" in result:
+                                queue = result["queue"]
+                                console.log(f"Queue: {queue}")
+                            elif "waiting" in result:
+                                retrys -= 1
+                                console.log(f"Remaining retrys: {retrys}")
+                            if retrys <= 0:
+                                raise Exception("Failed to get communication")
+                    pbar.update_absolute(total_steps, total_steps)
+
+            except httpx.HTTPStatusError as exc:
+                console.log(f"HTTP error occurred: {exc}")
+                # raise Exception(exc)
+            except Exception as exc:
+                console.log(f"HTTP error occurred: {exc}")
+                # raise Exception(exc)
+            return outputs
+
+        def upload_image_to_s3(self, base_url, token: str, image: TensorImage) -> str | None:
+            url = f"{base_url}/assets/upload"  # Replace with actual URL
+            headers = {"Authorization": f"Bearer {token}", "Access-Control-Allow-Origin": "*"}
+
+            query_params = {"id": uuid7str(), "prefix": ""}
+            image_bytes = image.get_bytes("png")
+
+            files = {
+                "file": (
+                    f"{uuid7str()}.png",
+                    image_bytes,
+                    "image/png",
+                )
+            }
+
+            try:
+                response = httpx.post(url, params=query_params, files=files, headers=headers)
+
+                if response.status_code == 200:
+                    return response.json()
+
+                print(f"Failed with status code {response.status_code}")
+                print("Response:", response.json())
+
+            except httpx.RequestError as exc:
+                print(f"An error occurred while requesting: {exc}")
+
+            return None
+
+        def process_outputs(self, job_outputs, node_outputs):
+
+            def process_data(node_output: dict, job_output: dict):
+
+                node_type = node_output.get("type")
+                value = job_output.get("value")
+                if value is None or not isinstance(node_type, str):
+                    return []
+                if node_type in ("IMAGE", "MASK"):
+                    if not isinstance(value, str):
+                        return None
+                    image_path = os.path.join(BASE_COMFY_DIR, "output", value)
+                    output_image = TensorImage.from_local(image_path)
+                    return output_image.get_BWHC()
+                if node_type == "INT":
+                    return int(value)
+                if node_type == "FLOAT":
+                    return float(value)
+                if node_type == "BOOLEAN":
+                    return bool(value)
+                return str(value)
+
+            outputs = []
+            for node_output in node_outputs:
+                for job_output in job_outputs:
+                    if not isinstance(job_output, dict) or not isinstance(node_output, dict):
+                        continue
+                    node_name = node_output.get("title") or []
+                    job_name = job_output.get("title") or []
+                    if isinstance(node_name, str):
+                        node_name = [node_name]
+                    if isinstance(job_name, str):
+                        job_name = [job_name]
+                    # console.log(f"Node name: {node_name}, Job name: {job_name}")
+                    for node_name_part in node_name:
+                        for job_name_part in job_name:
+                            if node_name_part != job_name_part:
+                                continue
+                            data = process_data(node_output, job_output)
+                            if data is None:
+                                continue
+                            outputs.append(data)
+                            break
+                    # console.log(f"Added {node_name} {node_type}")
+            # console.log(f"=====================>>> Node outputs: {len(outputs)}")
+            return tuple(outputs)
+
+        @classmethod
+        def INPUT_TYPES(cls):  # type: ignore
+            inputs = {
+                "required": {
+                    "data": ("STRING", {"default": ""}),
+                },
+                "optional": {},
+            }
+
+            return inputs
+
+        RETURN_TYPES = (any_type,) * 20
+        FUNCTION = "execute"
+        CATEGORY = UTILS_CAT
+
+        def execute(self, **kwargs):
+
+            data = kwargs.get("data")
+            # console.log(f"kwargs: {kwargs}")
+
+            fallback = (None,) * 20
+            if data is None:
+                return fallback
+            json_data = json.loads(data)
+            if not isinstance(json_data, dict):
+                return fallback
+            base_url = json_data.get("origin") or None
+            workflow_api = json_data.get("workflow_api") or None
+            token = json_data.get("token") or None
+            inference_host = json_data.get("inference_host") or None
+            widget_inputs = json_data.get("widget_inputs") or []
+            # console.log(f"Widget inputs: {widget_inputs}")
+
+            if inference_host is None or inference_host == "":
+                inference_host = base_url
+            # console.log(f"Origin: {base_url}, Inference host: {inference_host}")
+            if not isinstance(base_url, str):
+                return fallback
+            if not isinstance(workflow_api, dict):
+                return fallback
+            if not isinstance(token, str):
+                return fallback
+
+            workflow = Workflow(workflow_api)
+            node_inputs = workflow.get_inputs()
+            # console.log(f"Node inputs: {node_inputs}")
+            workflow_outputs = workflow.get_outputs()
+            output_ids = workflow_outputs.keys()
+            node_outputs = workflow_outputs.values()
+            # console.log(f"Node outputs: {node_outputs}")
+
+            for key, value in node_inputs.items():
+                if not isinstance(value, dict):
+                    continue
+                node_title = value.get("title")
+                node_type = value.get("type")
+                if not isinstance(node_type, str) or not isinstance(node_title, str):
+                    continue
+                comfy_value = kwargs.get(node_title)
+                if comfy_value is None:
+                    for widget_input in widget_inputs:
+                        if widget_input.get("title") == node_title:
+                            widget_value = widget_input.get("value")
+                            if widget_value is None:
+                                continue
+                            comfy_value = widget_input.get("value")
+                            break
+                if comfy_value is None:
+                    continue
+                if node_type in ("IMAGE", "MASK"):
+                    if isinstance(comfy_value, torch.Tensor):
+                        tensor_image = TensorImage.from_BWHC(comfy_value).get_base64()
+                        # uploaded_image = self.upload_image_to_s3(base_url, token, tensor_image)
+                        value.update({"value": tensor_image})
+                        node_inputs[key] = value
+                else:
+                    value.update({"value": comfy_value})
+                    node_inputs[key] = value
+
+            workflow.set_inputs(node_inputs)
+            workflow_api = workflow.data
+
+            if not isinstance(workflow_api, dict):
+                return fallback
+
+            executor.execute(workflow_api, uuid.uuid4(), {}, output_ids)
+            executor.reset()
+            gc.collect()
+            comfy.model_management.unload_all_models()
+            comfy.model_management.cleanup_models()
+            comfy.model_management.soft_empty_cache()
+
+            if executor.success:
+                console.log("Success wrapper inference")
+            else:
+                console.log("Failed wrapper inference")
+                final_status = executor.status_messages[-1]
+                console.log(f"Final status: {final_status}")
+                if isinstance(final_status, dict):
+                    final_error = final_status.get("execution_error") or None
+                    if final_error is not None:
+                        raise Exception(final_error)
+            outputs = executor.history_result["outputs"].values()
+            job_outputs = []
+            for job_output in outputs:
+                for key, value in job_output.items():
+                    if key == "signature_output":
+                        job_outputs.extend(value)
+
+            return self.process_outputs(job_outputs, node_outputs)
+
+    ```

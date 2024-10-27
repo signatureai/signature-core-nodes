@@ -2,7 +2,11 @@
 
 ## PlatformInputImage
 
-Handles image input for the platform
+Processes and validates image inputs from various sources for the platform.
+
+This class handles image input processing, supporting both single and multiple images
+from URLs or base64 strings. It includes functionality for alpha channel management and
+mask generation.
 
 ### Inputs
 
@@ -15,22 +19,38 @@ Handles image input for the platform
 | required | multiple      | `BOOLEAN`                             | False       |                |
 | required | value         | `STRING`                              |             |                |
 | required | metadata      | `STRING`                              | {}          | multiline=True |
-| optional | fallback      | `<ast.Name object at 0x7f0a337f9bd0>` |             |                |
+| optional | fallback      | `<ast.Name object at 0x7efc8f4f3040>` |             |                |
 
-??? note "Pick the code in platform_io.py"
+??? note "Source code in platform_io.py"
 
     ```python
     class PlatformInputImage:
-        """Handles image input for the platform.
+        """Processes and validates image inputs from various sources for the platform.
 
-        This class processes image inputs, supporting both single and multiple images.
-        It can handle images from URLs or base64 strings and apply post-processing like alpha channel removal.
+        This class handles image input processing, supporting both single and multiple images from URLs or
+        base64 strings. It includes functionality for alpha channel management and mask generation.
 
-        Methods:
-            execute(**kwargs): Processes the image input and returns a list of processed images.
+        Args:
+            title (str): Display title for the input node. Defaults to "Input Image".
+            subtype (str): Type of input - either "image" or "mask".
+            required (bool): Whether the input is required. Defaults to True.
+            include_alpha (bool): Whether to preserve alpha channel. Defaults to False.
+            multiple (bool): Allow multiple image inputs. Defaults to False.
+            value (str): Image data as URL or base64 string.
+            metadata (str): JSON string containing additional metadata. Defaults to "{}".
+            fallback (any): Optional fallback value if no input is provided.
+
+        Returns:
+            tuple[list]: A tuple containing a list of processed images as torch tensors in BWHC format.
 
         Raises:
-            ValueError: If input values are not of the expected types or if no valid input is found.
+            ValueError: If value is not a string, subtype is invalid, or no valid input is found.
+
+        Notes:
+            - URLs must start with "http" to be recognized
+            - Multiple images can be provided as comma-separated values
+            - Alpha channels are removed by default unless include_alpha is True
+            - Mask inputs are automatically converted to grayscale
         """
 
         @classmethod
@@ -114,11 +134,16 @@ Handles image input for the platform
                     if isinstance(output, TensorImage):
                         outputs[i] = post_process(output, include_alpha).get_BWHC()
             return (outputs,)
+
+
     ```
 
 ## PlatformInputConnector
 
-Handles input from external connectors like Google Drive
+Manages file downloads from external services using authentication tokens.
+
+Handles connections to external services (currently Google Drive) to download files
+using provided authentication tokens and file identifiers.
 
 ### Inputs
 
@@ -139,19 +164,35 @@ Handles input from external connectors like Google Drive
 | ---- | ------ |
 | file | `FILE` |
 
-??? note "Pick the code in platform_io.py"
+??? note "Source code in platform_io.py"
 
     ```python
     class PlatformInputConnector:
-        """Handles input from external connectors like Google Drive.
+        """Manages file downloads from external services using authentication tokens.
 
-        This class manages file downloads from external services using provided tokens and file IDs.
+        Handles connections to external services (currently Google Drive) to download files using provided
+        authentication tokens and file identifiers.
 
-        Methods:
-            execute(**kwargs): Downloads the specified file and returns the file data.
+        Args:
+            title (str): Display title for the connector. Defaults to "Input Connector".
+            subtype (str): Service type, currently only supports "google_drive".
+            required (bool): Whether the input is required. Defaults to True.
+            override (bool): Whether to override existing files. Defaults to False.
+            token (str): Authentication token for the service.
+            mime_type (str): Expected MIME type of the file. Defaults to "image/png".
+            value (str): File identifier for the service.
+            metadata (str): JSON string containing additional metadata. Defaults to "{}".
+
+        Returns:
+            tuple[str]: A tuple containing the path to the downloaded file.
 
         Raises:
-            ValueError: If input values are not of the expected types.
+            ValueError: If token, value, mime_type are not strings or override is not boolean.
+
+        Notes:
+            - Files are downloaded to the ComfyUI input directory
+            - Supports Google Drive integration with proper authentication
+            - Can be extended to support other services in the future
         """
 
         @classmethod
@@ -195,11 +236,16 @@ Handles input from external connectors like Google Drive
                 file_id=value, mime_type=mime_type, output_path=input_folder, override=override
             )
             return (data,)
+
+
     ```
 
 ## PlatformInputText
 
-Handles text input for the platform
+Processes text input with fallback support.
+
+Handles text input processing with support for different subtypes and optional fallback
+values when input is empty.
 
 ### Inputs
 
@@ -218,19 +264,33 @@ Handles text input for the platform
 | ------ | -------- |
 | string | `STRING` |
 
-??? note "Pick the code in platform_io.py"
+??? note "Source code in platform_io.py"
 
     ```python
     class PlatformInputText:
-        """Handles text input for the platform.
+        """Processes text input with fallback support.
 
-        This class processes text inputs, providing a fallback option if the input is empty.
+        Handles text input processing with support for different subtypes and optional fallback values
+        when input is empty.
 
-        Methods:
-            execute(**kwargs): Returns the input text or the fallback if the input is empty.
+        Args:
+            title (str): Display title for the text input. Defaults to "Input Text".
+            subtype (str): Type of text - "string", "positive_prompt", or "negative_prompt".
+            required (bool): Whether the input is required. Defaults to True.
+            value (str): The input text value.
+            metadata (str): JSON string containing additional metadata. Defaults to "{}".
+            fallback (str): Optional fallback text if input is empty.
+
+        Returns:
+            tuple[str]: A tuple containing the processed text value.
 
         Raises:
-            ValueError: If input values are not of the expected types.
+            ValueError: If value or fallback are not strings.
+
+        Notes:
+            - Empty inputs will use the fallback value if provided
+            - Supports multiline text input
+            - Special handling for prompt-type inputs
         """
 
         @classmethod
@@ -262,11 +322,16 @@ Handles text input for the platform
             if value == "":
                 value = fallback or ""
             return (value,)
+
+
     ```
 
 ## PlatformInputNumber
 
-Handles numeric input for the platform
+Processes numeric inputs with type conversion.
+
+Handles numeric input processing with support for both integer and float values,
+including automatic type conversion based on the specified subtype.
 
 ### Inputs
 
@@ -278,19 +343,31 @@ Handles numeric input for the platform
 | required | value    | `FLOAT`   | 0            |                |
 | required | metadata | `STRING`  | {}           | multiline=True |
 
-??? note "Pick the code in platform_io.py"
+??? note "Source code in platform_io.py"
 
     ```python
     class PlatformInputNumber:
-        """Handles numeric input for the platform.
+        """Processes numeric inputs with type conversion.
 
-        This class processes numeric inputs, supporting both integers and floats.
+        Handles numeric input processing with support for both integer and float values, including
+        automatic type conversion based on the specified subtype.
 
-        Methods:
-            execute(**kwargs): Returns the input number, converting it to the specified subtype.
+        Args:
+            title (str): Display title for the number input. Defaults to "Input Number".
+            subtype (str): Type of number - either "float" or "int".
+            required (bool): Whether the input is required. Defaults to True.
+            value (float): The input numeric value. Defaults to 0.
+            metadata (str): JSON string containing additional metadata. Defaults to "{}".
+
+        Returns:
+            tuple[Union[int, float]]: A tuple containing the processed numeric value.
 
         Raises:
-            ValueError: If input values are not of the expected types.
+            ValueError: If value is not numeric or subtype is invalid.
+
+        Notes:
+            - Automatically converts between float and int based on subtype
+            - Maintains numeric precision during conversion
         """
 
         @classmethod
@@ -321,11 +398,15 @@ Handles numeric input for the platform
             else:
                 value = float(value)
             return (value,)
+
+
     ```
 
 ## PlatformInputBoolean
 
-Handles boolean input for the platform
+Processes boolean inputs for the platform.
+
+Handles boolean input processing with validation and type checking.
 
 ### Inputs
 
@@ -343,19 +424,30 @@ Handles boolean input for the platform
 | ------- | --------- |
 | boolean | `BOOLEAN` |
 
-??? note "Pick the code in platform_io.py"
+??? note "Source code in platform_io.py"
 
     ```python
     class PlatformInputBoolean:
-        """Handles boolean input for the platform.
+        """Processes boolean inputs for the platform.
 
-        This class processes boolean inputs.
+        Handles boolean input processing with validation and type checking.
 
-        Methods:
-            execute(**kwargs): Returns the input boolean value.
+        Args:
+            title (str): Display title for the boolean input. Defaults to "Input Boolean".
+            subtype (str): Must be "boolean".
+            required (bool): Whether the input is required. Defaults to True.
+            value (bool): The input boolean value. Defaults to False.
+            metadata (str): JSON string containing additional metadata. Defaults to "{}".
+
+        Returns:
+            tuple[bool]: A tuple containing the boolean value.
 
         Raises:
-            ValueError: If input values are not of the expected types.
+            ValueError: If value is not a boolean.
+
+        Notes:
+            - Simple boolean validation and processing
+            - Returns original boolean value without modification
         """
 
         @classmethod
@@ -380,11 +472,16 @@ Handles boolean input for the platform
             if not isinstance(value, bool):
                 raise ValueError("Value must be a boolean")
             return (value,)
+
+
     ```
 
 ## PlatformOutput
 
-Handles output for the platform
+Manages output processing and file saving for various data types.
+
+Handles the processing and saving of different output types including images, masks,
+numbers, and strings. Includes support for thumbnail generation and metadata management.
 
 ### Inputs
 
@@ -393,23 +490,37 @@ Handles output for the platform
 | required | title       | `STRING`                              | Output Image |                |
 | required | subtype     | `LIST`                                |              |                |
 | required | metadata    | `STRING`                              |              | multiline=True |
-| required | value       | `<ast.Name object at 0x7f0a337c3040>` |              |                |
+| required | value       | `<ast.Name object at 0x7efc8f46aad0>` |              |                |
 | hidden   | output_path | `STRING`                              | output       |                |
 
-??? note "Pick the code in platform_io.py"
+??? note "Source code in platform_io.py"
 
     ```python
     class PlatformOutput:
-        """Handles output for the platform.
+        """Manages output processing and file saving for various data types.
 
-        This class manages the output of various data types, including images, numbers, and strings.
-        It supports saving images and generating thumbnails.
+        Handles the processing and saving of different output types including images, masks, numbers, and
+        strings. Includes support for thumbnail generation and metadata management.
 
-        Methods:
-            execute(**kwargs): Processes and saves the output data, returning metadata about the saved files.
+        Args:
+            title (str): Display title for the output. Defaults to "Output Image".
+            subtype (str): Type of output - "image", "mask", "int", "float", "string", or "dict".
+            metadata (str): JSON string containing additional metadata.
+            value (any): The value to output.
+            output_path (str): Path for saving outputs. Defaults to "output".
+
+        Returns:
+            dict: UI configuration with signature_output containing processed results.
 
         Raises:
-            ValueError: If input values are not of the expected types or if unsupported output types are provided.
+            ValueError: If inputs are invalid or output type is unsupported.
+
+        Notes:
+            - Automatically generates thumbnails for image outputs
+            - Saves images with unique filenames including timestamps
+            - Supports batch processing of multiple outputs
+            - Creates both full-size PNG and compressed JPEG thumbnails
+            - Handles various data types with appropriate serialization
         """
 
         @classmethod
@@ -537,4 +648,5 @@ Handles output for the platform
                         {"title": title, "type": main_subtype, "metadata": metadata, "value": value_json}
                     )
             return {"ui": {"signature_output": results}}
+
     ```
