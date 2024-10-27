@@ -984,8 +984,9 @@
 <h1 id="lora-nodes">Lora Nodes</h1>
 <h2 id="applylorastack">ApplyLoraStack</h2>
 <p>Applies multiple LoRA models sequentially to a base model and CLIP in ComfyUI.</p>
-<p>This node takes a base model, CLIP, and a stack of LoRA models as input. It applies each LoRA
-in the stack sequentially using specified weights for both model and CLIP components.</p>
+<p>This node takes a base model, CLIP, and a stack of LoRA models as input. It applies each
+LoRA in the stack sequentially using specified weights for both model and CLIP
+components.</p>
 <h3 id="inputs">Inputs</h3>
 <table>
 <thead>
@@ -1121,8 +1122,9 @@ in the stack sequentially using specified weights for both model and CLIP compon
 </details>
 <h2 id="lorastack">LoraStack</h2>
 <p>Creates a configurable stack of up to 3 LoRA models with adjustable weights.</p>
-<p>Provides a user interface to enable/disable and configure up to three LoRA models with independent
-weights for both model and CLIP components. Can extend an existing LORA_STACK.</p>
+<p>Provides a user interface to enable/disable and configure up to three LoRA models with
+independent weights for both model and CLIP components. Can extend an existing
+LORA_STACK.</p>
 <h3 id="inputs_1">Inputs</h3>
 <table>
 <thead>
@@ -1145,7 +1147,7 @@ weights for both model and CLIP components. Can extend an existing LORA_STACK.</
 <tr>
 <td>required</td>
 <td>lora_name_1</td>
-<td><code>&lt;ast.Name object at 0x7fb698ffdae0&gt;</code></td>
+<td><code>&lt;ast.Name object at 0x7efc8f4b9ae0&gt;</code></td>
 <td></td>
 <td></td>
 </tr>
@@ -1173,7 +1175,7 @@ weights for both model and CLIP components. Can extend an existing LORA_STACK.</
 <tr>
 <td>required</td>
 <td>lora_name_2</td>
-<td><code>&lt;ast.Name object at 0x7fb698ffd540&gt;</code></td>
+<td><code>&lt;ast.Name object at 0x7efc8f4b9540&gt;</code></td>
 <td></td>
 <td></td>
 </tr>
@@ -1201,7 +1203,7 @@ weights for both model and CLIP components. Can extend an existing LORA_STACK.</
 <tr>
 <td>required</td>
 <td>lora_name_3</td>
-<td><code>&lt;ast.Name object at 0x7fb698ffcfa0&gt;</code></td>
+<td><code>&lt;ast.Name object at 0x7efc8f4b8fa0&gt;</code></td>
 <td></td>
 <td></td>
 </tr>
@@ -1331,8 +1333,8 @@ weights for both model and CLIP components. Can extend an existing LORA_STACK.</
 </details>
 <h2 id="dict2lorastack">Dict2LoraStack</h2>
 <p>Converts a list of LoRA configuration dictionaries into a LORA_STACK format.</p>
-<p>Transforms a list of dictionaries containing LoRA configurations into the tuple format required
-for LORA_STACK operations. Can optionally extend an existing stack.</p>
+<p>Transforms a list of dictionaries containing LoRA configurations into the tuple format
+required for LORA_STACK operations. Can optionally extend an existing stack.</p>
 <h3 id="returns_2">Returns</h3>
 <table>
 <thead>
@@ -1410,8 +1412,8 @@ for LORA_STACK operations. Can optionally extend an existing stack.</p>
 </details>
 <h2 id="saveloracaptions">SaveLoraCaptions</h2>
 <p>Saves images and captions in a format suitable for LoRA training.</p>
-<p>Creates a structured dataset directory containing images and their corresponding caption files,
-with support for multiple captions and optional text modifications.</p>
+<p>Creates a structured dataset directory containing images and their corresponding caption
+files, with support for multiple captions and optional text modifications.</p>
 <h3 id="inputs_2">Inputs</h3>
 <table>
 <thead>
