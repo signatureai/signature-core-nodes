@@ -128,13 +128,13 @@ class FloatClamp:
 
     def execute(self, **kwargs):
         number = kwargs.get("number")
-        if not isinstance(number, float):
+        if not isinstance(number, float) and not isinstance(number, int):
             raise ValueError("Number must be a float")
         min_value = kwargs.get("min_value")
-        if not isinstance(min_value, float):
+        if not isinstance(min_value, float) and not isinstance(min_value, int):
             raise ValueError("Min value must be a float")
-        max_value = kwargs.get("max_value")
-        if not isinstance(max_value, float):
+        max_value = float(kwargs.get("max_value") or 0.0)
+        if not isinstance(max_value, float) and not isinstance(max_value, int):
             raise ValueError("Max value must be a float")
 
         if number < min_value:
@@ -177,10 +177,11 @@ class Float2Int:
     CATEGORY = NUMBERS_CAT
 
     def execute(self, **kwargs):
-        number = kwargs.get("number")
-        if not isinstance(number, float):
-            raise ValueError("Number must be a float")
-        return (int(number),)
+        try:
+            number = float(kwargs.get("number", 0.0))
+            return (int(number),)
+        except (TypeError, ValueError):
+            raise ValueError("Number must be convertible to float")
 
 
 class Int2Float:
@@ -216,10 +217,11 @@ class Int2Float:
     CATEGORY = NUMBERS_CAT
 
     def execute(self, **kwargs):
-        number = kwargs.get("number")
-        if not isinstance(number, int):
-            raise ValueError("Number must be an integer")
-        return (float(number),)
+        try:
+            number = int(kwargs.get("number", 0))
+            return (float(number),)
+        except (TypeError, ValueError):
+            raise ValueError("Number must be convertible to integer")
 
 
 class IntOperator:
@@ -267,23 +269,21 @@ class IntOperator:
     CATEGORY = NUMBERS_CAT
 
     def execute(self, **kwargs):
-        left = kwargs.get("left")
-        if not isinstance(left, float):
-            raise ValueError("Left must be a float")
-        right = kwargs.get("right")
-        if not isinstance(right, float):
-            raise ValueError("Right must be a float")
-        operator = kwargs.get("operator")
-        if not isinstance(operator, str):
-            raise ValueError("Operator must be a string")
+        try:
+            left = float(kwargs.get("left", 0.0))
+            right = float(kwargs.get("right", 0.0))
+            operator = str(kwargs.get("operator", "+"))
+        except (TypeError, ValueError):
+            raise ValueError("Values must be convertible to floats")
+
         if operator == "+":
-            return (left + right,)
+            return (int(left + right),)
         if operator == "-":
-            return (left - right,)
+            return (int(left - right),)
         if operator == "*":
-            return (left * right,)
+            return (int(left * right),)
         if operator == "/":
-            return (left / right,)
+            return (int(left / right),)
 
         raise ValueError(f"Unsupported operator: {operator}")
 
@@ -389,15 +389,13 @@ class IntMinMax:
     CATEGORY = NUMBERS_CAT
 
     def execute(self, **kwargs):
-        a = kwargs.get("a")
-        b = kwargs.get("b")
-        if not isinstance(a, int):
-            raise ValueError("A must be an integer")
-        if not isinstance(b, int):
-            raise ValueError("B must be an integer")
-        mode = kwargs.get("mode")
-        if not isinstance(mode, str):
-            raise ValueError("Mode must be a string")
+        try:
+            a = int(kwargs.get("a", 0))
+            b = int(kwargs.get("b", 0))
+            mode = str(kwargs.get("mode", "min"))
+        except (TypeError, ValueError):
+            raise ValueError("Values must be convertible to integers")
+
         if mode == "min":
             return (min(a, b),)
         if mode == "max":
@@ -441,15 +439,13 @@ class FloatMinMax:
     CATEGORY = NUMBERS_CAT
 
     def execute(self, **kwargs):
-        a = kwargs.get("a")
-        b = kwargs.get("b")
-        if not isinstance(a, float):
-            raise ValueError("A must be a float")
-        if not isinstance(b, float):
-            raise ValueError("B must be a float")
-        mode = kwargs.get("mode")
-        if not isinstance(mode, str):
-            raise ValueError("Mode must be a string")
+        try:
+            a = float(kwargs.get("a", 0.0))
+            b = float(kwargs.get("b", 0.0))
+            mode = str(kwargs.get("mode", "min"))
+        except (TypeError, ValueError):
+            raise ValueError("Values must be convertible to floats")
+
         if mode == "min":
             return (min(a, b),)
         if mode == "max":
@@ -550,14 +546,14 @@ class MathOperator:
     CATEGORY = NUMBERS_CAT
 
     def execute(self, **kwargs):
-
-        a = kwargs.get("a") or 0.0
-        b = kwargs.get("b") or 0.0
-        c = kwargs.get("c") or 0.0
-        d = kwargs.get("d") or 0.0
-        value = kwargs.get("value") or ""
-        # trim value
-        value = value.strip()
+        try:
+            a = float(kwargs.get("a", 0.0))
+            b = float(kwargs.get("b", 0.0))
+            c = float(kwargs.get("c", 0.0))
+            d = float(kwargs.get("d", 0.0))
+            value = str(kwargs.get("value", "")).strip()
+        except (TypeError, ValueError):
+            raise ValueError("Values must be convertible to floats")
 
         def safe_xor(x, y):
             if isinstance(x, float) or isinstance(y, float):

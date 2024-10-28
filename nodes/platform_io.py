@@ -245,8 +245,6 @@ class InputText:
         if not isinstance(value, str):
             raise ValueError("Value must be a string")
         fallback = kwargs.get("fallback")
-        if not isinstance(fallback, str):
-            raise ValueError("Fallback must be a string")
         if value == "":
             value = fallback or ""
         return (value,)
