@@ -12,7 +12,7 @@ from .categories import PLATFORM_IO_CAT
 from .shared import BASE_COMFY_DIR, any_type
 
 
-class PlatformInputImage:
+class InputImage:
     """Processes and validates image inputs from various sources for the platform.
 
     This class handles image input processing, supporting both single and multiple images from URLs or
@@ -124,7 +124,7 @@ class PlatformInputImage:
         return (outputs,)
 
 
-class PlatformInputConnector:
+class InputConnector:
     """Manages file downloads from external services using authentication tokens.
 
     Handles connections to external services (currently Google Drive) to download files using provided
@@ -195,7 +195,7 @@ class PlatformInputConnector:
         return (data,)
 
 
-class PlatformInputText:
+class InputText:
     """Processes text input with fallback support.
 
     Handles text input processing with support for different subtypes and optional fallback values
@@ -252,7 +252,7 @@ class PlatformInputText:
         return (value,)
 
 
-class PlatformInputNumber:
+class InputNumber:
     """Processes numeric inputs with type conversion.
 
     Handles numeric input processing with support for both integer and float values, including
@@ -306,7 +306,7 @@ class PlatformInputNumber:
         return (value,)
 
 
-class PlatformInputBoolean:
+class InputBoolean:
     """Processes boolean inputs for the platform.
 
     Handles boolean input processing with validation and type checking.
@@ -353,7 +353,7 @@ class PlatformInputBoolean:
         return (value,)
 
 
-class PlatformOutput:
+class Output:
     """Manages output processing and file saving for various data types.
 
     Handles the processing and saving of different output types including images, masks, numbers, and
