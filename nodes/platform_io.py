@@ -466,7 +466,6 @@ class Output:
         if not isinstance(subtype_list, list):
             raise ValueError("Subtype must be a list")
         output_path_list = kwargs.get("output_path")
-        print(f"output_path_list: {output_path_list} {type(output_path_list)}")
         if not isinstance(output_path_list, list):
             output_path_list = ["output"] * len(title_list)
         value_list = kwargs.get("value")

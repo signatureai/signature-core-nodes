@@ -38,9 +38,11 @@ class PlaceholderServer:
 
     def send_sync(self, event: str, data: dict[str, Any], sid: str | None = None):
         console.log(f"Send sync: {event}, {data}, {sid}")
+        print(f"Send sync: {event}, {data}, {sid}")
 
     def send_sync_if_running(self, event: str, data: dict[str, Any], sid: str | None = None):
         console.log(f"Send sync if running: {event}, {data}, {sid}")
+        print(f"Send sync if running: {event}, {data}, {sid}")
 
     def queue_prompt(self, prompt_id: str, prompt: dict[str, Any]):
         self.prompt = prompt
