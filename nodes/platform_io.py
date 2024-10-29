@@ -66,60 +66,76 @@ class InputImage:
     def execute(
         self,
         **kwargs,
-    ):
+    ) -> tuple[list[torch.Tensor]]:
         def post_process(output: TensorImage, include_alpha: bool) -> TensorImage:
-            if include_alpha is False and output.shape[1] == 4:
-                # get alpha
+            if not include_alpha and output.shape[1] == 4:
                 rgb = TensorImage(output[:, :3, :, :])
                 alpha = TensorImage(output[:, -1, :, :])
                 output, _ = cutout(rgb, alpha)
             return output
 
-        value = kwargs.get("value")
-        if not isinstance(value, str):
-            raise ValueError("Value must be a string")
-        subtype = kwargs.get("subtype")
-        if not isinstance(subtype, str):
-            raise ValueError("Subtype must be a string")
-        include_alpha = kwargs.get("include_alpha") or False
-        if not isinstance(include_alpha, bool):
-            raise ValueError("Include alpha must be a boolean")
-        multiple = kwargs.get("multiple") or False
-        if not isinstance(multiple, bool):
-            raise ValueError("Multiple must be a boolean")
-        fallback = kwargs.get("fallback")
+        def validate_inputs() -> tuple[str, str, bool, bool, TensorImage | None]:
+            value = kwargs.get("value", "")
+            if not isinstance(value, str):
+                raise ValueError("Value must be a string")
 
-        if "," in value:
-            splited_value = value.split(",")
-            value = splited_value if multiple else splited_value[0]
-        else:
-            value = [value] if value != "" else []
-        outputs: list[TensorImage | torch.Tensor] = []
-        for i, _ in enumerate(value):
-            item = value[i]
+            subtype = kwargs.get("subtype", "image")
+            if not isinstance(subtype, str):
+                raise ValueError("Subtype must be a string")
+
+            include_alpha = bool(kwargs.get("include_alpha", False))
+            multiple = bool(kwargs.get("multiple", False))
+            fallback = kwargs.get("fallback")
+
+            return value, subtype, include_alpha, multiple, fallback
+
+        def process_value(value: str, multiple: bool) -> list[str]:
+            if not value:
+                return []
+            if "," in value:
+                items = value.split(",")
+                return items if multiple else [items[0]]
+            return [value]
+
+        def load_image(url_or_base64: str) -> TensorImage:
+            if not url_or_base64:
+                raise ValueError("Empty input string")
+
+            if url_or_base64.startswith("http"):
+                return TensorImage.from_web(url_or_base64)
+            try:
+                return TensorImage.from_base64(url_or_base64)
+            except Exception as e:
+                raise ValueError(f"Unsupported input format: {url_or_base64}") from e
+
+        value, subtype, include_alpha, multiple, fallback = validate_inputs()
+        value_list = process_value(value, multiple)
+        outputs: list[torch.Tensor] = []
+
+        # Process each input value
+        for item in value_list:
             if isinstance(item, str):
-                if item != "":
-                    if item.startswith("http"):
-                        output = TensorImage.from_web(item)
-                    else:
-                        try:
-                            output = TensorImage.from_base64(item)
-                        except:
-                            raise ValueError(f"Unsupported input format: {item}")
+                try:
+                    output = load_image(item)
                     outputs.append(output)
+                except ValueError as e:
+                    if not outputs:
+                        raise e
+
         if len(outputs) == 0:
             if fallback is None:
-                raise ValueError("No input found")
-            outputs.append(fallback)
-        for i, _ in enumerate(outputs):
-            output = outputs[i]
-            if isinstance(output, torch.Tensor):
-                output = TensorImage(output)
+                raise ValueError("No input found and no fallback provided")
+            outputs.append(TensorImage.from_BWHC(fallback))
+
+        for i, output in enumerate(outputs):
+            if not isinstance(output, TensorImage):
+                raise ValueError(f"Output {i} must be a TensorImage")
+
             if subtype == "mask":
                 outputs[i] = output.get_grayscale().get_BWHC()
             else:
-                if isinstance(output, TensorImage):
-                    outputs[i] = post_process(output, include_alpha).get_BWHC()
+                outputs[i] = post_process(output, include_alpha).get_BWHC()
+
         return (outputs,)
 
 
