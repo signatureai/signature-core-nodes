@@ -314,6 +314,7 @@ class Wrapper:
                 node_id = data.get("node")
                 self.remaining_ids = list(set(self.remaining_ids) - {node_id})
             elif event == "execution_error":
+                console.log(f"Execution error: {data}")
                 raise Exception(data.get("error"))
             elif event == "execution_interrupted":
                 raise Exception("Execution was interrupted")

@@ -202,7 +202,7 @@ async function displayWorkflows(node, projectId, projectName) {
         }
         for (let i = 0; i < data.length; i++) {
           if (data[i].name === selectedWidget.value) {
-            updateInputsOutputs(node, data[i], true);
+            updateInputsOutputs(node, data[i], false);
             break;
           }
         }
