@@ -110,8 +110,7 @@ class InputImage:
         if len(outputs) == 0:
             if fallback is None:
                 raise ValueError("No input found")
-            tensor_fallback = TensorImage.from_BWHC(fallback)
-            outputs.append(tensor_fallback)
+            outputs.append(fallback)
         for i, _ in enumerate(outputs):
             output = outputs[i]
             if isinstance(output, torch.Tensor):

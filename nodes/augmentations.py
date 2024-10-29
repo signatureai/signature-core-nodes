@@ -188,7 +188,7 @@ class ComposeAugmentation:
         self,
         **kwargs,
     ):
-        augmentation = kwargs.get("augmentation")
+        augmentation = kwargs.get("augmentation") or []
         samples = kwargs.get("samples") or 1
         image = kwargs.get("image")
         mask = kwargs.get("mask")
