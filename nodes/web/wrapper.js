@@ -202,7 +202,7 @@ async function displayWorkflows(node, projectId, projectName) {
         }
         for (let i = 0; i < data.length; i++) {
           if (data[i].name === selectedWidget.value) {
-            updateInputsOutputs(node, data[i], false);
+            updateInputsOutputs(node, data[i], true);
             break;
           }
         }
@@ -235,12 +235,12 @@ function resetWidgets(node) {
 
 function updateInputsOutputs(node, workflowObject, update) {
   if (update) {
-    node.inputs = [];
     node.outputs = [];
     resetWidgets(node);
   }
-  const workflowId = workflowObject._id;
   const parsedWorkflow = JSON.parse(workflowObject.workflow_api);
+
+  node.title = workflowObject.name;
 
   let data = {
     origin: main_url,
@@ -248,10 +248,9 @@ function updateInputsOutputs(node, workflowObject, update) {
     workflow_api: parsedWorkflow,
     widget_inputs: [],
   };
-  console.log("Selected workflow: ", workflowObject);
-  console.log("Selected workflow id: ", workflowId);
 
   const nodes = Object.keys(parsedWorkflow).map((key) => [key, parsedWorkflow[key]]);
+  let newInputs = [];
   for (let i = 0; i < nodes.length; i++) {
     const wfNode = nodes[i][1];
     const nodeType = wfNode.class_type;
@@ -336,13 +335,15 @@ function updateInputsOutputs(node, workflowObject, update) {
             // console.log("input type not supported: ", inputType);
           }
         } else {
-          node.addInput(inputName, inputType);
+          if (!node.inputs.find((input) => input.name === inputName)) {
+            node.addInput(inputName, inputType);
+          }
+          newInputs.push(inputName);
         }
       }
     }
 
     if (nodeType === "signature_output") {
-      // console.log("output nodes: ", nodes[i]);
       let nodeOutputs = wfNode.inputs;
       const name = nodeOutputs.title;
       const type = nodeOutputs.subtype.toUpperCase();
@@ -350,6 +351,11 @@ function updateInputsOutputs(node, workflowObject, update) {
         node.addOutput(name, type);
       }
     }
+  }
+
+  const inputsToRemove = node.inputs.filter((input) => !newInputs.includes(input.name));
+  for (const input of inputsToRemove) {
+    node.removeInput(input.name);
   }
   updateData(node, data);
 }
@@ -405,7 +411,7 @@ const ext = {
           value: "loading...",
           options: { values: [] },
         });
-
+        node.outputs = [];
         resetWidgets(node);
       }
       await displayOrganisations(node);
