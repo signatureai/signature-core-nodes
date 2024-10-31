@@ -68,10 +68,18 @@ class InputImage:
         **kwargs,
     ) -> tuple[list[torch.Tensor]]:
         def post_process(output: TensorImage, include_alpha: bool) -> TensorImage:
-            if not include_alpha and output.shape[1] == 4:
-                rgb = TensorImage(output[:, :3, :, :])
-                alpha = TensorImage(output[:, -1, :, :])
-                output, _ = cutout(rgb, alpha)
+            if output.shape[1] not in [3, 4]:
+                if len(output.shape) == 2:  # (H,W)
+                    output = TensorImage(output.unsqueeze(0).unsqueeze(0).expand(1, 1, -1, -1))
+                elif len(output.shape) == 3:  # (B,H,W)
+                    output = TensorImage(output.unsqueeze(-1).expand(-1, -1, -1, 3))
+                else:
+                    raise ValueError(f"Unsupported shape: {output.shape}")
+            else:
+                if not include_alpha and output.shape[1] == 4:
+                    rgb = TensorImage(output[:, :3, :, :])
+                    alpha = TensorImage(output[:, -1, :, :])
+                    output, _ = cutout(rgb, alpha)
             return output
 
         def validate_inputs() -> tuple[str, str, bool, bool, TensorImage | None]:
