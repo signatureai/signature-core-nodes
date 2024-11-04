@@ -37,6 +37,7 @@ class Any2String:
     RETURN_TYPES = ("STRING",)
     FUNCTION = "execute"
     CATEGORY = UTILS_CAT
+    CLASS_ID = "any_string"
 
     def execute(self, value):
         return (str(value),)
@@ -74,6 +75,7 @@ class Any2Image:
     RETURN_TYPES = ("IMAGE",)
     FUNCTION = "execute"
     CATEGORY = UTILS_CAT
+    CLASS_ID = "any_image"
 
     def execute(self, value):
         if isinstance(value, torch.Tensor):
@@ -109,6 +111,7 @@ class Any2Any:
     RETURN_TYPES = (any_type,)
     FUNCTION = "execute"
     CATEGORY = UTILS_CAT
+    CLASS_ID = "any_any"
 
     def execute(self, value):
         return (value,)
@@ -143,6 +146,7 @@ class RGB2HSV:
     RETURN_TYPES = ("IMAGE",)
     FUNCTION = "execute"
     CATEGORY = UTILS_CAT
+    CLASS_ID = "rgb_hsv"
 
     def execute(self, image: torch.Tensor):
         image_tensor = TensorImage.from_BWHC(image)
@@ -150,7 +154,7 @@ class RGB2HSV:
         return (output,)
 
 
-class RGBHLS:
+class RGB2HLS:
     """Converts RGB images to HLS color space.
 
     Transforms images from RGB (Red, Green, Blue) color space to HLS (Hue, Lightness, Saturation)
@@ -179,6 +183,7 @@ class RGBHLS:
     RETURN_TYPES = ("IMAGE",)
     FUNCTION = "execute"
     CATEGORY = UTILS_CAT
+    CLASS_ID = "rgb_hls"
 
     def execute(self, image: torch.Tensor):
         image_tensor = TensorImage.from_BWHC(image)
@@ -216,6 +221,7 @@ class RGBA2RGB:
     RETURN_TYPES = ("IMAGE",)
     FUNCTION = "execute"
     CATEGORY = UTILS_CAT
+    CLASS_ID = "rgba_rgb"
 
     def execute(self, image: torch.Tensor):
         image_tensor = TensorImage.from_BWHC(image)

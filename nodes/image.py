@@ -545,6 +545,7 @@ class ImageList2Batch:
     FUNCTION = "execute"
     CATEGORY = IMAGE_CAT
     INPUT_IS_LIST = True
+    CLASS_ID = "image_list_batch"
 
     def execute(self, **kwargs):
         images = kwargs.get("images")
@@ -611,6 +612,7 @@ class ImageBatch2List:
     RETURN_TYPES = ("IMAGE",)
     FUNCTION = "execute"
     CATEGORY = IMAGE_CAT
+    CLASS_ID = "image_batch_list"
     OUTPUT_IS_LIST = (True,)
 
     def execute(self, **kwargs):

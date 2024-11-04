@@ -1,5 +1,6 @@
 import json
 import os
+import time
 from datetime import datetime
 
 import torch
@@ -422,6 +423,10 @@ class Output:
     INPUT_IS_LIST = True
     FUNCTION = "execute"
     CATEGORY = PLATFORM_IO_CAT
+
+    @classmethod
+    def IS_CHANGED(cls, **kwargs):  # type: ignore
+        return time.time()
 
     def __save_outputs(self, **kwargs) -> dict | None:
         img = kwargs.get("img")

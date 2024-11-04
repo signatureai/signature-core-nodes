@@ -52,8 +52,8 @@ def get_node_class_mappings(nodes_directory: str):
                     continue
 
                 if hasattr(value, "FUNCTION"):
-                    cleaned_name = item.replace("2", "")
-                    snake_case = re.sub(r"(?<!^)(?=[A-Z])", "_", cleaned_name).lower()
+                    class_name = str(value.CLASS_ID) if hasattr(value, "CLASS_ID") else item.replace("2", "")
+                    snake_case = re.sub(r"(?<!^)(?=[A-Z])", "_", class_name).lower()
                     key = f"signature_{snake_case}"
                     node_class_mappings[key] = value
                     node_display_name_mappings[key] = f"SIG {item}"

@@ -4,7 +4,7 @@ from .categories import DATA_CAT
 from .shared import any_type
 
 
-class JsonToDict:
+class Json2Dict:
     """Converts JSON strings to Python dictionaries for workflow integration.
 
     A node that takes JSON-formatted strings and parses them into Python dictionaries, enabling
@@ -43,6 +43,7 @@ class JsonToDict:
 
     RETURN_TYPES = ("DICT",)
     FUNCTION = "execute"
+    CLASS_ID = "json_dict"
     CATEGORY = DATA_CAT
 
     def execute(self, **kwargs):
@@ -53,7 +54,7 @@ class JsonToDict:
         return (json_dict,)
 
 
-class DictToJson:
+class Dict2Json:
     """Converts Python dictionaries to JSON strings for data interchange.
 
     A node that serializes Python dictionaries into JSON-formatted strings, facilitating data
@@ -92,6 +93,7 @@ class DictToJson:
 
     RETURN_TYPES = ("STRING",)
     FUNCTION = "execute"
+    CLASS_ID = "dict_json"
     CATEGORY = DATA_CAT
 
     def execute(self, **kwargs):
