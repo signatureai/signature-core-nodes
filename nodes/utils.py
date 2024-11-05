@@ -221,7 +221,7 @@ class RGBA2RGB:
     RETURN_TYPES = ("IMAGE",)
     FUNCTION = "execute"
     CATEGORY = UTILS_CAT
-    CLASS_ID = "rgba_rgb"
+    CLASS_ID = "rgba2rgb"
 
     def execute(self, image: torch.Tensor):
         image_tensor = TensorImage.from_BWHC(image)

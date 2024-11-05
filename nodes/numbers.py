@@ -175,6 +175,7 @@ class Float2Int:
     RETURN_TYPES = ("INT",)
     FUNCTION = "execute"
     CATEGORY = NUMBERS_CAT
+    CLASS_ID = "float2int"
 
     def execute(self, **kwargs):
         try:
@@ -215,6 +216,7 @@ class Int2Float:
     RETURN_TYPES = ("FLOAT",)
     FUNCTION = "execute"
     CATEGORY = NUMBERS_CAT
+    CLASS_ID = "int2float"
 
     def execute(self, **kwargs):
         try:
@@ -387,6 +389,7 @@ class IntMinMax:
     RETURN_TYPES = ("INT",)
     FUNCTION = "execute"
     CATEGORY = NUMBERS_CAT
+    CLASS_ID = "int_minmax"
 
     def execute(self, **kwargs):
         try:
@@ -437,6 +440,7 @@ class FloatMinMax:
     RETURN_TYPES = ("FLOAT",)
     FUNCTION = "execute"
     CATEGORY = NUMBERS_CAT
+    CLASS_ID = "float_minmax"
 
     def execute(self, **kwargs):
         try:
