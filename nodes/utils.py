@@ -272,6 +272,7 @@ class PurgeVRAM:
     FUNCTION = "execute"
     CATEGORY = UTILS_CAT
     OUTPUT_NODE = True
+    DEPRECATED = True
 
     def execute(self, anything, purge_cache, purge_models):
 

@@ -1,6 +1,8 @@
+import gc
 import os
 import sys
 
+import torch
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -18,3 +20,16 @@ class AnyType(str):
 
 
 any_type = AnyType("*")
+
+sys.path.append(BASE_COMFY_DIR)
+import comfy  # type: ignore
+
+
+def clean_memory():
+    gc.collect()
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+        torch.cuda.ipc_collect()
+    comfy.model_management.unload_all_models()
+    comfy.model_management.cleanup_models()
+    comfy.model_management.soft_empty_cache()
