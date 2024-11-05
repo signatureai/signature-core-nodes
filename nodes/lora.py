@@ -213,7 +213,7 @@ class Dict2LoraStack:
     RETURN_NAMES = ("lora_stack",)
     FUNCTION = "execute"
     CATEGORY = LORA_CAT
-    CLASS_ID = "dict_lora_stack"
+    CLASS_ID = "dict_to_lora_stack"
 
     def execute(self, **kwargs):
         lora_dicts = kwargs.get("lora_dicts")
