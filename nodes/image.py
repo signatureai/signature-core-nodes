@@ -664,6 +664,7 @@ class GetImageShape:
     RETURN_NAMES = ("batch", "width", "height", "channels", "debug")
     FUNCTION = "execute"
     CATEGORY = IMAGE_CAT
+    CLASS_ID = "get_image_size"
 
     def execute(self, image):
         return (image.shape[0], image.shape[2], image.shape[1], image.shape[3], str(image.shape))
