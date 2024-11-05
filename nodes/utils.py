@@ -111,7 +111,7 @@ class Any2Any:
     RETURN_TYPES = (any_type,)
     FUNCTION = "execute"
     CATEGORY = UTILS_CAT
-    CLASS_ID = "any_any"
+    CLASS_ID = "any2any"
 
     def execute(self, value):
         return (value,)
@@ -273,6 +273,7 @@ class PurgeVRAM:
     CATEGORY = UTILS_CAT
     OUTPUT_NODE = True
     DEPRECATED = True
+    CLASS_ID = "purge_vram"
 
     def execute(self, anything, purge_cache, purge_models):
 
