@@ -10,7 +10,7 @@ from signature_core.img.tensor_image import TensorImage
 from uuid_extensions import uuid7str
 
 from .categories import PLATFORM_IO_CAT
-from .shared import BASE_COMFY_DIR, any_type
+from .shared import BASE_COMFY_DIR, any_type, clean_memory
 
 
 class InputImage:
@@ -146,7 +146,7 @@ class InputImage:
                 outputs[i] = output.get_grayscale().get_BWHC()
             else:
                 outputs[i] = post_process(output, include_alpha).get_BWHC()
-
+        clean_memory()
         return (outputs,)
 
 
@@ -218,6 +218,7 @@ class InputConnector:
         data = connector.download(
             file_id=value, mime_type=mime_type, output_path=input_folder, override=override
         )
+        clean_memory()
         return (data,)
 
 
@@ -273,6 +274,7 @@ class InputText:
         fallback = kwargs.get("fallback")
         if value == "":
             value = fallback or ""
+        clean_memory()
         return (value,)
 
 
@@ -327,6 +329,7 @@ class InputNumber:
             value = int(value)
         else:
             value = float(value)
+        clean_memory()
         return (value,)
 
 
@@ -374,6 +377,7 @@ class InputBoolean:
         value = kwargs.get("value")
         if not isinstance(value, bool):
             raise ValueError("Value must be a boolean")
+        clean_memory()
         return (value,)
 
 
@@ -531,4 +535,5 @@ class Output:
                 results.append(
                     {"title": title, "type": main_subtype, "metadata": metadata, "value": value_json}
                 )
+        clean_memory()
         return {"ui": {"signature_output": results}}
