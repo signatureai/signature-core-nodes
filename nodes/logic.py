@@ -158,11 +158,11 @@ class WhileLoopStart:
             inputs["optional"][f"init_value_{i}"] = (any_type,)
         return inputs
 
-    RETURN_TYPES = ByPassTypeTuple(tuple(["FLOW"] + [any_type] * MAX_FLOW_NUM))
+    RETURN_TYPES = ByPassTypeTuple(tuple(["FLOW_CONTROL"] + [any_type] * MAX_FLOW_NUM))
     RETURN_NAMES = ByPassTypeTuple(tuple(["flow"] + [f"value_{i}" for i in range(MAX_FLOW_NUM)]))
     FUNCTION = "execute"
 
-    CATEGORY = LOGIC_CAT
+    CATEGORY = LOGIC_CAT + "/Loops"
 
     def execute(self, **kwargs):
         values = []
@@ -179,7 +179,7 @@ class WhileLoopEnd:
     def INPUT_TYPES(cls):
         inputs = {
             "required": {
-                "flow": ("FLOW", {"rawLink": True}),
+                "flow": ("FLOW_CONTROL", {"rawLink": True}),
                 "condition": ("BOOLEAN", {}),
             },
             "optional": {},
@@ -196,7 +196,7 @@ class WhileLoopEnd:
     RETURN_NAMES = ByPassTypeTuple(tuple(f"value_{i}" for i in range(MAX_FLOW_NUM)))
     FUNCTION = "execute"
 
-    CATEGORY = LOGIC_CAT
+    CATEGORY = LOGIC_CAT + "/Loops"
 
     def explore_dependencies(self, node_id, dynprompt, upstream):
         node_info = dynprompt.get_node(node_id)
