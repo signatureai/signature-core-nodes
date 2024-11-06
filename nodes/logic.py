@@ -1,7 +1,10 @@
 import torch
+from comfy_execution.graph_utils import GraphBuilder, is_link  # type: ignore
 
 from .categories import LOGIC_CAT
-from .shared import any_type
+from .shared import ByPassTypeTuple, any_type
+
+MAX_FLOW_NUM = 10
 
 
 class LogicSwitch:
@@ -104,21 +107,16 @@ class LogicCompare:
             raise ValueError("All inputs are required")
 
         def safe_compare(a, b, tensor_op, primitive_op):
-            # Handle None values
             if a is None or b is None:
                 return a is b
 
-            # If types are different, they're never equal
             if not isinstance(a, type(b)) and not isinstance(b, type(a)):
                 return False
 
-            # Now we know both types are compatible
             if isinstance(a, torch.Tensor):
                 if a.shape != b.shape:
-                    # Reshape tensors to 1D for comparison
                     a = a.reshape(-1)
                     b = b.reshape(-1)
-                    # If sizes still don't match, compare only the overlapping part
                     min_size = min(a.size(0), b.size(0))
                     a = a[:min_size]
                     b = b[:min_size]
@@ -145,3 +143,126 @@ class LogicCompare:
             output = all(output)
 
         return (bool(output),)
+
+
+class WhileLoopStart:
+    def __init__(self):
+        pass
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        inputs = {
+            "optional": {},
+        }
+        for i in range(MAX_FLOW_NUM):
+            inputs["optional"][f"init_value_{i}"] = (any_type,)
+        return inputs
+
+    RETURN_TYPES = ByPassTypeTuple(tuple(["FLOW"] + [any_type] * MAX_FLOW_NUM))
+    RETURN_NAMES = ByPassTypeTuple(tuple(["flow"] + [f"value_{i}" for i in range(MAX_FLOW_NUM)]))
+    FUNCTION = "execute"
+
+    CATEGORY = LOGIC_CAT
+
+    def execute(self, **kwargs):
+        values = []
+        for i in range(MAX_FLOW_NUM):
+            values.append(kwargs.get(f"init_value_{i}", None))
+        return tuple(["stub"] + values)
+
+
+class WhileLoopEnd:
+    def __init__(self):
+        pass
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        inputs = {
+            "required": {
+                "flow": ("FLOW", {"rawLink": True}),
+                "condition": ("BOOLEAN", {}),
+            },
+            "optional": {},
+            "hidden": {
+                "dynprompt": "DYNPROMPT",
+                "unique_id": "UNIQUE_ID",
+            },
+        }
+        for i in range(MAX_FLOW_NUM):
+            inputs["optional"][f"init_value_{i}"] = (any_type,)
+        return inputs
+
+    RETURN_TYPES = ByPassTypeTuple(tuple([any_type] * MAX_FLOW_NUM))
+    RETURN_NAMES = ByPassTypeTuple(tuple(f"value_{i}" for i in range(MAX_FLOW_NUM)))
+    FUNCTION = "execute"
+
+    CATEGORY = LOGIC_CAT
+
+    def explore_dependencies(self, node_id, dynprompt, upstream):
+        node_info = dynprompt.get_node(node_id)
+        if "inputs" not in node_info:
+            return
+        for _, v in node_info["inputs"].items():
+            if is_link(v):
+                parent_id = v[0]
+                if parent_id not in upstream:
+                    upstream[parent_id] = []
+                    self.explore_dependencies(parent_id, dynprompt, upstream)
+                upstream[parent_id].append(node_id)
+
+    def collect_contained(self, node_id, upstream, contained):
+        if node_id not in upstream:
+            return
+        for child_id in upstream[node_id]:
+            if child_id not in contained:
+                contained[child_id] = True
+                self.collect_contained(child_id, upstream, contained)
+
+    def execute(self, flow, condition, dynprompt=None, unique_id=None, **kwargs):
+        if condition:
+            # We're done with the loop
+            values = []
+            for i in range(MAX_FLOW_NUM):
+                values.append(kwargs.get(f"init_value_{i}", None))
+            return tuple(values)
+
+        # We want to loop
+        if dynprompt is not None:
+            _ = dynprompt.get_node(unique_id)
+        upstream = {}
+        # Get the list of all nodes between the open and close nodes
+        self.explore_dependencies(unique_id, dynprompt, upstream)
+
+        contained = {}
+        open_node = flow[0]
+        self.collect_contained(open_node, upstream, contained)
+        contained[unique_id] = True
+        contained[open_node] = True
+
+        graph = GraphBuilder()
+        for node_id in contained:
+            if dynprompt is not None:
+                original_node = dynprompt.get_node(node_id)
+                node = graph.node(original_node["class_type"], "Recurse" if node_id == unique_id else node_id)
+                node.set_override_display_id(node_id)
+        for node_id in contained:
+            if dynprompt is not None:
+                original_node = dynprompt.get_node(node_id)
+                node = graph.lookup_node("Recurse" if node_id == unique_id else node_id)
+                for k, v in original_node["inputs"].items():
+                    if is_link(v) and v[0] in contained:
+                        parent = graph.lookup_node(v[0])
+                        node.set_input(k, parent.out(v[1]))
+                    else:
+                        node.set_input(k, v)
+
+        new_open = graph.lookup_node(open_node)
+        for i in range(MAX_FLOW_NUM):
+            key = f"init_value_{i}"
+            new_open.set_input(key, kwargs.get(key, None))
+        my_clone = graph.lookup_node("Recurse")
+        result = map(lambda x: my_clone.out(x), range(MAX_FLOW_NUM))
+        return {
+            "result": tuple(result),
+            "expand": graph.finalize(),
+        }
