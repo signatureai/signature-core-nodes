@@ -158,11 +158,11 @@ class WhileLoopStart:
             inputs["optional"][f"init_value_{i}"] = (any_type,)
         return inputs
 
-    RETURN_TYPES = ByPassTypeTuple(tuple(["FLOW"] + [any_type] * MAX_FLOW_NUM))
+    RETURN_TYPES = ByPassTypeTuple(tuple(["FLOW_CONTROL"] + [any_type] * MAX_FLOW_NUM))
     RETURN_NAMES = ByPassTypeTuple(tuple(["flow"] + [f"value_{i}" for i in range(MAX_FLOW_NUM)]))
     FUNCTION = "execute"
 
-    CATEGORY = LOGIC_CAT
+    CATEGORY = LOGIC_CAT + "/Loops"
 
     def execute(self, **kwargs):
         values = []
@@ -179,8 +179,8 @@ class WhileLoopEnd:
     def INPUT_TYPES(cls):
         inputs = {
             "required": {
-                "flow": ("FLOW", {"rawLink": True}),
-                "condition": ("BOOLEAN", {}),
+                "flow": ("FLOW_CONTROL", {"rawLink": True}),
+                "end_loop": ("BOOLEAN", {}),
             },
             "optional": {},
             "hidden": {
@@ -196,7 +196,7 @@ class WhileLoopEnd:
     RETURN_NAMES = ByPassTypeTuple(tuple(f"value_{i}" for i in range(MAX_FLOW_NUM)))
     FUNCTION = "execute"
 
-    CATEGORY = LOGIC_CAT
+    CATEGORY = LOGIC_CAT + "/Loops"
 
     def explore_dependencies(self, node_id, dynprompt, upstream):
         node_info = dynprompt.get_node(node_id)
@@ -218,8 +218,8 @@ class WhileLoopEnd:
                 contained[child_id] = True
                 self.collect_contained(child_id, upstream, contained)
 
-    def execute(self, flow, condition, dynprompt=None, unique_id=None, **kwargs):
-        if condition:
+    def execute(self, flow, end_loop, dynprompt=None, unique_id=None, **kwargs):
+        if end_loop:
             # We're done with the loop
             values = []
             for i in range(MAX_FLOW_NUM):
