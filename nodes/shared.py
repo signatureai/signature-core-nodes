@@ -14,6 +14,20 @@ MAX_INT: int = sys.maxsize
 MAX_FLOAT: float = sys.float_info.max
 
 
+class TautologyStr(str):
+    def __ne__(self, _):
+        return False
+
+
+class ByPassTypeTuple(tuple):
+    def __getitem__(self, index):
+        index = min(index, 0)
+        item = super().__getitem__(index)
+        if isinstance(item, str):
+            return TautologyStr(item)
+        return item
+
+
 class AnyType(str):
     def __ne__(self, __value: object) -> bool:
         return False

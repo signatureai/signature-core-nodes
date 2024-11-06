@@ -2,7 +2,7 @@ import torch
 from comfy_execution.graph_utils import GraphBuilder, is_link  # type: ignore
 
 from .categories import LOGIC_CAT
-from .shared import any_type
+from .shared import ByPassTypeTuple, any_type
 
 MAX_FLOW_NUM = 10
 
@@ -107,21 +107,16 @@ class LogicCompare:
             raise ValueError("All inputs are required")
 
         def safe_compare(a, b, tensor_op, primitive_op):
-            # Handle None values
             if a is None or b is None:
                 return a is b
 
-            # If types are different, they're never equal
             if not isinstance(a, type(b)) and not isinstance(b, type(a)):
                 return False
 
-            # Now we know both types are compatible
             if isinstance(a, torch.Tensor):
                 if a.shape != b.shape:
-                    # Reshape tensors to 1D for comparison
                     a = a.reshape(-1)
                     b = b.reshape(-1)
-                    # If sizes still don't match, compare only the overlapping part
                     min_size = min(a.size(0), b.size(0))
                     a = a[:min_size]
                     b = b[:min_size]
@@ -150,20 +145,6 @@ class LogicCompare:
         return (bool(output),)
 
 
-class TautologyStr(str):
-    def __ne__(self, other):
-        return False
-
-
-class ByPassTypeTuple(tuple):
-    def __getitem__(self, index):
-        index = min(index, 0)
-        item = super().__getitem__(index)
-        if isinstance(item, str):
-            return TautologyStr(item)
-        return item
-
-
 class WhileLoopStart:
     def __init__(self):
         pass
@@ -174,10 +155,10 @@ class WhileLoopStart:
             "optional": {},
         }
         for i in range(MAX_FLOW_NUM):
-            inputs["optional"][f"initial_value_{i}"] = (any_type,)
+            inputs["optional"][f"init_value_{i}"] = (any_type,)
         return inputs
 
-    RETURN_TYPES = ByPassTypeTuple(tuple(["FLOW_CONTROL"] + [any_type] * MAX_FLOW_NUM))
+    RETURN_TYPES = ByPassTypeTuple(tuple(["FLOW"] + [any_type] * MAX_FLOW_NUM))
     RETURN_NAMES = ByPassTypeTuple(tuple(["flow"] + [f"value_{i}" for i in range(MAX_FLOW_NUM)]))
     FUNCTION = "execute"
 
@@ -186,7 +167,7 @@ class WhileLoopStart:
     def execute(self, **kwargs):
         values = []
         for i in range(MAX_FLOW_NUM):
-            values.append(kwargs.get(f"initial_value_{i}", None))
+            values.append(kwargs.get(f"init_value_{i}", None))
         return tuple(["stub"] + values)
 
 
@@ -198,7 +179,7 @@ class WhileLoopEnd:
     def INPUT_TYPES(cls):
         inputs = {
             "required": {
-                "flow": ("FLOW_CONTROL", {"rawLink": True}),
+                "flow": ("FLOW", {"rawLink": True}),
                 "condition": ("BOOLEAN", {}),
             },
             "optional": {},
@@ -208,7 +189,7 @@ class WhileLoopEnd:
             },
         }
         for i in range(MAX_FLOW_NUM):
-            inputs["optional"][f"initial_value_{i}"] = (any_type,)
+            inputs["optional"][f"init_value_{i}"] = (any_type,)
         return inputs
 
     RETURN_TYPES = ByPassTypeTuple(tuple([any_type] * MAX_FLOW_NUM))
@@ -242,7 +223,7 @@ class WhileLoopEnd:
             # We're done with the loop
             values = []
             for i in range(MAX_FLOW_NUM):
-                values.append(kwargs.get(f"initial_value_{i}", None))
+                values.append(kwargs.get(f"init_value_{i}", None))
             return tuple(values)
 
         # We want to loop
@@ -277,7 +258,7 @@ class WhileLoopEnd:
 
         new_open = graph.lookup_node(open_node)
         for i in range(MAX_FLOW_NUM):
-            key = f"initial_value_{i}"
+            key = f"init_value_{i}"
             new_open.set_input(key, kwargs.get(key, None))
         my_clone = graph.lookup_node("Recurse")
         result = map(lambda x: my_clone.out(x), range(MAX_FLOW_NUM))
