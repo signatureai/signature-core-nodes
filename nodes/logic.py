@@ -180,7 +180,7 @@ class WhileLoopEnd:
         inputs = {
             "required": {
                 "flow": ("FLOW_CONTROL", {"rawLink": True}),
-                "condition": ("BOOLEAN", {}),
+                "end_loop": ("BOOLEAN", {}),
             },
             "optional": {},
             "hidden": {
@@ -218,8 +218,8 @@ class WhileLoopEnd:
                 contained[child_id] = True
                 self.collect_contained(child_id, upstream, contained)
 
-    def execute(self, flow, condition, dynprompt=None, unique_id=None, **kwargs):
-        if condition:
+    def execute(self, flow, end_loop, dynprompt=None, unique_id=None, **kwargs):
+        if end_loop:
             # We're done with the loop
             values = []
             for i in range(MAX_FLOW_NUM):
