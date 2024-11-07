@@ -261,7 +261,10 @@ async function updateInputsOutputs(node, workflowObject, update) {
     node.outputs = [];
     resetWidgets(node);
   }
-  const workflowId = workflowObject.id;
+  let workflowId = workflowObject.id;
+  if (workflowId === undefined) {
+    workflowId = workflowObject._id;
+  }
   node.title = "Loading...";
   const detailedWorkflow = await getWorkflowData(workflowId);
   const parsedWorkflow = JSON.parse(detailedWorkflow.workflow_api);
