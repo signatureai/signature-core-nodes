@@ -78,8 +78,10 @@ const ext = {
         class_name === "signature_loop_start" ||
         class_name === "signature_loop_end"
       ) {
-        if (type === 1) {
+        if (type === 1 && link_info && link_info.target_id) {
           const node = app.graph.getNodeById(link_info.target_id);
+          if (!node || !node.inputs[index]) return;
+
           const inputName = node.inputs[index].name;
           if (inputName.includes("init_value_")) {
             if (connected) {
@@ -101,6 +103,7 @@ const ext = {
                 }
               }
             }
+
             let idx = 0;
             for (let i = 0; i < node.inputs.length; i++) {
               if (node.inputs[i].name.includes("init_value_")) {
