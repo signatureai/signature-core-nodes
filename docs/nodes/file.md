@@ -422,6 +422,7 @@ into ComfyUI-compatible tensor format.
         RETURN_TYPES = ("IMAGE",)
         FUNCTION = "execute"
         CATEGORY = FILE_CAT
+        CLASS_ID = "file_image_list"
         OUTPUT_IS_LIST = (True,)
 
         def execute(self, **kwargs):
@@ -494,6 +495,7 @@ Processes file input data into a consistent list format for further ComfyUI oper
 
         RETURN_TYPES = ("LIST",)
         FUNCTION = "execute"
+        CLASS_ID = "file_list"
         CATEGORY = FILE_CAT
 
         def execute(self, **kwargs):

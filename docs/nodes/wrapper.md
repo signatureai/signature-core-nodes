@@ -42,25 +42,11 @@ jobs, and processing various types of data including images, masks, and primitiv
             - Implements retry logic for handling communication issues
         """
 
-        def upload_file(self, base_url, file_path: str, token: str) -> dict:
-            url = f"{base_url}/assets/upload"
-            headers = {
-                "Content-Type": "application/json",
-                "Access-Control-Allow-Origin": "*",
-                "Authorization": "Bearer " + token,
-            }
-            output = {}
-            with httpx.Client() as client:
-                try:
-                    with open(file_path, "rb") as file:
-                        files = {"file": file}
-                        response = client.post(url, headers=headers, files=files, timeout=3)
-                        if response.status_code == 200:
-                            buffer = response.content
-                            output = json.loads(buffer)
-                except Exception as e:
-                    console.log(e)
-            return output
+        def __init__(self):
+            self.total_steps = 0
+            self.remaining_ids = []
+            self.server = None
+            self.executor = None
 
         def get_workflow(self, base_url: str, workflow_id: str, token: str) -> dict:
             url = f"{base_url}/workflows/{workflow_id}"
@@ -79,145 +65,6 @@ jobs, and processing various types of data including images, masks, and primitiv
                 except Exception as e:
                     console.log(e)
             return output
-
-        def run_workflow_job(self, base_url, org_id: str, workflow: Workflow, token: str) -> list:
-            def process_data_chunk(chunk: str, nodes_ids: list) -> dict | None:
-                cleaned_chunk = chunk.strip()
-                if cleaned_chunk.startswith("data:"):
-                    cleaned_chunk = cleaned_chunk[len("data:") :].strip()
-
-                try:
-                    data = json.loads(cleaned_chunk)
-                    data_type = data.get("type")
-                    if data_type == "execution_cached":
-                        cached_nodes_ids = data["data"].get("nodes")
-                        remaining_ids = list(set(nodes_ids) - set(cached_nodes_ids))
-                        return {"remaining_ids": remaining_ids}
-                    if data_type == "executing":
-                        node_id = data["data"].get("node")
-                        remaining_ids = list(set(nodes_ids) - {node_id})
-                        return {"remaining_ids": remaining_ids}
-                    if data_type == "executed":
-                        output = data["data"].get("output")
-                        if output is None:
-                            return None
-                        if "signature_output" in output:
-                            signature_output = output["signature_output"]
-                            # console.log(f"Signature output: {signature_output}")
-                            for item in signature_output:
-                                title = item.get("title")
-                                value = item.get("value")
-                                # console.log(f"======== Title: {title}, Value: {value}")
-                                return {"output": {"title": title, "value": value}}
-                    elif data_type == "execution_error":
-                        error = data["data"]
-                        return {"error": error}
-                    elif data_type == "status":
-                        status = data["data"].get("status")
-                        if isinstance(status, dict):
-                            queue_remaining = status.get("exec_info", None).get("queue_remaining")
-                            return {"queue": max(0, int(queue_remaining) - 1)}
-                    else:
-                        return {"waiting": "no communication yet"}
-                        # elif status == "finished":
-                        #     # console.log("Workflow finished!")
-                        #     return {"finished": True}
-
-                except json.JSONDecodeError:
-                    console.log(f"JSON decode error: {cleaned_chunk}")
-                return None
-
-            url = f"{base_url}/generate-signature"
-            # queue_url = f"{base_url}/queue"
-
-            headers = {
-                "accept": "application/json",
-                "Content-Type": "application/json",
-                "Authorization": f"Bearer {token}",
-                "X-Org-Id": org_id,
-            }
-            total_nodes = list(workflow.data.keys())
-            total_steps = len(total_nodes)
-            remaining_ids = total_nodes
-            workflow_data = json.dumps(workflow.data)
-            params = {"data": {"client_id": uuid7str(), "workflow": workflow_data}}
-            outputs = []
-            try:
-                data = json.dumps(params)
-                pbar = ProgressBar(total_steps)  # type: ignore
-                with httpx.Client() as client:
-                    prompt_id = client.post(url, data=data, headers=headers).json()  # type: ignore
-                    # queue = client.get(queue_url, headers=headers).json()
-                    # console.log(f"Queue: {queue}")
-                    stream_url = f"{url}/{prompt_id}"
-                    base_retrys = 20
-                    retrys = base_retrys
-                    with client.stream(method="GET", url=stream_url, headers=headers, timeout=9000000) as stream:
-                        for chunk in stream.iter_lines():
-                            if not chunk:
-                                continue
-
-                            result = process_data_chunk(chunk, remaining_ids)
-                            if result is None:
-                                retrys -= 1
-                                console.log(f"Remaining retrys: {retrys}")
-                            elif "error" in result:
-                                error = result["error"]
-                                raise Exception(error)
-                            elif "output" in result:
-                                retrys = base_retrys
-                                outputs.append(result["output"])
-                            elif "remaining_ids" in result:
-                                retrys = base_retrys
-                                remaining_ids = result["remaining_ids"]
-                                step = total_steps - len(remaining_ids)
-                                pbar.update_absolute(step, total_steps)
-                            elif "queue" in result:
-                                queue = result["queue"]
-                                console.log(f"Queue: {queue}")
-                            elif "waiting" in result:
-                                retrys -= 1
-                                console.log(f"Remaining retrys: {retrys}")
-                            if retrys <= 0:
-                                raise Exception("Failed to get communication")
-                    pbar.update_absolute(total_steps, total_steps)
-
-            except httpx.HTTPStatusError as exc:
-                console.log(f"HTTP error occurred: {exc}")
-                # raise Exception(exc)
-            except Exception as exc:
-                console.log(f"HTTP error occurred: {exc}")
-                # raise Exception(exc)
-            return outputs
-
-        def upload_image_to_s3(self, base_url, token: str, image: TensorImage) -> str | None:
-            url = f"{base_url}/assets/upload"  # Replace with actual URL
-            headers = {"Authorization": f"Bearer {token}", "Access-Control-Allow-Origin": "*"}
-
-            query_params = {"id": uuid7str(), "prefix": ""}
-            image_bytes = image.get_bytes("png")
-
-            files = {
-                "file": (
-                    f"{uuid7str()}.png",
-                    image_bytes,
-                    "image/png",
-                )
-            }
-
-            try:
-                response = httpx.post(url, params=query_params, files=files, headers=headers)
-
-                if response.status_code == 200:
-                    return response.json()
-
-                print(f"Failed with status code {response.status_code}")
-                print("Response:", response.json())
-
-            except httpx.RequestError as exc:
-                print(f"An error occurred while requesting: {exc}")
-
-            return None
 
         def process_outputs(self, job_outputs, node_outputs):
 
@@ -338,7 +185,6 @@ jobs, and processing various types of data including images, masks, and primitiv
                 if node_type in ("IMAGE", "MASK"):
                     if isinstance(comfy_value, torch.Tensor):
                         tensor_image = TensorImage.from_BWHC(comfy_value).get_base64()
-                        # uploaded_image = self.upload_image_to_s3(base_url, token, tensor_image)
                         value.update({"value": tensor_image})
                         node_inputs[key] = value
                 else:
@@ -351,24 +197,54 @@ jobs, and processing various types of data including images, masks, and primitiv
             if not isinstance(workflow_api, dict):
                 return fallback
 
-            executor.execute(workflow_api, uuid.uuid4(), {}, output_ids)
-            executor.reset()
+            total_nodes = list(workflow_api.keys())
+            self.total_steps = len(total_nodes)
+            self.remaining_ids = total_nodes
+            pbar = ProgressBar(self.total_steps)  # type: ignore
+
+            def report_handler(event, data, _):
+                if event == "execution_start":
+                    prompt_id = data.get("prompt_id")
+                    console.log(f"Wrapper Execution started, prompt {prompt_id}")
+                elif event == "execution_cached":
+                    cached_nodes_ids = data.get("nodes", []) or []
+                    self.remaining_ids = list(set(self.remaining_ids) - set(cached_nodes_ids))
+                elif event == "executing":
+                    node_id = data.get("node")
+                    self.remaining_ids = list(set(self.remaining_ids) - {node_id})
+                elif event == "execution_error":
+                    console.log(f"Execution error: {data}")
+                    raise Exception(data.get("error"))
+                elif event == "execution_interrupted":
+                    raise Exception("Execution was interrupted")
+                elif event == "executed":
+                    prompt_id = data.get("prompt_id")
+                    self.remaining_ids = []
+                    console.log(f"Wrapper Execution finished, prompt {prompt_id}")
+                pbar.update_absolute(self.total_steps - len(self.remaining_ids), self.total_steps)
+                percentage = 100 * round((self.total_steps - len(self.remaining_ids)) / self.total_steps, 2)
+                console.log(f"Wrapper Execution: {percentage}%")
+
+            self.server = PlaceholderServer(report_handler)
+            self.executor = execution.PromptExecutor(self.server)  # type: ignore
+            self.executor.execute(workflow_api, uuid.uuid4(), {"client_id": self.server.client_id}, output_ids)
+            self.executor.reset()
             gc.collect()
             comfy.model_management.unload_all_models()
             comfy.model_management.cleanup_models()
             comfy.model_management.soft_empty_cache()
 
-            if executor.success:
+            if self.executor.success:
                 console.log("Success wrapper inference")
             else:
                 console.log("Failed wrapper inference")
-                final_status = executor.status_messages[-1]
+                final_status = self.executor.status_messages[-1]
                 console.log(f"Final status: {final_status}")
                 if isinstance(final_status, dict):
                     final_error = final_status.get("execution_error") or None
                     if final_error is not None:
                         raise Exception(final_error)
-            outputs = executor.history_result["outputs"].values()
+            outputs = self.executor.history_result["outputs"].values()
             job_outputs = []
             for job_output in outputs:
                 for key, value in job_output.items():

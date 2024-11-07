@@ -747,6 +747,7 @@ quality.
         FUNCTION = "execute"
         CATEGORY = IMAGE_CAT
         INPUT_IS_LIST = True
+        CLASS_ID = "image_list_batch"
 
         def execute(self, **kwargs):
             images = kwargs.get("images")
@@ -837,6 +838,7 @@ tensors, useful for processing images individually after batch operations.
         RETURN_TYPES = ("IMAGE",)
         FUNCTION = "execute"
         CATEGORY = IMAGE_CAT
+        CLASS_ID = "image_batch_list"
         OUTPUT_IS_LIST = (True,)
 
         def execute(self, **kwargs):
@@ -916,6 +918,7 @@ both individual dimensions and a formatted string representation.
         RETURN_NAMES = ("batch", "width", "height", "channels", "debug")
         FUNCTION = "execute"
         CATEGORY = IMAGE_CAT
+        CLASS_ID = "get_image_size"
 
         def execute(self, image):
             return (image.shape[0], image.shape[2], image.shape[1], image.shape[3], str(image.shape))

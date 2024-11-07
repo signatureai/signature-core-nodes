@@ -1,6 +1,6 @@
 # Logic Nodes
 
-## LogicSwitch
+## Switch
 
 Switches between two input values based on a boolean condition.
 
@@ -11,16 +11,16 @@ selection.
 
 ### Inputs
 
-| Group    | Name      | Type                                  | Default | Extras          |
-| -------- | --------- | ------------------------------------- | ------- | --------------- |
-| required | condition | `BOOLEAN`                             | False   | forceInput=True |
-| required | true      | `<ast.Name object at 0x7efc8f4ee9b0>` |         |                 |
-| required | false     | `<ast.Name object at 0x7efc8f4eef50>` |         |                 |
+| Group    | Name      | Type                                  | Default | Extras |
+| -------- | --------- | ------------------------------------- | ------- | ------ |
+| required | condition | `BOOLEAN`                             | True    |        |
+| required | true      | `<ast.Name object at 0x7fc956dfaa70>` |         |        |
+| required | false     | `<ast.Name object at 0x7fc956dfaa10>` |         |        |
 
 ??? note "Source code in logic.py"
 
     ```python
-    class LogicSwitch:
+    class Switch:
         """Switches between two input values based on a boolean condition.
 
         A logic gate that selects between two inputs of any type based on a boolean condition. When the
@@ -47,13 +47,14 @@ selection.
         def INPUT_TYPES(cls):  # type: ignore
             return {
                 "required": {
-                    "condition": ("BOOLEAN", {"default": False, "forceInput": True}),
+                    "condition": ("BOOLEAN", {"default": True}),
                     "true": (any_type,),
                     "false": (any_type,),
                 }
             }
 
         RETURN_TYPES = (any_type,)
+        RETURN_NAMES = ("output",)
         FUNCTION = "execute"
         CATEGORY = LOGIC_CAT
 
@@ -68,21 +69,22 @@ selection.
 
     ```
 
-## LogicCompare
+## Compare
 
-Compares two values using equality operators and handles various data types.
+Compares two input values based on a specified comparison operation.
 
-A comparison node that evaluates two inputs using either equality or inequality
-operators. Supports comparison of primitive types, tensors, and mixed data types with
-special handling for shape mismatches in tensors.
+A logic gate that evaluates a comparison between two inputs of any type. The comparison
+is determined by the specified operation, which can include equality, inequality, and
+relational comparisons. This node is useful for implementing conditional logic based on
+the relationship between two values.
 
 ### Inputs
 
-| Group    | Name     | Type                                  | Default | Extras |
-| -------- | -------- | ------------------------------------- | ------- | ------ |
-| required | input_a  | `<ast.Name object at 0x7efc8f4ef280>` |         |        |
-| required | input_b  | `<ast.Name object at 0x7efc8f4ec8b0>` |         |        |
-| required | operator | `LIST`                                |         |        |
+| Group    | Name       | Type                                  | Default | Extras |
+| -------- | ---------- | ------------------------------------- | ------- | ------ |
+| required | a          | `<ast.Name object at 0x7fc956df9210>` |         |        |
+| required | b          | `<ast.Name object at 0x7fc956df91b0>` |         |        |
+| required | comparison | `<ast.Name object at 0x7fc956df9150>` | a == b  |        |
 
 ### Returns
 
@@ -93,100 +95,266 @@ special handling for shape mismatches in tensors.
 ??? note "Source code in logic.py"
 
     ```python
-    class LogicCompare:
-        """Compares two values using equality operators and handles various data types.
+    class Compare:
+        """Compares two input values based on a specified comparison operation.
 
-        A comparison node that evaluates two inputs using either equality or inequality operators.
-        Supports comparison of primitive types, tensors, and mixed data types with special handling for
-        shape mismatches in tensors.
+        A logic gate that evaluates a comparison between two inputs of any type. The comparison is determined
+        by the specified operation, which can include equality, inequality, and relational comparisons. This
+        node is useful for implementing conditional logic based on the relationship between two values.
 
         Args:
-            input_a (Any): First value for comparison. Can be of any type.
-            input_b (Any): Second value for comparison. Can be of any type.
-            operator (str): The comparison operator to use. Must be one of:
-                - 'equal': Tests if inputs are equal
-                - 'not_equal': Tests if inputs are not equal
+            a (Any): The first value to compare. Can be of any type.
+            b (Any): The second value to compare. Can be of any type.
+            comparison (str): The comparison operation to perform. Defaults to "a == b".
+                Available options include:
+                - "a == b": Checks if a is equal to b.
+                - "a != b": Checks if a is not equal to b.
+                - "a < b": Checks if a is less than b.
+                - "a > b": Checks if a is greater than b.
+                - "a <= b": Checks if a is less than or equal to b.
+                - "a >= b": Checks if a is greater than or equal to b.
 
         Returns:
-            tuple[bool]: A single-element tuple containing the boolean result of the comparison.
-
-        Raises:
-            ValueError: If any input is None or if the operator is not one of the valid options.
+            tuple[bool]: A single-element tuple containing the result of the comparison as a boolean value.
 
         Notes:
-            - Handles tensor comparisons with automatic shape adjustment
-            - Different types are always considered unequal
-            - For tensors with different shapes:
-                * Tensors are flattened to 1D
-                * Only the overlapping portions are compared
-                * All elements must satisfy the condition for True result
-            - None values are handled specially: None equals None, but nothing else
-            - Lists and tuples are compared element-wise with all elements must match
+            - The node accepts inputs of any type, making it versatile for different data types.
+            - If the inputs are tensors, lists, or tuples,
+              the comparison will be evaluated based on their shapes or lengths.
+            - The output will be cast to a boolean value.
         """
+
+        COMPARE_FUNCTIONS = {
+            "a == b": lambda a, b: a == b,
+            "a != b": lambda a, b: a != b,
+            "a < b": lambda a, b: a < b,
+            "a > b": lambda a, b: a > b,
+            "a <= b": lambda a, b: a <= b,
+            "a >= b": lambda a, b: a >= b,
+        }
 
         @classmethod
         def INPUT_TYPES(cls):  # type: ignore
+            compare_functions = list(cls.COMPARE_FUNCTIONS.keys())
             return {
                 "required": {
-                    "input_a": (any_type,),
-                    "input_b": (any_type,),
-                    "operator": (["equal", "not_equal"],),
+                    "a": (any_type,),
+                    "b": (any_type,),
+                    "comparison": (compare_functions, {"default": "a == b"}),
                 }
             }
 
         RETURN_TYPES = ("BOOLEAN",)
+        RETURN_NAMES = ("result",)
         FUNCTION = "execute"
         CATEGORY = LOGIC_CAT
 
         def execute(self, **kwargs):
-            input_a = kwargs.get("input_a")
-            input_b = kwargs.get("input_b")
-            operator = kwargs.get("operator")
+            input_a = kwargs.get("a")
+            input_b = kwargs.get("b")
+            comparison = kwargs.get("comparison") or "a == b"
 
-            if input_a is None or input_b is None or operator is None:
-                raise ValueError("All inputs are required")
+            try:
+                output = self.COMPARE_FUNCTIONS[comparison](input_a, input_b)
+            except Exception as e:
+                if isinstance(input_a, torch.Tensor) and isinstance(input_b, torch.Tensor):
+                    output = self.COMPARE_FUNCTIONS[comparison](input_a.shape, input_b.shape)
+                elif isinstance(input_a, (list, tuple)) and isinstance(input_b, (list, tuple)):
+                    output = self.COMPARE_FUNCTIONS[comparison](len(input_a), len(input_b))
+                else:
+                    raise e
 
-            def safe_compare(a, b, tensor_op, primitive_op):
-                # Handle None values
-                if a is None or b is None:
-                    return a is b
-
-                # If types are different, they're never equal
-                if not isinstance(a, type(b)) and not isinstance(b, type(a)):
-                    return False
-
-                # Now we know both types are compatible
-                if isinstance(a, torch.Tensor):
-                    if a.shape != b.shape:
-                        # Reshape tensors to 1D for comparison
-                        a = a.reshape(-1)
-                        b = b.reshape(-1)
-                        # If sizes still don't match, compare only the overlapping part
-                        min_size = min(a.size(0), b.size(0))
-                        a = a[:min_size]
-                        b = b[:min_size]
-                    return tensor_op(a, b)
-
-                return primitive_op(a, b)
-
-            operator_map = {
-                "equal": lambda a, b: safe_compare(a, b, torch.eq, lambda x, y: x == y),
-                "not_equal": lambda a, b: safe_compare(a, b, torch.ne, lambda x, y: x != y),
-            }
-
-            if operator not in operator_map:
-                raise ValueError(
-                    f"Invalid operator: {operator}. Valid operators are: {', '.join(operator_map.keys())}"
-                )
-
-            output = operator_map[operator](input_a, input_b)
-
-            # Handle different output types
             if isinstance(output, torch.Tensor):
                 output = output.all().item()
             elif isinstance(output, (list, tuple)):
                 output = all(output)
 
             return (bool(output),)
+
+
+    ```
+
+## LoopStart
+
+Initiates a loop with optional initial values for each iteration.
+
+A control node that starts a loop, allowing for a specified number of iterations. It can
+accept optional initial values for each iteration, which can be used within the loop.
+This node is useful for creating iterative workflows where the same set of operations is
+performed multiple times.
+
+??? note "Source code in logic.py"
+
+    ```python
+    class LoopStart:
+        """Initiates a loop with optional initial values for each iteration.
+
+        A control node that starts a loop, allowing for a specified number of iterations. It can accept
+        optional initial values for each iteration, which can be used within the loop. This node is useful
+        for creating iterative workflows where the same set of operations is performed multiple times.
+
+        Args:
+            init_value (Any): The initial value for the first iteration. Can be of any type.
+
+        Returns:
+            tuple[tuple]: A tuple containing a flow control signal and the initial values for each iteration.
+
+        Notes:
+            - The number of initial values can be adjusted by changing the MAX_FLOW_NUM constant.
+            - Each initial value can be of any type, providing flexibility for different workflows.
+        """
+
+        @classmethod
+        def INPUT_TYPES(cls):
+            inputs = {
+                "optional": {},
+            }
+            for i in range(MAX_FLOW_NUM):
+                inputs["optional"][f"init_value_{i}"] = (any_type,)
+            return inputs
+
+        RETURN_TYPES = ByPassTypeTuple(tuple(["FLOW_CONTROL"] + [any_type] * MAX_FLOW_NUM))
+        RETURN_NAMES = ByPassTypeTuple(tuple(["flow"] + [f"value_{i}" for i in range(MAX_FLOW_NUM)]))
+        FUNCTION = "execute"
+
+        CATEGORY = LOGIC_CAT + "/Loops"
+
+        def execute(self, **kwargs):
+            values = []
+            for i in range(MAX_FLOW_NUM):
+                values.append(kwargs.get(f"init_value_{i}", None))
+            return tuple(["stub"] + values)
+
+
+    ```
+
+## LoopEnd
+
+Ends a loop and returns the final values after the loop execution.
+
+A control node that signifies the end of a loop initiated by a `LoopStart` node. It
+processes the flow control signal and can return the final values from the loop
+iterations. This node is useful for managing the completion of iterative workflows and
+retrieving results after looping.
+
+??? note "Source code in logic.py"
+
+    ```python
+    class LoopEnd:
+        """Ends a loop and returns the final values after the loop execution.
+
+        A control node that signifies the end of a loop initiated by a `LoopStart` node. It processes the
+        flow control signal and can return the final values from the loop iterations. This node is useful
+        for managing the completion of iterative workflows and retrieving results after looping.
+
+        Args:
+            flow (FLOW_CONTROL): The flow control signal indicating the current state of the loop.
+            end_loop (bool): A boolean flag that indicates whether to end the loop. If True, the loop will terminate.
+            dynprompt (DYNPROMPT, optional): Dynamic prompt information for the node.
+            unique_id (UNIQUE_ID, optional): A unique identifier for the loop instance.
+
+        Returns:
+            tuple: A tuple containing the final values from the loop iterations.
+
+        Notes:
+            - The loop can be terminated based on the `end_loop` flag,
+              allowing for flexible control over the iteration process.
+            - The number of returned values corresponds to the number of initial values provided in the `LoopStart`.
+        """
+
+        def __init__(self):
+            pass
+
+        @classmethod
+        def INPUT_TYPES(cls):
+            inputs = {
+                "required": {
+                    "flow": ("FLOW_CONTROL", {"rawLink": True}),
+                    "end_loop": ("BOOLEAN", {}),
+                },
+                "optional": {},
+                "hidden": {
+                    "dynprompt": "DYNPROMPT",
+                    "unique_id": "UNIQUE_ID",
+                },
+            }
+            for i in range(MAX_FLOW_NUM):
+                inputs["optional"][f"init_value_{i}"] = (any_type,)
+            return inputs
+
+        RETURN_TYPES = ByPassTypeTuple(tuple([any_type] * MAX_FLOW_NUM))
+        RETURN_NAMES = ByPassTypeTuple(tuple(f"value_{i}" for i in range(MAX_FLOW_NUM)))
+        FUNCTION = "execute"
+
+        CATEGORY = LOGIC_CAT + "/Loops"
+
+        def explore_dependencies(self, node_id, dynprompt, upstream):
+            node_info = dynprompt.get_node(node_id)
+            if "inputs" not in node_info:
+                return
+            for _, v in node_info["inputs"].items():
+                if is_link(v):
+                    parent_id = v[0]
+                    if parent_id not in upstream:
+                        upstream[parent_id] = []
+                        self.explore_dependencies(parent_id, dynprompt, upstream)
+                    upstream[parent_id].append(node_id)
+
+        def collect_contained(self, node_id, upstream, contained):
+            if node_id not in upstream:
+                return
+            for child_id in upstream[node_id]:
+                if child_id not in contained:
+                    contained[child_id] = True
+                    self.collect_contained(child_id, upstream, contained)
+
+        def execute(self, flow, end_loop, dynprompt=None, unique_id=None, **kwargs):
+            if end_loop:
+                # We're done with the loop
+                values = []
+                for i in range(MAX_FLOW_NUM):
+                    values.append(kwargs.get(f"init_value_{i}", None))
+                return tuple(values)
+
+            # We want to loop
+            if dynprompt is not None:
+                _ = dynprompt.get_node(unique_id)
+            upstream = {}
+            # Get the list of all nodes between the open and close nodes
+            self.explore_dependencies(unique_id, dynprompt, upstream)
+
+            contained = {}
+            open_node = flow[0]
+            self.collect_contained(open_node, upstream, contained)
+            contained[unique_id] = True
+            contained[open_node] = True
+
+            graph = GraphBuilder()
+            for node_id in contained:
+                if dynprompt is not None:
+                    original_node = dynprompt.get_node(node_id)
+                    node = graph.node(original_node["class_type"], "Recurse" if node_id == unique_id else node_id)
+                    node.set_override_display_id(node_id)
+            for node_id in contained:
+                if dynprompt is not None:
+                    original_node = dynprompt.get_node(node_id)
+                    node = graph.lookup_node("Recurse" if node_id == unique_id else node_id)
+                    for k, v in original_node["inputs"].items():
+                        if is_link(v) and v[0] in contained:
+                            parent = graph.lookup_node(v[0])
+                            node.set_input(k, parent.out(v[1]))
+                        else:
+                            node.set_input(k, v)
+
+            new_open = graph.lookup_node(open_node)
+            for i in range(MAX_FLOW_NUM):
+                key = f"init_value_{i}"
+                new_open.set_input(key, kwargs.get(key, None))
+            my_clone = graph.lookup_node("Recurse")
+            result = map(lambda x: my_clone.out(x), range(MAX_FLOW_NUM))
+            return {
+                "result": tuple(result),
+                "expand": graph.finalize(),
+            }
 
     ```
