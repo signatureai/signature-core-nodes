@@ -86,8 +86,8 @@ async function displayOrganisations(node) {
   if (selectedWidget) {
     node.title = "Loading...";
     selectedWidget.value = "Loading...";
-    findWidgetByName(node, "project").value = "Loading...";
-    findWidgetByName(node, "workflow").value = "Loading...";
+    //findWidgetByName(node, "project").value = "Loading...";
+    //findWidgetByName(node, "workflow").value = "Loading...";
     let data = await getOrganisationsData();
     let selectedOrgs = [];
     if (data && data.length > 0) {
@@ -144,7 +144,7 @@ async function displayProjects(node, organisationId) {
   if (selectedWidget) {
     node.title = "Loading...";
     selectedWidget.value = "Loading...";
-    findWidgetByName(node, "workflow").value = "Loading...";
+    //findWidgetByName(node, "workflow").value = "Loading...";
     let data = await getProjectsData(organisationId);
     if (data && data.length > 0) {
       let selectedProjects = [];
