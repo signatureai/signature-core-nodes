@@ -53,8 +53,22 @@ async function getProjectsData(organisationId) {
   return data;
 }
 
-async function getWorkflowsData(projectId) {
-  let url = main_url + "/workflows?project_id=" + projectId + "&skip=0&limit=1000";
+async function getProjectWorkflowsData(projectId) {
+  let url =
+    main_url +
+    "/workflows?project_id=" +
+    projectId +
+    "&skip=0&limit=1000&detailed=false";
+  const response = await fetch(url, {
+    method: "GET",
+    headers: headers,
+  });
+  let data = await response.json();
+  return data;
+}
+
+async function getWorkflowData(workflowId) {
+  let url = main_url + "/workflows/" + workflowId;
   const response = await fetch(url, {
     method: "GET",
     headers: headers,
@@ -70,6 +84,10 @@ async function displayOrganisations(node) {
   dataWidget.value = "";
 
   if (selectedWidget) {
+    node.title = "Loading...";
+    selectedWidget.value = "Loading...";
+    findWidgetByName(node, "project").value = "Loading...";
+    findWidgetByName(node, "workflow").value = "Loading...";
     let data = await getOrganisationsData();
     let selectedOrgs = [];
     if (data && data.length > 0) {
@@ -124,6 +142,9 @@ async function displayProjects(node, organisationId) {
   dataWidget.value = "";
 
   if (selectedWidget) {
+    node.title = "Loading...";
+    selectedWidget.value = "Loading...";
+    findWidgetByName(node, "workflow").value = "Loading...";
     let data = await getProjectsData(organisationId);
     if (data && data.length > 0) {
       let selectedProjects = [];
@@ -179,7 +200,9 @@ async function displayWorkflows(node, projectId, projectName) {
   dataWidget.value = "";
 
   if (selectedWidget) {
-    let data = await getWorkflowsData(projectId);
+    node.title = "Loading...";
+    selectedWidget.value = "Loading...";
+    let data = await getProjectWorkflowsData(projectId);
 
     if (data && data.length > 0) {
       // console.log("workflow data", data);
@@ -202,7 +225,7 @@ async function displayWorkflows(node, projectId, projectName) {
         }
         for (let i = 0; i < data.length; i++) {
           if (data[i].name === selectedWidget.value) {
-            updateInputsOutputs(node, data[i], true);
+            await updateInputsOutputs(node, data[i], true);
             break;
           }
         }
@@ -210,7 +233,7 @@ async function displayWorkflows(node, projectId, projectName) {
         selectedWidget.callback = async function () {
           for (let i = 0; i < data.length; i++) {
             if (data[i].name === selectedWidget.value) {
-              updateInputsOutputs(node, data[i], true);
+              await updateInputsOutputs(node, data[i], true);
               break;
             }
           }
@@ -233,14 +256,16 @@ function resetWidgets(node) {
   node.widgets = widgets;
 }
 
-function updateInputsOutputs(node, workflowObject, update) {
+async function updateInputsOutputs(node, workflowObject, update) {
   if (update) {
     node.outputs = [];
     resetWidgets(node);
   }
-  const parsedWorkflow = JSON.parse(workflowObject.workflow_api);
-
-  node.title = workflowObject.name;
+  const workflowId = workflowObject.id;
+  node.title = "Loading...";
+  const detailedWorkflow = await getWorkflowData(workflowId);
+  const parsedWorkflow = JSON.parse(detailedWorkflow.workflow_api);
+  node.title = detailedWorkflow.name;
 
   let data = {
     origin: main_url,
