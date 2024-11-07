@@ -524,13 +524,13 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#jsontodict" class="md-nav__link">
+  <a href="#json2dict" class="md-nav__link">
     <span class="md-ellipsis">
-      JsonToDict
+      Json2Dict
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="JsonToDict">
+    <nav class="md-nav" aria-label="Json2Dict">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -557,13 +557,13 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#dicttojson" class="md-nav__link">
+  <a href="#dict2json" class="md-nav__link">
     <span class="md-ellipsis">
-      DictToJson
+      Dict2Json
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="DictToJson">
+    <nav class="md-nav" aria-label="Dict2Json">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -868,13 +868,13 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#jsontodict" class="md-nav__link">
+  <a href="#json2dict" class="md-nav__link">
     <span class="md-ellipsis">
-      JsonToDict
+      Json2Dict
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="JsonToDict">
+    <nav class="md-nav" aria-label="Json2Dict">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -901,13 +901,13 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#dicttojson" class="md-nav__link">
+  <a href="#dict2json" class="md-nav__link">
     <span class="md-ellipsis">
-      DictToJson
+      Dict2Json
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="DictToJson">
+    <nav class="md-nav" aria-label="Dict2Json">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1030,7 +1030,7 @@
 
 
 <h1 id="data-nodes">Data Nodes</h1>
-<h2 id="jsontodict">JsonToDict</h2>
+<h2 id="json2dict">Json2Dict</h2>
 <p>Converts JSON strings to Python dictionaries for workflow integration.</p>
 <p>A node that takes JSON-formatted strings and parses them into Python dictionaries,
 enabling seamless data integration within the workflow. Handles nested JSON structures
@@ -1073,7 +1073,7 @@ and validates input format.</p>
 </table>
 <details class="note">
 <summary>Source code in data.py</summary>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">class</span> <span class="nc">JsonToDict</span><span class="p">:</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">class</span> <span class="nc">Json2Dict</span><span class="p">:</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Converts JSON strings to Python dictionaries for workflow integration.</span>
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
 <a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="sd">    A node that takes JSON-formatted strings and parses them into Python dictionaries, enabling</span>
@@ -1112,17 +1112,18 @@ and validates input format.</p>
 <a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a>
 <a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a>    <span class="n">RETURN_TYPES</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;DICT&quot;</span><span class="p">,)</span>
 <a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a>    <span class="n">FUNCTION</span> <span class="o">=</span> <span class="s2">&quot;execute&quot;</span>
-<a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a>    <span class="n">CATEGORY</span> <span class="o">=</span> <span class="n">DATA_CAT</span>
-<a id="__codelineno-0-41" name="__codelineno-0-41" href="#__codelineno-0-41"></a>
-<a id="__codelineno-0-42" name="__codelineno-0-42" href="#__codelineno-0-42"></a>    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<a id="__codelineno-0-43" name="__codelineno-0-43" href="#__codelineno-0-43"></a>        <span class="n">json_str</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;json_str&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-44" name="__codelineno-0-44" href="#__codelineno-0-44"></a>        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">json_str</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-<a id="__codelineno-0-45" name="__codelineno-0-45" href="#__codelineno-0-45"></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Json string must be a string&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-46" name="__codelineno-0-46" href="#__codelineno-0-46"></a>        <span class="n">json_dict</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">json_str</span><span class="p">)</span>
-<a id="__codelineno-0-47" name="__codelineno-0-47" href="#__codelineno-0-47"></a>        <span class="k">return</span> <span class="p">(</span><span class="n">json_dict</span><span class="p">,)</span>
+<a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a>    <span class="n">CLASS_ID</span> <span class="o">=</span> <span class="s2">&quot;json_dict&quot;</span>
+<a id="__codelineno-0-41" name="__codelineno-0-41" href="#__codelineno-0-41"></a>    <span class="n">CATEGORY</span> <span class="o">=</span> <span class="n">DATA_CAT</span>
+<a id="__codelineno-0-42" name="__codelineno-0-42" href="#__codelineno-0-42"></a>
+<a id="__codelineno-0-43" name="__codelineno-0-43" href="#__codelineno-0-43"></a>    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<a id="__codelineno-0-44" name="__codelineno-0-44" href="#__codelineno-0-44"></a>        <span class="n">json_str</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;json_str&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-45" name="__codelineno-0-45" href="#__codelineno-0-45"></a>        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">json_str</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+<a id="__codelineno-0-46" name="__codelineno-0-46" href="#__codelineno-0-46"></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Json string must be a string&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-47" name="__codelineno-0-47" href="#__codelineno-0-47"></a>        <span class="n">json_dict</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">json_str</span><span class="p">)</span>
+<a id="__codelineno-0-48" name="__codelineno-0-48" href="#__codelineno-0-48"></a>        <span class="k">return</span> <span class="p">(</span><span class="n">json_dict</span><span class="p">,)</span>
 </code></pre></div>
 </details>
-<h2 id="dicttojson">DictToJson</h2>
+<h2 id="dict2json">Dict2Json</h2>
 <p>Converts Python dictionaries to JSON strings for data interchange.</p>
 <p>A node that serializes Python dictionaries into JSON-formatted strings, facilitating
 data export and communication with external systems that require JSON format.</p>
@@ -1164,7 +1165,7 @@ data export and communication with external systems that require JSON format.</p
 </table>
 <details class="note">
 <summary>Source code in data.py</summary>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">class</span> <span class="nc">DictToJson</span><span class="p">:</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">class</span> <span class="nc">Dict2Json</span><span class="p">:</span>
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Converts Python dictionaries to JSON strings for data interchange.</span>
 <a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
 <a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="sd">    A node that serializes Python dictionaries into JSON-formatted strings, facilitating data</span>
@@ -1203,12 +1204,13 @@ data export and communication with external systems that require JSON format.</p
 <a id="__codelineno-1-37" name="__codelineno-1-37" href="#__codelineno-1-37"></a>
 <a id="__codelineno-1-38" name="__codelineno-1-38" href="#__codelineno-1-38"></a>    <span class="n">RETURN_TYPES</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;STRING&quot;</span><span class="p">,)</span>
 <a id="__codelineno-1-39" name="__codelineno-1-39" href="#__codelineno-1-39"></a>    <span class="n">FUNCTION</span> <span class="o">=</span> <span class="s2">&quot;execute&quot;</span>
-<a id="__codelineno-1-40" name="__codelineno-1-40" href="#__codelineno-1-40"></a>    <span class="n">CATEGORY</span> <span class="o">=</span> <span class="n">DATA_CAT</span>
-<a id="__codelineno-1-41" name="__codelineno-1-41" href="#__codelineno-1-41"></a>
-<a id="__codelineno-1-42" name="__codelineno-1-42" href="#__codelineno-1-42"></a>    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<a id="__codelineno-1-43" name="__codelineno-1-43" href="#__codelineno-1-43"></a>        <span class="n">json_dict</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;dict&quot;</span><span class="p">)</span>
-<a id="__codelineno-1-44" name="__codelineno-1-44" href="#__codelineno-1-44"></a>        <span class="n">json_str</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">json_dict</span><span class="p">)</span>
-<a id="__codelineno-1-45" name="__codelineno-1-45" href="#__codelineno-1-45"></a>        <span class="k">return</span> <span class="p">(</span><span class="n">json_str</span><span class="p">,)</span>
+<a id="__codelineno-1-40" name="__codelineno-1-40" href="#__codelineno-1-40"></a>    <span class="n">CLASS_ID</span> <span class="o">=</span> <span class="s2">&quot;dict_json&quot;</span>
+<a id="__codelineno-1-41" name="__codelineno-1-41" href="#__codelineno-1-41"></a>    <span class="n">CATEGORY</span> <span class="o">=</span> <span class="n">DATA_CAT</span>
+<a id="__codelineno-1-42" name="__codelineno-1-42" href="#__codelineno-1-42"></a>
+<a id="__codelineno-1-43" name="__codelineno-1-43" href="#__codelineno-1-43"></a>    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<a id="__codelineno-1-44" name="__codelineno-1-44" href="#__codelineno-1-44"></a>        <span class="n">json_dict</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;dict&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-45" name="__codelineno-1-45" href="#__codelineno-1-45"></a>        <span class="n">json_str</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">json_dict</span><span class="p">)</span>
+<a id="__codelineno-1-46" name="__codelineno-1-46" href="#__codelineno-1-46"></a>        <span class="k">return</span> <span class="p">(</span><span class="n">json_str</span><span class="p">,)</span>
 </code></pre></div>
 </details>
 <h2 id="getimagelistitem">GetImageListItem</h2>
