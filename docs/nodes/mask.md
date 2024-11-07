@@ -420,6 +420,7 @@ regions using threshold values and morphological operations.
         RETURN_TYPES = ("MASK", "TRIMAP")
         FUNCTION = "execute"
         CATEGORY = MASK_CAT
+        CLASS_ID = "mask_trimap"
 
         def execute(self, **kwargs):
             mask = kwargs.get("mask")
@@ -672,69 +673,6 @@ iterations.
         def execute(self, image: torch.Tensor, radius, sigma, interations):
             tensor_image = TensorImage.from_BWHC(image)
             output = gaussian_blur2d(tensor_image, radius, sigma, interations).get_BWHC()
-            return (output,)
-
-
-    ```
-
-## Mask2Image
-
-Converts a single-channel mask into a three-channel grayscale image.
-
-Duplicates the mask's intensity values across three channels to create a grayscale
-image.
-
-### Inputs
-
-| Group    | Name | Type   | Default | Extras |
-| -------- | ---- | ------ | ------- | ------ |
-| required | mask | `MASK` |         |        |
-
-### Returns
-
-| Name  | Type    |
-| ----- | ------- |
-| image | `IMAGE` |
-
-??? note "Source code in mask.py"
-
-    ```python
-    class Mask2Image:
-        """Converts a single-channel mask into a three-channel grayscale image.
-
-        Duplicates the mask's intensity values across three channels to create a grayscale image.
-
-        Args:
-            mask (torch.Tensor): Input single-channel mask in BWHC format
-
-        Returns:
-            tuple[torch.Tensor]: Single-element tuple containing the three-channel image
-
-        Raises:
-            ValueError: If mask is not a valid torch.Tensor
-
-        Notes:
-            - Output has identical values in R, G, and B channels
-            - Useful for visualization or processing requiring three-channel input
-            - Preserves the original mask's intensity values
-        """
-
-        @classmethod
-        def INPUT_TYPES(cls):  # type: ignore
-            return {
-                "required": {
-                    "mask": ("MASK",),
-                }
-            }
-
-        RETURN_TYPES = ("IMAGE",)
-        FUNCTION = "execute"
-        CATEGORY = MASK_CAT
-
-        def execute(self, mask: torch.Tensor):
-            mask_tensor = TensorImage.from_BWHC(mask)
-            output = mask_tensor.repeat(1, 3, 1, 1)
-            output = TensorImage(output).get_BWHC()
             return (output,)
 
 

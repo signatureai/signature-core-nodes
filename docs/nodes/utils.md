@@ -12,7 +12,7 @@ operations.
 
 | Group    | Name  | Type                                  | Default | Extras |
 | -------- | ----- | ------------------------------------- | ------- | ------ |
-| required | value | `<ast.Name object at 0x7efc8f469c00>` |         |        |
+| required | value | `<ast.Name object at 0x7fc956dc3f40>` |         |        |
 
 ### Returns
 
@@ -51,6 +51,7 @@ operations.
         RETURN_TYPES = ("STRING",)
         FUNCTION = "execute"
         CATEGORY = UTILS_CAT
+        CLASS_ID = "any_string"
 
         def execute(self, value):
             return (str(value),)
@@ -69,7 +70,7 @@ use in image processing workflows.
 
 | Group    | Name  | Type                                  | Default | Extras |
 | -------- | ----- | ------------------------------------- | ------- | ------ |
-| required | value | `<ast.Name object at 0x7efc8f46a290>` |         |        |
+| required | value | `<ast.Name object at 0x7fc956dc3670>` |         |        |
 
 ### Returns
 
@@ -112,6 +113,7 @@ use in image processing workflows.
         RETURN_TYPES = ("IMAGE",)
         FUNCTION = "execute"
         CATEGORY = UTILS_CAT
+        CLASS_ID = "any_image"
 
         def execute(self, value):
             if isinstance(value, torch.Tensor):
@@ -132,7 +134,7 @@ value without any modifications. Useful for workflow organization or debugging.
 
 | Group    | Name  | Type                                  | Default | Extras |
 | -------- | ----- | ------------------------------------- | ------- | ------ |
-| required | value | `<ast.Name object at 0x7efc8f46b160>` |         |        |
+| required | value | `<ast.Name object at 0x7fc956dc20b0>` |         |        |
 
 ??? note "Source code in utils.py"
 
@@ -165,6 +167,7 @@ value without any modifications. Useful for workflow organization or debugging.
         RETURN_TYPES = (any_type,)
         FUNCTION = "execute"
         CATEGORY = UTILS_CAT
+        CLASS_ID = "any2any"
 
         def execute(self, value):
             return (value,)
@@ -223,6 +226,7 @@ Value) color space while preserving the image structure and dimensions.
         RETURN_TYPES = ("IMAGE",)
         FUNCTION = "execute"
         CATEGORY = UTILS_CAT
+        CLASS_ID = "rgb_hsv"
 
         def execute(self, image: torch.Tensor):
             image_tensor = TensorImage.from_BWHC(image)
@@ -232,7 +236,7 @@ Value) color space while preserving the image structure and dimensions.
 
     ```
 
-## RGBHLS
+## RGB2HLS
 
 Converts RGB images to HLS color space.
 
@@ -254,7 +258,7 @@ Saturation) color space while preserving the image structure and dimensions.
 ??? note "Source code in utils.py"
 
     ```python
-    class RGBHLS:
+    class RGB2HLS:
         """Converts RGB images to HLS color space.
 
         Transforms images from RGB (Red, Green, Blue) color space to HLS (Hue, Lightness, Saturation)
@@ -283,6 +287,7 @@ Saturation) color space while preserving the image structure and dimensions.
         RETURN_TYPES = ("IMAGE",)
         FUNCTION = "execute"
         CATEGORY = UTILS_CAT
+        CLASS_ID = "rgb_hls"
 
         def execute(self, image: torch.Tensor):
             image_tensor = TensorImage.from_BWHC(image)
@@ -344,6 +349,7 @@ the alpha channel. Passes through RGB images unchanged.
         RETURN_TYPES = ("IMAGE",)
         FUNCTION = "execute"
         CATEGORY = UTILS_CAT
+        CLASS_ID = "rgba2rgb"
 
         def execute(self, image: torch.Tensor):
             image_tensor = TensorImage.from_BWHC(image)
@@ -366,7 +372,7 @@ and optionally unload models to free up graphics memory.
 
 | Group    | Name         | Type                                  | Default | Extras |
 | -------- | ------------ | ------------------------------------- | ------- | ------ |
-| required | anything     | `<ast.Name object at 0x7efc8f4ade40>` |         |        |
+| required | anything     | `<ast.Name object at 0x7fc956dc3130>` |         |        |
 | required | purge_cache  | `BOOLEAN`                             | True    |        |
 | required | purge_models | `BOOLEAN`                             | True    |        |
 
@@ -414,6 +420,8 @@ and optionally unload models to free up graphics memory.
         FUNCTION = "execute"
         CATEGORY = UTILS_CAT
         OUTPUT_NODE = True
+        DEPRECATED = True
+        CLASS_ID = "purge_vram"
 
         def execute(self, anything, purge_cache, purge_models):
 
@@ -428,5 +436,69 @@ and optionally unload models to free up graphics memory.
                 mm.unload_all_models()
                 mm.soft_empty_cache(True)
             return (None,)
+
+
+    ```
+
+## WaitSeconds
+
+Pauses execution for a specified number of seconds.
+
+A utility node that introduces a delay in the workflow by sleeping for a given duration.
+This can be useful for timing control, pacing operations, or waiting for external
+processes to complete.
+
+### Inputs
+
+| Group    | Name    | Type                                  | Default | Extras |
+| -------- | ------- | ------------------------------------- | ------- | ------ |
+| required | value   | `<ast.Name object at 0x7fc956d2d660>` |         |        |
+| required | seconds | `FLOAT`                               | 1.0     |        |
+
+??? note "Source code in utils.py"
+
+    ```python
+    class WaitSeconds:
+        """Pauses execution for a specified number of seconds.
+
+        A utility node that introduces a delay in the workflow by sleeping for a given duration. This can
+        be useful for timing control, pacing operations, or waiting for external processes to complete.
+
+        Args:
+            value (Any): Any input value to be returned after the wait period.
+            seconds (float): The duration to wait in seconds. Defaults to 1.0 seconds.
+
+        Returns:
+            tuple[Any]: A single-element tuple containing the unchanged input value after the wait.
+
+        Notes:
+            - The wait time can be adjusted by changing the `seconds` argument.
+            - The function uses Python's time.sleep() to implement the delay.
+        """
+
+        @classmethod
+        def INPUT_TYPES(cls):  # type: ignore
+            return {
+                "required": {
+                    "value": (any_type,),
+                    "seconds": (
+                        "FLOAT",
+                        {
+                            "default": 1.0,
+                        },
+                    ),
+                }
+            }
+
+        RETURN_TYPES = (any_type,)
+        RETURN_NAMES = ("value",)
+        FUNCTION = "execute"
+        CATEGORY = UTILS_CAT
+
+        def execute(self, **kwargs):
+            value = kwargs.get("value")
+            seconds = kwargs.get("seconds") or 1.0
+            time.sleep(seconds)
+            return (value,)
 
     ```

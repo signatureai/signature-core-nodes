@@ -118,15 +118,15 @@ LORA_STACK.
 | Group    | Name           | Type                                  | Default | Extras              |
 | -------- | -------------- | ------------------------------------- | ------- | ------------------- |
 | required | switch_1       | `LIST`                                |         |                     |
-| required | lora_name_1    | `<ast.Name object at 0x7efc8f4b9ae0>` |         |                     |
+| required | lora_name_1    | `<ast.Name object at 0x7fc956dd9ba0>` |         |                     |
 | required | model_weight_1 | `FLOAT`                               | 1.0     | max=10.0, step=0.01 |
 | required | clip_weight_1  | `FLOAT`                               | 1.0     | max=10.0, step=0.01 |
 | required | switch_2       | `LIST`                                |         |                     |
-| required | lora_name_2    | `<ast.Name object at 0x7efc8f4b9540>` |         |                     |
+| required | lora_name_2    | `<ast.Name object at 0x7fc956dd9600>` |         |                     |
 | required | model_weight_2 | `FLOAT`                               | 1.0     | max=10.0, step=0.01 |
 | required | clip_weight_2  | `FLOAT`                               | 1.0     | max=10.0, step=0.01 |
 | required | switch_3       | `LIST`                                |         |                     |
-| required | lora_name_3    | `<ast.Name object at 0x7efc8f4b8fa0>` |         |                     |
+| required | lora_name_3    | `<ast.Name object at 0x7fc956dd9060>` |         |                     |
 | required | model_weight_3 | `FLOAT`                               | 1.0     | max=10.0, step=0.01 |
 | required | clip_weight_3  | `FLOAT`                               | 1.0     | max=10.0, step=0.01 |
 | optional | lora_stack     | `LORA_STACK`                          |         |                     |
@@ -282,6 +282,7 @@ required for LORA_STACK operations. Can optionally extend an existing stack.
         RETURN_NAMES = ("lora_stack",)
         FUNCTION = "execute"
         CATEGORY = LORA_CAT
+        CLASS_ID = "dict_to_lora_stack"
 
         def execute(self, **kwargs):
             lora_dicts = kwargs.get("lora_dicts")

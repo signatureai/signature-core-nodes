@@ -1,4 +1,5 @@
 import gc
+import time
 
 import comfy.model_management as mm  # type: ignore
 import torch
@@ -288,3 +289,47 @@ class PurgeVRAM:
             mm.unload_all_models()
             mm.soft_empty_cache(True)
         return (None,)
+
+
+class WaitSeconds:
+    """Pauses execution for a specified number of seconds.
+
+    A utility node that introduces a delay in the workflow by sleeping for a given duration. This can
+    be useful for timing control, pacing operations, or waiting for external processes to complete.
+
+    Args:
+        value (Any): Any input value to be returned after the wait period.
+        seconds (float): The duration to wait in seconds. Defaults to 1.0 seconds.
+
+    Returns:
+        tuple[Any]: A single-element tuple containing the unchanged input value after the wait.
+
+    Notes:
+        - The wait time can be adjusted by changing the `seconds` argument.
+        - The function uses Python's time.sleep() to implement the delay.
+    """
+
+    @classmethod
+    def INPUT_TYPES(cls):  # type: ignore
+        return {
+            "required": {
+                "value": (any_type,),
+                "seconds": (
+                    "FLOAT",
+                    {
+                        "default": 1.0,
+                    },
+                ),
+            }
+        }
+
+    RETURN_TYPES = (any_type,)
+    RETURN_NAMES = ("value",)
+    FUNCTION = "execute"
+    CATEGORY = UTILS_CAT
+
+    def execute(self, **kwargs):
+        value = kwargs.get("value")
+        seconds = kwargs.get("seconds") or 1.0
+        time.sleep(seconds)
+        return (value,)

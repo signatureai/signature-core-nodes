@@ -1,6 +1,6 @@
 # Platform Io Nodes
 
-## PlatformInputImage
+## InputImage
 
 Processes and validates image inputs from various sources for the platform.
 
@@ -19,12 +19,12 @@ mask generation.
 | required | multiple      | `BOOLEAN`                             | False       |                |
 | required | value         | `STRING`                              |             |                |
 | required | metadata      | `STRING`                              | {}          | multiline=True |
-| optional | fallback      | `<ast.Name object at 0x7efc8f4f3040>` |             |                |
+| optional | fallback      | `<ast.Name object at 0x7fc956daaf80>` |             |                |
 
 ??? note "Source code in platform_io.py"
 
     ```python
-    class PlatformInputImage:
+    class InputImage:
         """Processes and validates image inputs from various sources for the platform.
 
         This class handles image input processing, supporting both single and multiple images from URLs or
@@ -78,67 +78,92 @@ mask generation.
         def execute(
             self,
             **kwargs,
-        ):
+        ) -> tuple[list[torch.Tensor]]:
             def post_process(output: TensorImage, include_alpha: bool) -> TensorImage:
-                if include_alpha is False and output.shape[1] == 4:
-                    # get alpha
-                    rgb = TensorImage(output[:, :3, :, :])
-                    alpha = TensorImage(output[:, -1, :, :])
-                    output, _ = cutout(rgb, alpha)
+                if output.shape[1] not in [3, 4]:
+                    if len(output.shape) == 2:  # (H,W)
+                        output = TensorImage(output.unsqueeze(0).unsqueeze(0).expand(-1, 3, -1, -1))
+                    elif len(output.shape) == 3:  # (B,H,W)
+                        output = TensorImage(output.unsqueeze(1).expand(-1, 3, -1, -1))
+                    elif len(output.shape) == 4 and output.shape[1] == 1:  # (B,1,H,W)
+                        output = TensorImage(output.expand(-1, 3, -1, -1))
+                    else:
+                        raise ValueError(f"Unsupported shape: {output.shape}")
+                else:
+                    if not include_alpha and output.shape[1] == 4:
+                        rgb = TensorImage(output[:, :3, :, :])
+                        alpha = TensorImage(output[:, -1, :, :])
+                        output, _ = cutout(rgb, alpha)
                 return output
 
-            value = kwargs.get("value")
-            if not isinstance(value, str):
-                raise ValueError("Value must be a string")
-            subtype = kwargs.get("subtype")
-            if not isinstance(subtype, str):
-                raise ValueError("Subtype must be a string")
-            include_alpha = kwargs.get("include_alpha") or False
-            if not isinstance(include_alpha, bool):
-                raise ValueError("Include alpha must be a boolean")
-            multiple = kwargs.get("multiple") or False
-            if not isinstance(multiple, bool):
-                raise ValueError("Multiple must be a boolean")
-            fallback = kwargs.get("fallback")
+            def validate_inputs() -> tuple[str, str, bool, bool, TensorImage | None]:
+                value = kwargs.get("value", "")
+                if not isinstance(value, str):
+                    raise ValueError("Value must be a string")
 
-            if "," in value:
-                splited_value = value.split(",")
-                value = splited_value if multiple else splited_value[0]
-            else:
-                value = [value] if value != "" else []
-            outputs: list[TensorImage | torch.Tensor] = []
-            for i, _ in enumerate(value):
-                item = value[i]
+                subtype = kwargs.get("subtype", "image")
+                if not isinstance(subtype, str):
+                    raise ValueError("Subtype must be a string")
+
+                include_alpha = bool(kwargs.get("include_alpha", False))
+                multiple = bool(kwargs.get("multiple", False))
+                fallback = kwargs.get("fallback")
+
+                return value, subtype, include_alpha, multiple, fallback
+
+            def process_value(value: str, multiple: bool) -> list[str]:
+                if not value:
+                    return []
+                if "," in value:
+                    items = value.split(",")
+                    return items if multiple else [items[0]]
+                return [value]
+
+            def load_image(url_or_base64: str) -> TensorImage:
+                if not url_or_base64:
+                    raise ValueError("Empty input string")
+
+                if url_or_base64.startswith("http"):
+                    return TensorImage.from_web(url_or_base64)
+                try:
+                    return TensorImage.from_base64(url_or_base64)
+                except Exception as e:
+                    raise ValueError(f"Unsupported input format: {url_or_base64}") from e
+
+            value, subtype, include_alpha, multiple, fallback = validate_inputs()
+            value_list = process_value(value, multiple)
+            outputs: list[torch.Tensor] = []
+
+            # Process each input value
+            for item in value_list:
                 if isinstance(item, str):
-                    if item != "":
-                        if item.startswith("http"):
-                            output = TensorImage.from_web(item)
-                        else:
-                            try:
-                                output = TensorImage.from_base64(item)
-                            except:
-                                raise ValueError(f"Unsupported input format: {item}")
+                    try:
+                        output = load_image(item)
                         outputs.append(output)
+                    except ValueError as e:
+                        if not outputs:
+                            raise e
+
             if len(outputs) == 0:
                 if fallback is None:
-                    raise ValueError("No input found")
-                tensor_fallback = TensorImage.from_BWHC(fallback)
-                outputs.append(tensor_fallback)
-            for i, _ in enumerate(outputs):
-                output = outputs[i]
-                if isinstance(output, torch.Tensor):
-                    output = TensorImage(output)
+                    raise ValueError("No input found and no fallback provided")
+                outputs.append(TensorImage.from_BWHC(fallback))
+
+            for i, output in enumerate(outputs):
+                if not isinstance(output, TensorImage):
+                    raise ValueError(f"Output {i} must be a TensorImage")
+
                 if subtype == "mask":
                     outputs[i] = output.get_grayscale().get_BWHC()
                 else:
-                    if isinstance(output, TensorImage):
-                        outputs[i] = post_process(output, include_alpha).get_BWHC()
+                    outputs[i] = post_process(output, include_alpha).get_BWHC()
+            clean_memory()
             return (outputs,)
 
 
     ```
 
-## PlatformInputConnector
+## InputConnector
 
 Manages file downloads from external services using authentication tokens.
 
@@ -167,7 +192,7 @@ using provided authentication tokens and file identifiers.
 ??? note "Source code in platform_io.py"
 
     ```python
-    class PlatformInputConnector:
+    class InputConnector:
         """Manages file downloads from external services using authentication tokens.
 
         Handles connections to external services (currently Google Drive) to download files using provided
@@ -235,12 +260,13 @@ using provided authentication tokens and file identifiers.
             data = connector.download(
                 file_id=value, mime_type=mime_type, output_path=input_folder, override=override
             )
+            clean_memory()
             return (data,)
 
 
     ```
 
-## PlatformInputText
+## InputText
 
 Processes text input with fallback support.
 
@@ -267,7 +293,7 @@ values when input is empty.
 ??? note "Source code in platform_io.py"
 
     ```python
-    class PlatformInputText:
+    class InputText:
         """Processes text input with fallback support.
 
         Handles text input processing with support for different subtypes and optional fallback values
@@ -317,16 +343,15 @@ values when input is empty.
             if not isinstance(value, str):
                 raise ValueError("Value must be a string")
             fallback = kwargs.get("fallback")
-            if not isinstance(fallback, str):
-                raise ValueError("Fallback must be a string")
             if value == "":
                 value = fallback or ""
+            clean_memory()
             return (value,)
 
 
     ```
 
-## PlatformInputNumber
+## InputNumber
 
 Processes numeric inputs with type conversion.
 
@@ -346,7 +371,7 @@ including automatic type conversion based on the specified subtype.
 ??? note "Source code in platform_io.py"
 
     ```python
-    class PlatformInputNumber:
+    class InputNumber:
         """Processes numeric inputs with type conversion.
 
         Handles numeric input processing with support for both integer and float values, including
@@ -397,12 +422,13 @@ including automatic type conversion based on the specified subtype.
                 value = int(value)
             else:
                 value = float(value)
+            clean_memory()
             return (value,)
 
 
     ```
 
-## PlatformInputBoolean
+## InputBoolean
 
 Processes boolean inputs for the platform.
 
@@ -427,7 +453,7 @@ Handles boolean input processing with validation and type checking.
 ??? note "Source code in platform_io.py"
 
     ```python
-    class PlatformInputBoolean:
+    class InputBoolean:
         """Processes boolean inputs for the platform.
 
         Handles boolean input processing with validation and type checking.
@@ -471,12 +497,13 @@ Handles boolean input processing with validation and type checking.
             value = kwargs.get("value")
             if not isinstance(value, bool):
                 raise ValueError("Value must be a boolean")
+            clean_memory()
             return (value,)
 
 
     ```
 
-## PlatformOutput
+## Output
 
 Manages output processing and file saving for various data types.
 
@@ -490,13 +517,13 @@ numbers, and strings. Includes support for thumbnail generation and metadata man
 | required | title       | `STRING`                              | Output Image |                |
 | required | subtype     | `LIST`                                |              |                |
 | required | metadata    | `STRING`                              |              | multiline=True |
-| required | value       | `<ast.Name object at 0x7efc8f46aad0>` |              |                |
+| required | value       | `<ast.Name object at 0x7fc956d84a00>` |              |                |
 | hidden   | output_path | `STRING`                              | output       |                |
 
 ??? note "Source code in platform_io.py"
 
     ```python
-    class PlatformOutput:
+    class Output:
         """Manages output processing and file saving for various data types.
 
         Handles the processing and saving of different output types including images, masks, numbers, and
@@ -542,6 +569,10 @@ numbers, and strings. Includes support for thumbnail generation and metadata man
         INPUT_IS_LIST = True
         FUNCTION = "execute"
         CATEGORY = PLATFORM_IO_CAT
+
+        @classmethod
+        def IS_CHANGED(cls, **kwargs):  # type: ignore
+            return time.time()
 
         def __save_outputs(self, **kwargs) -> dict | None:
             img = kwargs.get("img")
@@ -609,7 +640,6 @@ numbers, and strings. Includes support for thumbnail generation and metadata man
             if not isinstance(subtype_list, list):
                 raise ValueError("Subtype must be a list")
             output_path_list = kwargs.get("output_path")
-            print(f"output_path_list: {output_path_list} {type(output_path_list)}")
             if not isinstance(output_path_list, list):
                 output_path_list = ["output"] * len(title_list)
             value_list = kwargs.get("value")
@@ -647,6 +677,7 @@ numbers, and strings. Includes support for thumbnail generation and metadata man
                     results.append(
                         {"title": title, "type": main_subtype, "metadata": metadata, "value": value_json}
                     )
+            clean_memory()
             return {"ui": {"signature_output": results}}
 
     ```

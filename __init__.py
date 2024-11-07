@@ -55,11 +55,16 @@ def get_node_class_mappings(nodes_directory: str):
                     continue
 
                 if hasattr(value, "FUNCTION"):
-                    class_name = str(value.CLASS_ID) if hasattr(value, "CLASS_ID") else item.replace("2", "")
-                    snake_case = re.sub(r"(?<!^)(?=[A-Z])", "_", class_name).lower()
+                    class_name = item.replace("2", "")
+                    snake_case = (
+                        str(value.CLASS_ID)
+                        if hasattr(value, "CLASS_ID")
+                        else re.sub(r"(?<!^)(?=[A-Z])", "_", class_name).lower()
+                    )
                     key = f"signature_{snake_case}"
                     node_class_mappings[key] = value
-                    node_display_name_mappings[key] = f"SIG {item}"
+                    item_name = re.sub(r"(?<=[a-z])(?=[A-Z])|(?<=[A-Z]{2})(?=[A-Z][a-z])", " ", item)
+                    node_display_name_mappings[key] = f"SIG {item_name}"
         except ImportError as e:
             console.log(f"[red]Error importing {plugin_rel_path}: {e}")
 

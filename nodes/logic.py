@@ -7,7 +7,7 @@ from .shared import ByPassTypeTuple, any_type
 MAX_FLOW_NUM = 10
 
 
-class LogicSwitch:
+class Switch:
     """Switches between two input values based on a boolean condition.
 
     A logic gate that selects between two inputs of any type based on a boolean condition. When the
@@ -34,13 +34,14 @@ class LogicSwitch:
     def INPUT_TYPES(cls):  # type: ignore
         return {
             "required": {
-                "condition": ("BOOLEAN", {"default": False, "forceInput": True}),
+                "condition": ("BOOLEAN", {"default": True}),
                 "true": (any_type,),
                 "false": (any_type,),
             }
         }
 
     RETURN_TYPES = (any_type,)
+    RETURN_NAMES = ("output",)
     FUNCTION = "execute"
     CATEGORY = LOGIC_CAT
 
@@ -53,90 +54,75 @@ class LogicSwitch:
         return (output,)
 
 
-class LogicCompare:
-    """Compares two values using equality operators and handles various data types.
+class Compare:
+    """Compares two input values based on a specified comparison operation.
 
-    A comparison node that evaluates two inputs using either equality or inequality operators.
-    Supports comparison of primitive types, tensors, and mixed data types with special handling for
-    shape mismatches in tensors.
+    A logic gate that evaluates a comparison between two inputs of any type. The comparison is determined
+    by the specified operation, which can include equality, inequality, and relational comparisons. This
+    node is useful for implementing conditional logic based on the relationship between two values.
 
     Args:
-        input_a (Any): First value for comparison. Can be of any type.
-        input_b (Any): Second value for comparison. Can be of any type.
-        operator (str): The comparison operator to use. Must be one of:
-            - 'equal': Tests if inputs are equal
-            - 'not_equal': Tests if inputs are not equal
+        a (Any): The first value to compare. Can be of any type.
+        b (Any): The second value to compare. Can be of any type.
+        comparison (str): The comparison operation to perform. Defaults to "a == b".
+            Available options include:
+            - "a == b": Checks if a is equal to b.
+            - "a != b": Checks if a is not equal to b.
+            - "a < b": Checks if a is less than b.
+            - "a > b": Checks if a is greater than b.
+            - "a <= b": Checks if a is less than or equal to b.
+            - "a >= b": Checks if a is greater than or equal to b.
 
     Returns:
-        tuple[bool]: A single-element tuple containing the boolean result of the comparison.
-
-    Raises:
-        ValueError: If any input is None or if the operator is not one of the valid options.
+        tuple[bool]: A single-element tuple containing the result of the comparison as a boolean value.
 
     Notes:
-        - Handles tensor comparisons with automatic shape adjustment
-        - Different types are always considered unequal
-        - For tensors with different shapes:
-            * Tensors are flattened to 1D
-            * Only the overlapping portions are compared
-            * All elements must satisfy the condition for True result
-        - None values are handled specially: None equals None, but nothing else
-        - Lists and tuples are compared element-wise with all elements must match
+        - The node accepts inputs of any type, making it versatile for different data types.
+        - If the inputs are tensors, lists, or tuples,
+          the comparison will be evaluated based on their shapes or lengths.
+        - The output will be cast to a boolean value.
     """
+
+    COMPARE_FUNCTIONS = {
+        "a == b": lambda a, b: a == b,
+        "a != b": lambda a, b: a != b,
+        "a < b": lambda a, b: a < b,
+        "a > b": lambda a, b: a > b,
+        "a <= b": lambda a, b: a <= b,
+        "a >= b": lambda a, b: a >= b,
+    }
 
     @classmethod
     def INPUT_TYPES(cls):  # type: ignore
+        compare_functions = list(cls.COMPARE_FUNCTIONS.keys())
         return {
             "required": {
-                "input_a": (any_type,),
-                "input_b": (any_type,),
-                "operator": (["equal", "not_equal"],),
+                "a": (any_type,),
+                "b": (any_type,),
+                "comparison": (compare_functions, {"default": "a == b"}),
             }
         }
 
     RETURN_TYPES = ("BOOLEAN",)
+    RETURN_NAMES = ("result",)
     FUNCTION = "execute"
     CATEGORY = LOGIC_CAT
 
     def execute(self, **kwargs):
-        input_a = kwargs.get("input_a")
-        input_b = kwargs.get("input_b")
-        operator = kwargs.get("operator")
+        input_a = kwargs.get("a")
+        input_b = kwargs.get("b")
+        comparison = kwargs.get("comparison") or "a == b"
 
-        if input_a is None or input_b is None or operator is None:
-            raise ValueError("All inputs are required")
+        try:
+            output = self.COMPARE_FUNCTIONS[comparison](input_a, input_b)
+        except Exception as e:
+            if isinstance(input_a, torch.Tensor) and isinstance(input_b, torch.Tensor):
+                output = self.COMPARE_FUNCTIONS[comparison](input_a.shape, input_b.shape)
+            elif isinstance(input_a, (list, tuple)) and isinstance(input_b, (list, tuple)):
+                output = self.COMPARE_FUNCTIONS[comparison](len(input_a), len(input_b))
+            else:
+                raise e
 
-        def safe_compare(a, b, tensor_op, primitive_op):
-            if a is None or b is None:
-                return a is b
-
-            if not isinstance(a, type(b)) and not isinstance(b, type(a)):
-                return False
-
-            if isinstance(a, torch.Tensor):
-                if a.shape != b.shape:
-                    a = a.reshape(-1)
-                    b = b.reshape(-1)
-                    min_size = min(a.size(0), b.size(0))
-                    a = a[:min_size]
-                    b = b[:min_size]
-                return tensor_op(a, b)
-
-            return primitive_op(a, b)
-
-        operator_map = {
-            "equal": lambda a, b: safe_compare(a, b, torch.eq, lambda x, y: x == y),
-            "not_equal": lambda a, b: safe_compare(a, b, torch.ne, lambda x, y: x != y),
-        }
-
-        if operator not in operator_map:
-            raise ValueError(
-                f"Invalid operator: {operator}. Valid operators are: {', '.join(operator_map.keys())}"
-            )
-
-        output = operator_map[operator](input_a, input_b)
-
-        # Handle different output types
         if isinstance(output, torch.Tensor):
             output = output.all().item()
         elif isinstance(output, (list, tuple)):
@@ -145,9 +131,23 @@ class LogicCompare:
         return (bool(output),)
 
 
-class WhileLoopStart:
-    def __init__(self):
-        pass
+class LoopStart:
+    """Initiates a loop with optional initial values for each iteration.
+
+    A control node that starts a loop, allowing for a specified number of iterations. It can accept
+    optional initial values for each iteration, which can be used within the loop. This node is useful
+    for creating iterative workflows where the same set of operations is performed multiple times.
+
+    Args:
+        init_value (Any): The initial value for the first iteration. Can be of any type.
+
+    Returns:
+        tuple[tuple]: A tuple containing a flow control signal and the initial values for each iteration.
+
+    Notes:
+        - The number of initial values can be adjusted by changing the MAX_FLOW_NUM constant.
+        - Each initial value can be of any type, providing flexibility for different workflows.
+    """
 
     @classmethod
     def INPUT_TYPES(cls):
@@ -171,7 +171,28 @@ class WhileLoopStart:
         return tuple(["stub"] + values)
 
 
-class WhileLoopEnd:
+class LoopEnd:
+    """Ends a loop and returns the final values after the loop execution.
+
+    A control node that signifies the end of a loop initiated by a `LoopStart` node. It processes the
+    flow control signal and can return the final values from the loop iterations. This node is useful
+    for managing the completion of iterative workflows and retrieving results after looping.
+
+    Args:
+        flow (FLOW_CONTROL): The flow control signal indicating the current state of the loop.
+        end_loop (bool): A boolean flag that indicates whether to end the loop. If True, the loop will terminate.
+        dynprompt (DYNPROMPT, optional): Dynamic prompt information for the node.
+        unique_id (UNIQUE_ID, optional): A unique identifier for the loop instance.
+
+    Returns:
+        tuple: A tuple containing the final values from the loop iterations.
+
+    Notes:
+        - The loop can be terminated based on the `end_loop` flag,
+          allowing for flexible control over the iteration process.
+        - The number of returned values corresponds to the number of initial values provided in the `LoopStart`.
+    """
+
     def __init__(self):
         pass
 

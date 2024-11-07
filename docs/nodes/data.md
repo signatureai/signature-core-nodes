@@ -1,6 +1,6 @@
 # Data Nodes
 
-## JsonToDict
+## Json2Dict
 
 Converts JSON strings to Python dictionaries for workflow integration.
 
@@ -23,7 +23,7 @@ and validates input format.
 ??? note "Source code in data.py"
 
     ```python
-    class JsonToDict:
+    class Json2Dict:
         """Converts JSON strings to Python dictionaries for workflow integration.
 
         A node that takes JSON-formatted strings and parses them into Python dictionaries, enabling
@@ -62,6 +62,7 @@ and validates input format.
 
         RETURN_TYPES = ("DICT",)
         FUNCTION = "execute"
+        CLASS_ID = "json_dict"
         CATEGORY = DATA_CAT
 
         def execute(self, **kwargs):
@@ -74,7 +75,7 @@ and validates input format.
 
     ```
 
-## DictToJson
+## Dict2Json
 
 Converts Python dictionaries to JSON strings for data interchange.
 
@@ -96,7 +97,7 @@ data export and communication with external systems that require JSON format.
 ??? note "Source code in data.py"
 
     ```python
-    class DictToJson:
+    class Dict2Json:
         """Converts Python dictionaries to JSON strings for data interchange.
 
         A node that serializes Python dictionaries into JSON-formatted strings, facilitating data
@@ -135,6 +136,7 @@ data export and communication with external systems that require JSON format.
 
         RETURN_TYPES = ("STRING",)
         FUNCTION = "execute"
+        CLASS_ID = "dict_json"
         CATEGORY = DATA_CAT
 
         def execute(self, **kwargs):
