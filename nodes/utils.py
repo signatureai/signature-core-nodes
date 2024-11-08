@@ -44,6 +44,70 @@ class Any2String:
         return (str(value),)
 
 
+class Any2Int:
+    """Converts any input value to its int representation.
+
+    This utility node provides a simple way to convert any input value into a int format using
+    Python's built-in int() function. Useful for debugging, logging, or text-based operations.
+
+    Args:
+        value (Any): The input value to be converted to a int.
+
+    Returns:
+        tuple[int]: A single-element tuple containing the int representation of the input value.
+
+    Notes:
+        - The conversion is done using Python's native int() function
+    """
+
+    @classmethod
+    def INPUT_TYPES(cls):  # type: ignore
+        return {
+            "required": {
+                "value": (any_type,),
+            }
+        }
+
+    RETURN_TYPES = ("INT",)
+    FUNCTION = "execute"
+    CATEGORY = UTILS_CAT
+
+    def execute(self, value):
+        return (int(value),)
+
+
+class Any2Float:
+    """Converts any input value to its float representation.
+
+    This utility node provides a simple way to convert any input value into a float format using
+    Python's built-in float() function. Useful for debugging, logging, or text-based operations.
+
+    Args:
+        value (Any): The input value to be converted to a float.
+
+    Returns:
+        tuple[float]: A single-element tuple containing the float representation of the input value.
+
+    Notes:
+        - The conversion is done using Python's native float() function
+    """
+
+    @classmethod
+    def INPUT_TYPES(cls):  # type: ignore
+        return {
+            "required": {
+                "value": (any_type,),
+            }
+        }
+
+    RETURN_TYPES = ("FLOAT",)
+    FUNCTION = "execute"
+    CATEGORY = UTILS_CAT
+
+    def execute(self, value):
+        return (float(value),)
+
+
 class Any2Image:
     """Converts any inputs value to image format.
 
