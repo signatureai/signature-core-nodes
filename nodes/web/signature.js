@@ -2,13 +2,22 @@ import { app } from "../scripts/app.js";
 
 const urlParams = new URLSearchParams(window.location.search);
 const env = urlParams.get("env");
+const workflow_id = urlParams.get("workflow_id");
+const token = urlParams.get("token");
+
+// Exit early if required parameters are missing
+if (!env || !workflow_id || !token) {
+  console.log(
+    "Signature Bridge: Missing required URL parameters (env, workflow_id, token). Extension not loaded.",
+  );
+  return;
+}
+
 let main_url = "https://api.signature.ai/api/v1";
 if (env === "staging") {
   main_url = "https://api-staging.signature.ai/api/v1";
 }
-const workflow_id = urlParams.get("workflow_id");
 const url = main_url + `/workflows/${workflow_id}`;
-const token = urlParams.get("token");
 const headers = getHeaders(token);
 
 function getHeaders(token) {
