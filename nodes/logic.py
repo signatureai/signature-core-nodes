@@ -1,4 +1,5 @@
 import torch
+from comfy_execution.graph import ExecutionBlocker  # type: ignore
 from comfy_execution.graph_utils import GraphBuilder, is_link  # type: ignore
 
 from .categories import LOGIC_CAT
@@ -17,8 +18,8 @@ class Switch:
     Args:
         condition (bool): The boolean condition that determines which value to return.
             Defaults to False if not provided.
-        true (Any): The value to return when the condition is True. Can be of any type.
-        false (Any): The value to return when the condition is False. Can be of any type.
+        on_true (Any): The value to return when the condition is True. Can be of any type.
+        on_false (Any): The value to return when the condition is False. Can be of any type.
 
     Returns:
         tuple[Any]: A single-element tuple containing either the 'true' or 'false' value based on
@@ -26,7 +27,7 @@ class Switch:
 
     Notes:
         - The node accepts inputs of any type, making it versatile for different data types
-        - Both 'true' and 'false' values must be provided
+        - Both 'on_true' and 'on_false' values must be provided
         - The condition is automatically cast to boolean, with None being treated as False
     """
 
@@ -35,8 +36,8 @@ class Switch:
         return {
             "required": {
                 "condition": ("BOOLEAN", {"default": True}),
-                "true": (any_type,),
-                "false": (any_type,),
+                "on_true": (any_type,),
+                "on_false": (any_type,),
             }
         }
 
@@ -45,13 +46,62 @@ class Switch:
     FUNCTION = "execute"
     CATEGORY = LOGIC_CAT
 
-    def execute(self, **kwargs):
-        condition = kwargs.get("condition") or False
-        true_val = kwargs.get("true")
-        false_val = kwargs.get("false")
+    def check_lazy_status(self, condition, on_true=None, on_false=None):
 
-        output = true_val if condition else false_val
-        return (output,)
+        if condition and on_true is None:
+            on_true = ["on_true"]
+            if isinstance(on_true, ExecutionBlocker):
+                on_true = on_true.message  # type: ignore
+            return on_true
+        if not condition and on_false is None:
+            on_false = ["on_false"]
+            if isinstance(on_false, ExecutionBlocker):
+                on_false = on_false.message  # type: ignore
+            return on_false
+        return None
+
+    def execute(self, **kwargs):
+        return (kwargs["on_true"] if kwargs["condition"] else kwargs["on_false"],)
+
+
+class Blocker:
+    """Controls flow execution based on a boolean condition.
+
+    A utility node that blocks or allows execution flow based on a boolean flag. When the continue
+    flag is False, it blocks execution by returning an ExecutionBlocker. When True, it passes through
+    the input value unchanged.
+
+    Args:
+        continue (bool): Flag to control execution flow. When False, blocks execution.
+        in (Any): The input value to pass through when execution is allowed.
+
+    Returns:
+        tuple[Any]: A single-element tuple containing either:
+            - The input value if continue is True
+            - An ExecutionBlocker if continue is False
+
+    Notes:
+        - Useful for conditional workflow execution
+        - Can be used to create branches in execution flow
+        - The ExecutionBlocker prevents downstream nodes from executing
+    """
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "continue": ("BOOLEAN", {"default": False}),
+                "in": (any_type, {"default": None}),
+            },
+        }
+
+    RETURN_TYPES = (any_type,)
+    RETURN_NAMES = ("out",)
+    CATEGORY = LOGIC_CAT
+    FUNCTION = "execute"
+
+    def execute(self, **kwargs):
+        return (kwargs["in"] if kwargs["continue"] else ExecutionBlocker(None),)
 
 
 class Compare:

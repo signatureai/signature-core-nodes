@@ -309,7 +309,7 @@ class InputNumber:
                 "title": ("STRING", {"default": "Input Number"}),
                 "subtype": (["float", "int"],),
                 "required": ("BOOLEAN", {"default": True}),
-                "value": ("FLOAT", {"default": 0}),
+                "value": ("FLOAT", {"default": 0, "min": -18446744073709551615, "max": 18446744073709551615}),
                 "metadata": ("STRING", {"default": "{}", "multiline": True}),
             },
         }
@@ -414,7 +414,7 @@ class Output:
             "required": {
                 "title": ("STRING", {"default": "Output Image"}),
                 "subtype": (["image", "mask", "int", "float", "string", "dict"],),
-                "metadata": ("STRING", {"default": "", "multiline": True}),
+                "metadata": ("STRING", {"default": "{}", "multiline": True}),
                 "value": (any_type,),
             },
             "hidden": {

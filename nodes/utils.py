@@ -1,13 +1,11 @@
-import gc
 import time
 
-import comfy.model_management as mm  # type: ignore
 import torch
 from signature_core.functional.color import rgb_to_hls, rgb_to_hsv, rgba_to_rgb
 from signature_core.img.tensor_image import TensorImage
 
 from .categories import UTILS_CAT
-from .shared import any_type
+from .shared import any_type, clean_memory
 
 
 class Any2String:
@@ -297,29 +295,24 @@ class RGBA2RGB:
 
 
 class PurgeVRAM:
-    """Cleans up VRAM by purging caches and/or unloading models.
+    """Cleans up VRAM by forcing memory deallocation and cache clearing.
 
-    A comprehensive VRAM management utility that can clear various types of memory caches and
-    optionally unload models to free up graphics memory.
+    A utility node that performs comprehensive VRAM cleanup by collecting garbage, emptying CUDA cache,
+    and unloading models. Useful for managing memory usage in complex workflows.
 
     Args:
-        anything (Any): Any input value (unused, allows connection in workflow).
-        purge_cache (bool): Whether to purge system and CUDA cache. Defaults to True.
-        purge_models (bool): Whether to unload all models from memory. Defaults to True.
+        anything (Any): Any input value that will be passed through unchanged.
 
     Returns:
-        tuple[None]: An empty tuple signifying completion.
+        tuple[Any]: A single-element tuple containing the unchanged input value.
 
     Notes:
-        - Performs the following cleanup operations when purge_cache is True:
-            * Clears Python garbage collector
-            * Empties PyTorch CUDA cache
-            * Runs CUDA IPC collection
-        - When purge_models is True:
-            * Unloads all loaded models
-            * Performs soft cache emptying
-        - Useful for managing memory in complex workflows or between heavy operations
-        - Can be used as an OUTPUT_NODE in the workflow
+        - Calls Python's garbage collector
+        - Clears CUDA cache if available
+        - Unloads and cleans up ComfyUI models
+        - Performs soft cache emptying
+        - Input value is passed through unchanged
+        - Useful for preventing out-of-memory errors
     """
 
     @classmethod
@@ -327,32 +320,20 @@ class PurgeVRAM:
         return {
             "required": {
                 "anything": (any_type, {}),
-                "purge_cache": ("BOOLEAN", {"default": True}),
-                "purge_models": ("BOOLEAN", {"default": True}),
             },
             "optional": {},
         }
 
-    RETURN_TYPES = ()
+    RETURN_TYPES = (any_type,)
     FUNCTION = "execute"
     CATEGORY = UTILS_CAT
     OUTPUT_NODE = True
-    DEPRECATED = True
+    # DEPRECATED = True
     CLASS_ID = "purge_vram"
 
-    def execute(self, anything, purge_cache, purge_models):
-
-        if purge_cache:
-
-            gc.collect()
-            if torch.cuda.is_available():
-                torch.cuda.empty_cache()
-                torch.cuda.ipc_collect()
-
-        if purge_models:
-            mm.unload_all_models()
-            mm.soft_empty_cache(True)
-        return (None,)
+    def execute(self, anything):
+        clean_memory()
+        return (anything,)
 
 
 class WaitSeconds:
