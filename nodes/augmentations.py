@@ -1,8 +1,17 @@
 import torch
 from signature_core.functional.augmentation import (
+    blur_augmentation,
+    brightness_contrast_augmentation,
     compose_augmentation,
+    cutout_augmentation,
+    distortion_augmentation,
     flip_augmentation,
+    grid_augmentation,
+    perspective_augmentation,
+    quality_augmentation,
     random_crop_augmentation,
+    rotation_augmentation,
+    shift_scale_augmentation,
 )
 from signature_core.img.tensor_image import TensorImage
 
@@ -194,6 +203,10 @@ class ComposeAugmentation:
         mask = kwargs.get("mask")
         seed = kwargs.get("seed") or -1
 
+        # Create a dummy image if only mask is provided
+        if image is None and mask is not None:
+            image = torch.zeros_like(mask)
+
         image_tensor = TensorImage.from_BWHC(image) if isinstance(image, torch.Tensor) else None
         mask_tensor = TensorImage.from_BWHC(mask) if isinstance(mask, torch.Tensor) else None
 
@@ -215,3 +228,279 @@ class ComposeAugmentation:
             node_image,
             node_mask,
         )
+
+
+class BrightnessContrastAugmentation:
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "brightness_limit": ("FLOAT", {"default": 0.2, "min": 0.0, "max": 1.0}),
+                "contrast_limit": ("FLOAT", {"default": 0.2, "min": 0.0, "max": 1.0}),
+                "percent": ("FLOAT", {"default": 0.5, "min": 0.0, "max": 1.0}),
+            },
+            "optional": {
+                "augmentation": ("AUGMENTATION", {"default": None}),
+            },
+        }
+
+    RETURN_TYPES = ("AUGMENTATION",)
+    RETURN_NAMES = ("augmentation",)
+    FUNCTION = "execute"
+    CATEGORY = AUGMENTATION_CAT
+
+    def execute(self, **kwargs):
+        brightness_limit = kwargs.get("brightness_limit") or 0.2
+        contrast_limit = kwargs.get("contrast_limit") or 0.2
+        percent = kwargs.get("percent") or 0.5
+        augmentation = kwargs.get("augmentation")
+        augmentation = brightness_contrast_augmentation(
+            brightness_limit=brightness_limit,
+            contrast_limit=contrast_limit,
+            percent=percent,
+            augmentation=augmentation,
+        )
+        return (augmentation,)
+
+
+class RotationAugmentation:
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "limit": ("INT", {"default": 45, "min": 0, "max": 180}),
+                "percent": ("FLOAT", {"default": 0.5, "min": 0.0, "max": 1.0}),
+            },
+            "optional": {
+                "augmentation": ("AUGMENTATION", {"default": None}),
+            },
+        }
+
+    RETURN_TYPES = ("AUGMENTATION",)
+    RETURN_NAMES = ("augmentation",)
+    FUNCTION = "execute"
+    CATEGORY = AUGMENTATION_CAT
+
+    def execute(self, **kwargs):
+        limit = kwargs.get("limit") or 45
+        percent = kwargs.get("percent") or 0.5
+        augmentation = kwargs.get("augmentation")
+        augmentation = rotation_augmentation(limit=limit, percent=percent, augmentation=augmentation)
+        return (augmentation,)
+
+
+class BlurAugmentation:
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "blur_type": (["gaussian", "motion", "median"], {"default": "gaussian"}),
+                "blur_limit_min": ("INT", {"default": 3, "min": 3, "step": 3}),
+                "blur_limit_max": ("INT", {"default": 87, "min": 3, "step": 3}),
+                "percent": ("FLOAT", {"default": 0.3, "min": 0.0, "max": 1.0}),
+            },
+            "optional": {
+                "augmentation": ("AUGMENTATION", {"default": None}),
+            },
+        }
+
+    RETURN_TYPES = ("AUGMENTATION",)
+    RETURN_NAMES = ("augmentation",)
+    FUNCTION = "execute"
+    CATEGORY = AUGMENTATION_CAT
+
+    def execute(self, **kwargs):
+        blur_type = kwargs.get("blur_type") or "gaussian"
+        blur_limit = (kwargs.get("blur_limit_min", 3), kwargs.get("blur_limit_max", 7))
+        percent = kwargs.get("percent") or 0.3
+        augmentation = kwargs.get("augmentation")
+        augmentation = blur_augmentation(
+            blur_type=blur_type, blur_limit=blur_limit, percent=percent, augmentation=augmentation
+        )
+        return (augmentation,)
+
+
+class QualityAugmentation:
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "quality_type": (["compression", "downscale"], {"default": "compression"}),
+                "quality_limit": ("INT", {"default": 60, "min": 1, "max": 100}),
+                "percent": ("FLOAT", {"default": 0.2, "min": 0.0, "max": 1.0}),
+            },
+            "optional": {
+                "augmentation": ("AUGMENTATION", {"default": None}),
+            },
+        }
+
+    RETURN_TYPES = ("AUGMENTATION",)
+    RETURN_NAMES = ("augmentation",)
+    FUNCTION = "execute"
+    CATEGORY = AUGMENTATION_CAT
+
+    def execute(self, **kwargs):
+        quality_type = kwargs.get("quality_type") or "compression"
+        quality_limit = kwargs.get("quality_limit") or 60
+        percent = kwargs.get("percent") or 0.2
+        augmentation = kwargs.get("augmentation")
+        augmentation = quality_augmentation(
+            quality_type=quality_type, quality_limit=quality_limit, percent=percent, augmentation=augmentation
+        )
+        return (augmentation,)
+
+
+class DistortionAugmentation:
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "distortion_type": (["optical", "grid", "elastic"], {"default": "optical"}),
+                "severity": ("INT", {"default": 1, "min": 1, "max": 5}),
+                "percent": ("FLOAT", {"default": 0.3, "min": 0.0, "max": 1.0}),
+            },
+            "optional": {
+                "augmentation": ("AUGMENTATION", {"default": None}),
+            },
+        }
+
+    RETURN_TYPES = ("AUGMENTATION",)
+    RETURN_NAMES = ("augmentation",)
+    FUNCTION = "execute"
+    CATEGORY = AUGMENTATION_CAT
+
+    def execute(self, **kwargs):
+        distortion_type = kwargs.get("distortion_type") or "optical"
+        severity = kwargs.get("severity") or 1
+        percent = kwargs.get("percent") or 0.3
+        augmentation = kwargs.get("augmentation")
+        augmentation = distortion_augmentation(
+            distortion_type=distortion_type, severity=severity, percent=percent, augmentation=augmentation
+        )
+        return (augmentation,)
+
+
+class ShiftScaleAugmentation:
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "shift_limit": ("FLOAT", {"default": 0.1, "min": 0.0, "max": 1.0}),
+                "scale_limit": ("FLOAT", {"default": 0.2, "min": 0.0, "max": 1.0}),
+                "rotate_limit": ("INT", {"default": 45, "min": 0, "max": 180}),
+                "percent": ("FLOAT", {"default": 0.3, "min": 0.0, "max": 1.0}),
+            },
+            "optional": {
+                "augmentation": ("AUGMENTATION", {"default": None}),
+            },
+        }
+
+    RETURN_TYPES = ("AUGMENTATION",)
+    RETURN_NAMES = ("augmentation",)
+    FUNCTION = "execute"
+    CATEGORY = AUGMENTATION_CAT
+
+    def execute(self, **kwargs):
+        shift_limit = kwargs.get("shift_limit") or 0.1
+        scale_limit = kwargs.get("scale_limit") or 0.2
+        rotate_limit = kwargs.get("rotate_limit") or 45
+        percent = kwargs.get("percent") or 0.3
+        augmentation = kwargs.get("augmentation")
+        augmentation = shift_scale_augmentation(
+            shift_limit=shift_limit,
+            scale_limit=scale_limit,
+            rotate_limit=rotate_limit,
+            percent=percent,
+            augmentation=augmentation,
+        )
+        return (augmentation,)
+
+
+class CutoutAugmentation:
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "num_holes": ("INT", {"default": 8, "min": 1, "max": 20}),
+                "max_size": ("INT", {"default": 30, "min": 1, "max": 100}),
+                "percent": ("FLOAT", {"default": 0.3, "min": 0.0, "max": 1.0}),
+            },
+            "optional": {
+                "augmentation": ("AUGMENTATION", {"default": None}),
+            },
+        }
+
+    RETURN_TYPES = ("AUGMENTATION",)
+    RETURN_NAMES = ("augmentation",)
+    FUNCTION = "execute"
+    CATEGORY = AUGMENTATION_CAT
+
+    def execute(self, **kwargs):
+        num_holes = kwargs.get("num_holes") or 8
+        max_size = kwargs.get("max_size") or 30
+        percent = kwargs.get("percent") or 0.3
+        augmentation = kwargs.get("augmentation")
+        augmentation = cutout_augmentation(
+            num_holes=num_holes, max_size=max_size, percent=percent, augmentation=augmentation
+        )
+        return (augmentation,)
+
+
+class GridAugmentation:
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "grid_type": (["shuffle", "dropout"], {"default": "shuffle"}),
+                "grid_size": ("INT", {"default": 3, "min": 2, "max": 10}),
+                "percent": ("FLOAT", {"default": 0.3, "min": 0.0, "max": 1.0}),
+            },
+            "optional": {
+                "augmentation": ("AUGMENTATION", {"default": None}),
+            },
+        }
+
+    RETURN_TYPES = ("AUGMENTATION",)
+    RETURN_NAMES = ("augmentation",)
+    FUNCTION = "execute"
+    CATEGORY = AUGMENTATION_CAT
+
+    def execute(self, **kwargs):
+        grid_type = kwargs.get("grid_type") or "shuffle"
+        grid_size = kwargs.get("grid_size") or 3
+        percent = kwargs.get("percent") or 0.3
+        augmentation = kwargs.get("augmentation")
+        augmentation = grid_augmentation(
+            grid_type=grid_type, grid_size=grid_size, percent=percent, augmentation=augmentation
+        )
+        return (augmentation,)
+
+
+class PerspectiveAugmentation:
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "scale": ("FLOAT", {"default": 0.05, "min": 0.01, "max": 0.5}),
+                "keep_size": ("BOOLEAN", {"default": True}),
+                "percent": ("FLOAT", {"default": 0.3, "min": 0.0, "max": 1.0}),
+            },
+            "optional": {
+                "augmentation": ("AUGMENTATION", {"default": None}),
+            },
+        }
+
+    RETURN_TYPES = ("AUGMENTATION",)
+    RETURN_NAMES = ("augmentation",)
+    FUNCTION = "execute"
+    CATEGORY = AUGMENTATION_CAT
+
+    def execute(self, **kwargs):
+        scale = kwargs.get("scale") or 0.05
+        keep_size = kwargs.get("keep_size", True)
+        percent = kwargs.get("percent") or 0.3
+        augmentation = kwargs.get("augmentation")
+        augmentation = perspective_augmentation(
+            scale=scale, keep_size=keep_size, percent=percent, augmentation=augmentation
+        )
+        return (augmentation,)
