@@ -59,7 +59,11 @@ def get_node_class_mappings(nodes_directory: str):
                     snake_case = (
                         str(value.CLASS_ID)
                         if hasattr(value, "CLASS_ID")
-                        else re.sub(r"(?<!^)(?=[A-Z])", "_", class_name).lower()
+                        else (
+                            str(value.CLASS_NAME)
+                            if hasattr(value, "CLASS_NAME")
+                            else re.sub(r"(?<!^)(?=[A-Z])", "_", class_name).lower()
+                        )
                     )
                     key = f"signature_{snake_case}"
                     node_class_mappings[key] = value
