@@ -1,7 +1,13 @@
 import time
 
 import torch
-from signature_core.functional.color import rgb_to_hls, rgb_to_hsv, rgba_to_rgb
+from signature_core.functional.color import (
+    grayscale_to_rgb,
+    rgb_to_grayscale,
+    rgb_to_hls,
+    rgb_to_hsv,
+    rgba_to_rgb,
+)
 from signature_core.img.tensor_image import TensorImage
 
 from .categories import UTILS_CAT
@@ -34,6 +40,7 @@ class Any2String:
         }
 
     RETURN_TYPES = ("STRING",)
+    RETURN_NAMES = ("string",)
     FUNCTION = "execute"
     CATEGORY = UTILS_CAT
     CLASS_ID = "any_string"
@@ -67,6 +74,7 @@ class Any2Int:
         }
 
     RETURN_TYPES = ("INT",)
+    RETURN_NAMES = ("int",)
     FUNCTION = "execute"
     CATEGORY = UTILS_CAT
 
@@ -99,6 +107,7 @@ class Any2Float:
         }
 
     RETURN_TYPES = ("FLOAT",)
+    RETURN_NAMES = ("float",)
     FUNCTION = "execute"
     CATEGORY = UTILS_CAT
 
@@ -136,6 +145,7 @@ class Any2Image:
         }
 
     RETURN_TYPES = ("IMAGE",)
+    RETURN_NAMES = ("image",)
     FUNCTION = "execute"
     CATEGORY = UTILS_CAT
     CLASS_ID = "any_image"
@@ -172,6 +182,7 @@ class Any2Any:
         }
 
     RETURN_TYPES = (any_type,)
+    RETURN_NAMES = ("value",)
     FUNCTION = "execute"
     CATEGORY = UTILS_CAT
     CLASS_ID = "any2any"
@@ -291,6 +302,80 @@ class RGBA2RGB:
         if image_tensor.shape[1] == 4:
             image_tensor = rgba_to_rgb(image_tensor)
         output = image_tensor.get_BWHC()
+        return (output,)
+
+
+class RGB2GRAY:
+    """Converts RGB images to grayscale format.
+
+    This node transforms RGB color images to single-channel grayscale images using
+    standard luminance conversion factors.
+
+    Args:
+        image (torch.Tensor): Input RGB image in BWHC format
+
+    Returns:
+        tuple[torch.Tensor]: Single-element tuple containing grayscale image in BWHC format
+
+    Notes:
+        - Uses standard RGB to grayscale conversion weights
+        - Output is single-channel
+        - Preserves image dimensions
+        - Values remain in [0,1] range
+    """
+
+    @classmethod
+    def INPUT_TYPES(cls):  # type: ignore
+        return {
+            "required": {
+                "image": ("IMAGE",),
+            }
+        }
+
+    RETURN_TYPES = ("IMAGE",)
+    FUNCTION = "execute"
+    CATEGORY = UTILS_CAT
+
+    def execute(self, image: torch.Tensor):
+        image_tensor = TensorImage.from_BWHC(image)
+        output = rgb_to_grayscale(image_tensor).get_BWHC()
+        return (output,)
+
+
+class GRAY2RGB:
+    """Converts grayscale images to RGB format.
+
+    This node transforms single-channel grayscale images to three-channel RGB images
+    by replicating the grayscale values across channels.
+
+    Args:
+        image (torch.Tensor): Input grayscale image in BWHC format
+
+    Returns:
+        tuple[torch.Tensor]: Single-element tuple containing RGB image in BWHC format
+
+    Notes:
+        - Replicates grayscale values to all RGB channels
+        - Output has three identical channels
+        - Preserves image dimensions
+        - Values remain in [0,1] range
+    """
+
+    @classmethod
+    def INPUT_TYPES(cls):  # type: ignore
+        return {
+            "required": {
+                "image": ("IMAGE",),
+            }
+        }
+
+    RETURN_TYPES = ("IMAGE",)
+    FUNCTION = "execute"
+    CATEGORY = UTILS_CAT
+
+    def execute(self, image: torch.Tensor):
+        image_tensor = TensorImage.from_BWHC(image)
+        output = grayscale_to_rgb(image_tensor).get_BWHC()
         return (output,)
 
 
