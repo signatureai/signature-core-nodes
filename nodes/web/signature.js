@@ -221,7 +221,7 @@ function cleanSessionStorage() {
 
 const ext = {
   // Unique name for the extension
-  name: "Signature.Bridge",
+  name: "signature.bridge",
   async init(app) {
     cleanLocalStorage();
     cleanSessionStorage();

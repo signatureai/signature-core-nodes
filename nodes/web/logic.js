@@ -64,7 +64,7 @@ function setNodeColors(node, theme) {
 
 const ext = {
   // Unique name for the extension
-  name: "Signature.Logic",
+  name: "signature.logic",
   async beforeRegisterNodeDef(nodeType, nodeData, app) {
     const class_name = nodeType.comfyClass;
 

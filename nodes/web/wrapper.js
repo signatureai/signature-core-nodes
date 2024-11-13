@@ -389,7 +389,7 @@ function updateData(node, data) {
 }
 
 const ext = {
-  name: "Signature.Wrapper",
+  name: "signature.wrapper",
   async nodeCreated(node) {
     const class_name = node.comfyClass;
     if (class_name === "signature_wrapper") {

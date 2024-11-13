@@ -53,6 +53,9 @@ class AnyType(str):
         - Used primarily for internal type system implementation
     """
 
+    def __ne__(self, __value: object) -> bool:
+        return False
+
 
 any_type = AnyType("*")
 

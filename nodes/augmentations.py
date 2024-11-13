@@ -231,6 +231,27 @@ class ComposeAugmentation:
 
 
 class BrightnessContrastAugmentation:
+    """Applies brightness and contrast adjustments to images.
+
+    This node provides controls for adjusting image brightness and contrast with configurable
+    limits and probability of application.
+
+    Args:
+        brightness_limit (float): Maximum brightness adjustment range (0.0-1.0)
+        contrast_limit (float): Maximum contrast adjustment range (0.0-1.0)
+        percent (float): Probability of applying the augmentation (0.0-1.0)
+        augmentation (AUGMENTATION, optional): Existing augmentation to chain with
+
+    Returns:
+        tuple[AUGMENTATION]: Single-element tuple containing the configured augmentation
+
+    Notes:
+        - Brightness adjustments are applied as multiplicative factors
+        - Contrast adjustments modify image histogram spread
+        - Can be chained with other augmentations
+        - Actual adjustment values are randomly sampled within limits
+    """
+
     @classmethod
     def INPUT_TYPES(cls):
         return {
@@ -264,6 +285,26 @@ class BrightnessContrastAugmentation:
 
 
 class RotationAugmentation:
+    """Rotates images by random angles within specified limits.
+
+    This node performs random rotation augmentation with configurable angle limits and
+    application probability.
+
+    Args:
+        limit (int): Maximum rotation angle in degrees (0-180)
+        percent (float): Probability of applying the rotation (0.0-1.0)
+        augmentation (AUGMENTATION, optional): Existing augmentation to chain with
+
+    Returns:
+        tuple[AUGMENTATION]: Single-element tuple containing the configured augmentation
+
+    Notes:
+        - Rotation angles are randomly sampled between -limit and +limit
+        - Empty areas after rotation are filled with black
+        - Can be chained with other augmentations
+        - Original aspect ratio is preserved
+    """
+
     @classmethod
     def INPUT_TYPES(cls):
         return {
@@ -290,6 +331,31 @@ class RotationAugmentation:
 
 
 class BlurAugmentation:
+    """Applies various types of blur effects to images.
+
+    This node provides multiple blur algorithms with configurable parameters for image
+    softening effects.
+
+    Args:
+        blur_type (str): Type of blur to apply:
+            - "gaussian": Gaussian blur
+            - "motion": Motion blur
+            - "median": Median filter blur
+        blur_limit_min (int): Minimum blur kernel size (must be multiple of 3)
+        blur_limit_max (int): Maximum blur kernel size (must be multiple of 3)
+        percent (float): Probability of applying the blur (0.0-1.0)
+        augmentation (AUGMENTATION, optional): Existing augmentation to chain with
+
+    Returns:
+        tuple[AUGMENTATION]: Single-element tuple containing the configured augmentation
+
+    Notes:
+        - Kernel size is randomly selected between min and max limits
+        - Different blur types produce distinct softening effects
+        - Larger kernel sizes create stronger blur effects
+        - Can be chained with other augmentations
+    """
+
     @classmethod
     def INPUT_TYPES(cls):
         return {
@@ -321,6 +387,29 @@ class BlurAugmentation:
 
 
 class QualityAugmentation:
+    """Simulates image quality degradation through compression or downscaling.
+
+    This node provides options to reduce image quality in ways that simulate real-world
+    quality loss scenarios.
+
+    Args:
+        quality_type (str): Type of quality reduction:
+            - "compression": JPEG-like compression artifacts
+            - "downscale": Resolution reduction and upscaling
+        quality_limit (int): Quality parameter (1-100, lower = more degradation)
+        percent (float): Probability of applying the effect (0.0-1.0)
+        augmentation (AUGMENTATION, optional): Existing augmentation to chain with
+
+    Returns:
+        tuple[AUGMENTATION]: Single-element tuple containing the configured augmentation
+
+    Notes:
+        - Compression type simulates JPEG artifacts
+        - Downscale type reduces and restores resolution
+        - Lower quality limits produce more visible artifacts
+        - Can be chained with other augmentations
+    """
+
     @classmethod
     def INPUT_TYPES(cls):
         return {
@@ -351,6 +440,30 @@ class QualityAugmentation:
 
 
 class DistortionAugmentation:
+    """Applies geometric distortion effects to images.
+
+    This node provides various types of geometric distortion with configurable severity
+    and application probability.
+
+    Args:
+        distortion_type (str): Type of distortion to apply:
+            - "optical": Lens-like distortion
+            - "grid": Grid-based warping
+            - "elastic": Elastic deformation
+        severity (int): Intensity of the distortion effect (1-5)
+        percent (float): Probability of applying the effect (0.0-1.0)
+        augmentation (AUGMENTATION, optional): Existing augmentation to chain with
+
+    Returns:
+        tuple[AUGMENTATION]: Single-element tuple containing the configured augmentation
+
+    Notes:
+        - Each distortion type produces unique geometric deformations
+        - Higher severity values create stronger distortion effects
+        - Can be chained with other augmentations
+        - Maintains overall image structure while adding local deformations
+    """
+
     @classmethod
     def INPUT_TYPES(cls):
         return {
@@ -381,6 +494,29 @@ class DistortionAugmentation:
 
 
 class ShiftScaleAugmentation:
+    """Applies random shifting, scaling, and rotation transformations.
+
+    This node combines multiple geometric transformations with configurable ranges
+    and probability.
+
+    Args:
+        shift_limit (float): Maximum shift as fraction of image size (0.0-1.0)
+        scale_limit (float): Maximum scale factor change (0.0-1.0)
+        rotate_limit (int): Maximum rotation angle in degrees (0-180)
+        percent (float): Probability of applying transformations (0.0-1.0)
+        augmentation (AUGMENTATION, optional): Existing augmentation to chain with
+
+    Returns:
+        tuple[AUGMENTATION]: Single-element tuple containing the configured augmentation
+
+    Notes:
+        - Shift moves image content within frame
+        - Scale changes overall image size
+        - Rotation angles are randomly sampled
+        - Can be chained with other augmentations
+        - All transformations are applied together when selected
+    """
+
     @classmethod
     def INPUT_TYPES(cls):
         return {
@@ -417,6 +553,28 @@ class ShiftScaleAugmentation:
 
 
 class CutoutAugmentation:
+    """Creates random rectangular cutouts in images.
+
+    This node randomly removes rectangular regions from images by filling them with black,
+    useful for regularization and robustness training.
+
+    Args:
+        num_holes (int): Number of cutout regions to create (1-20)
+        max_size (int): Maximum size of cutout regions in pixels (1-100)
+        percent (float): Probability of applying cutouts (0.0-1.0)
+        augmentation (AUGMENTATION, optional): Existing augmentation to chain with
+
+    Returns:
+        tuple[AUGMENTATION]: Single-element tuple containing the configured augmentation
+
+    Notes:
+        - Cutout positions are randomly selected
+        - Each cutout region is independently sized
+        - Regions are filled with black (zero) values
+        - Can be chained with other augmentations
+        - Useful for preventing overfitting
+    """
+
     @classmethod
     def INPUT_TYPES(cls):
         return {
@@ -447,6 +605,30 @@ class CutoutAugmentation:
 
 
 class GridAugmentation:
+    """Applies grid-based transformations to images.
+
+    This node provides grid-based image modifications including shuffling and dropout
+    effects.
+
+    Args:
+        grid_type (str): Type of grid transformation:
+            - "shuffle": Randomly permute grid cells
+            - "dropout": Randomly remove grid cells
+        grid_size (int): Number of grid divisions (2-10)
+        percent (float): Probability of applying the effect (0.0-1.0)
+        augmentation (AUGMENTATION, optional): Existing augmentation to chain with
+
+    Returns:
+        tuple[AUGMENTATION]: Single-element tuple containing the configured augmentation
+
+    Notes:
+        - Image is divided into grid_size x grid_size cells
+        - Shuffle randomly reorders grid cells
+        - Dropout replaces cells with black
+        - Can be chained with other augmentations
+        - Maintains overall image structure while adding local variations
+    """
+
     @classmethod
     def INPUT_TYPES(cls):
         return {
@@ -477,6 +659,28 @@ class GridAugmentation:
 
 
 class PerspectiveAugmentation:
+    """Applies perspective transformation effects to images.
+
+    This node creates perspective distortion effects that simulate viewing angle changes,
+    with configurable strength and probability.
+
+    Args:
+        scale (float): Strength of perspective effect (0.01-0.5)
+        keep_size (bool): Whether to maintain original image size
+        percent (float): Probability of applying the effect (0.0-1.0)
+        augmentation (AUGMENTATION, optional): Existing augmentation to chain with
+
+    Returns:
+        tuple[AUGMENTATION]: Single-element tuple containing the configured augmentation
+
+    Notes:
+        - Scale controls the intensity of perspective change
+        - keep_size=True maintains original dimensions
+        - keep_size=False may change image size
+        - Can be chained with other augmentations
+        - Simulates realistic viewing angle variations
+    """
+
     @classmethod
     def INPUT_TYPES(cls):
         return {
