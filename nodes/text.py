@@ -32,20 +32,19 @@ class TextPreview:
     def INPUT_TYPES(cls):  # type: ignore
         return {
             "required": {
-                "text": (any_type,),
+                "value": (any_type,),
             },
         }
 
     INPUT_IS_LIST = True
-    RETURN_TYPES = ("STRING",)
+    RETURN_TYPES = ()
     FUNCTION = "execute"
     OUTPUT_NODE = True
-    OUTPUT_IS_LIST = (True,)
 
     CATEGORY = TEXT_CAT
 
     def execute(self, **kwargs):
-        text = kwargs.get("text", [])
+        text = kwargs.get("value", [])
         text_string = ""
         for t in text:
             if t is None:
@@ -53,7 +52,7 @@ class TextPreview:
             if text_string != "":
                 text_string += "\n"
             text_string += str(t.shape) if isinstance(t, torch.Tensor) else str(t)
-        return {"ui": {"text": [text_string]}, "result": (text_string,)}
+        return {"ui": {"text": [text_string]}}
 
 
 class TextCase:
