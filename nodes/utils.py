@@ -466,6 +466,25 @@ class WaitSeconds:
 
 
 class ListBuilder:
+    """Builds a list from input elements.
+
+    A node that constructs a list from provided input elements. Used in node-based
+    workflows to combine multiple elements into a single list output.
+
+    Args:
+        elements (Any): Input elements to combine into a list. The specific types
+            accepted are defined in INPUT_TYPES.
+
+    Returns:
+        tuple: A tuple containing:
+            - list: The constructed list containing all input elements
+
+    Notes:
+        - The actual input types and number of elements that can be added to the list
+          are defined in the INPUT_TYPES class method
+        - This node is typically used in node graph systems to aggregate multiple
+          inputs into a single list output
+    """
 
     @classmethod
     def INPUT_TYPES(cls):
