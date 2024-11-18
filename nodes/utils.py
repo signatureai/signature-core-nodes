@@ -463,3 +463,71 @@ class WaitSeconds:
         seconds = kwargs.get("seconds") or 1.0
         time.sleep(seconds)
         return (value,)
+
+
+class ListBuilder:
+    """Builds a list from input elements.
+
+    A node that constructs a list from provided input elements. Used in node-based
+    workflows to combine multiple elements into a single list output.
+
+    Args:
+        elements (Any): Input elements to combine into a list. The specific types
+            accepted are defined in INPUT_TYPES.
+
+    Returns:
+        tuple: A tuple containing:
+            - list: The constructed list containing all input elements
+
+    Notes:
+        - The actual input types and number of elements that can be added to the list
+          are defined in the INPUT_TYPES class method
+        - This node is typically used in node graph systems to aggregate multiple
+          inputs into a single list output
+    """
+
+    @classmethod
+    def INPUT_TYPES(cls):
+
+        inputs = {
+            "required": {
+                "num_slots": ([str(i) for i in range(1, 11)], {"default": "1"}),
+            },
+            "optional": {},
+        }
+
+        for i in range(1, 11):
+            inputs["optional"].update(
+                {
+                    f"value_{i}": (any_type, {"forceInput": True}),
+                }
+            )
+        return inputs
+
+    RETURN_TYPES = (
+        any_type,
+        "LIST",
+    )
+    RETURN_NAMES = (
+        "ANY",
+        "LIST",
+    )
+    FUNCTION = "execute"
+    CATEGORY = UTILS_CAT
+    CLASS_ID = "list_builder"
+    OUTPUT_IS_LIST = (
+        True,
+        False,
+    )
+
+    def execute(self, **kwargs):
+        num_slots = int(kwargs.get("num_slots", 1))
+        list_stack = []
+        for i in range(1, num_slots + 1):
+            list_value = kwargs.get(f"value_{i}")
+            if list_value is not None:
+                list_stack.append(list_value)
+        return (
+            list_stack,
+            list_stack,
+        )
