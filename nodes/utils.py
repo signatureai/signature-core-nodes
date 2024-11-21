@@ -1,3 +1,4 @@
+import ast
 import time
 
 import torch
@@ -47,6 +48,43 @@ class Any2String:
 
     def execute(self, value):
         return (str(value),)
+
+
+class String2Any:
+    """Safely converts a string representation to its Python object.
+
+    Uses Python's ast.literal_eval for secure string evaluation, which only allows
+    literal expressions (strings, numbers, tuples, lists, dicts, booleans, None).
+
+    Args:
+        string (str): String representation of a Python literal.
+
+    Returns:
+        tuple[Any]: A single-element tuple containing the evaluated Python object.
+
+    Notes:
+        - Only evaluates literal expressions, preventing code execution
+        - Supports: strings, numbers, tuples, lists, dicts, booleans, None
+    """
+
+    @classmethod
+    def INPUT_TYPES(cls):  # type: ignore
+        return {
+            "required": {
+                "string": ("STRING",),
+            }
+        }
+
+    RETURN_TYPES = (any_type,)
+    RETURN_NAMES = ("value",)
+    FUNCTION = "execute"
+    CATEGORY = UTILS_CAT
+
+    def execute(self, string):
+        try:
+            return (ast.literal_eval(string),)
+        except (ValueError, SyntaxError) as e:
+            raise ValueError(f"Invalid literal expression: {str(e)}")
 
 
 class Any2Int:
@@ -531,3 +569,117 @@ class ListBuilder:
             list_stack,
             list_stack,
         )
+
+
+class Latent2Dict:
+    """Converts a latent tensor representation to a dictionary format.
+
+    Transforms a LATENT input (containing tensor data) into a structured dictionary
+    that includes type information, shape, and tensor values.
+
+    Args:
+        latent (LATENT): A latent tensor input.
+
+    Returns:
+        tuple[dict]: A single-element tuple containing a dictionary with the structure:
+            {
+                "type": "LATENT",
+                "data": {
+                    "samples": {
+                        "type": str,  # Tensor type name
+                        "shape": tuple,  # Tensor dimensions
+                        "values": list  # Tensor data as nested lists
+                    }
+                }
+            }
+    """
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "latent": ("LATENT",),
+            }
+        }
+
+    RETURN_TYPES = ("DICT",)
+    RETURN_NAMES = ("dict",)
+    FUNCTION = "execute"
+    CATEGORY = UTILS_CAT
+    OUTPUT_NODE = True
+
+    def execute(self, **kwargs):
+        latent = kwargs.get("latent") or {}
+
+        latent_dict = {
+            "type": "LATENT",
+            "data": {
+                "samples": {
+                    "type": str(type(latent["samples"]).__name__),
+                    "shape": latent["samples"].shape,
+                    "values": latent["samples"].tolist(),
+                }
+            },
+        }
+
+        return (latent_dict,)
+
+
+class Dict2Latent:
+    """Converts a dictionary representation back to a latent tensor format.
+
+    Transforms a structured dictionary containing tensor data back into the LATENT
+    format used by the system.
+
+    Args:
+        dict (DICT): A dictionary containing tensor data in the format:
+            {
+                "type": "LATENT",
+                "data": {
+                    "samples": {
+                        "type": str,  # Tensor type name
+                        "shape": tuple,  # Tensor dimensions
+                        "values": list  # Tensor data as nested lists
+                    }
+                }
+            }
+
+    Returns:
+        tuple[LATENT]: A single-element tuple containing the reconstructed latent
+            tensor in the format: {"samples": tensor}
+
+    Raises:
+        ValueError: If the input dictionary is not of type "LATENT" or contains an
+            unsupported tensor type.
+    """
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "dict": ("DICT",),
+            }
+        }
+
+    RETURN_TYPES = ("LATENT",)
+    RETURN_NAMES = ("latent",)
+    FUNCTION = "execute"
+    CATEGORY = UTILS_CAT
+    OUTPUT_NODE = True
+
+    def execute(self, **kwargs):
+        input_dict = kwargs.get("dict") or {}
+        if input_dict.get("type") != "LATENT":
+            raise ValueError("Input dictionary is not a LATENT type")
+
+        samples_data = input_dict["data"]["samples"]
+        tensor_type = samples_data["type"]
+        if "Tensor" in tensor_type or "GGMLTensor" in tensor_type or "TensorImage" in tensor_type:
+            tensor_data = torch.tensor(samples_data["values"])
+            tensor_data = tensor_data.reshape(samples_data["shape"])
+        else:
+            raise ValueError(f"Unsupported tensor type: {tensor_type}")
+
+        latent = {"samples": tensor_data}
+
+        return (latent,)

@@ -26,7 +26,7 @@ repos:
       # - id: python-check-blanket-type-ignore
       - id: python-use-type-annotations
       - id: python-check-mock-methods
-      # - id: python-no-eval
+      - id: python-no-eval
       - id: python-no-log-warn
       - id: text-unicode-replacement-char
 
