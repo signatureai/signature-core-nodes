@@ -390,15 +390,6 @@
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#returns" class="md-nav__link">
-    <span class="md-ellipsis">
-      Returns
-    </span>
-  </a>
-  
-</li>
-        
       </ul>
     </nav>
   
@@ -424,7 +415,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#returns_1" class="md-nav__link">
+  <a href="#returns" class="md-nav__link">
     <span class="md-ellipsis">
       Returns
     </span>
@@ -457,7 +448,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#returns_2" class="md-nav__link">
+  <a href="#returns_1" class="md-nav__link">
     <span class="md-ellipsis">
       Returns
     </span>
@@ -490,7 +481,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#returns_3" class="md-nav__link">
+  <a href="#returns_2" class="md-nav__link">
     <span class="md-ellipsis">
       Returns
     </span>
@@ -523,7 +514,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#returns_4" class="md-nav__link">
+  <a href="#returns_3" class="md-nav__link">
     <span class="md-ellipsis">
       Returns
     </span>
@@ -556,7 +547,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#returns_5" class="md-nav__link">
+  <a href="#returns_4" class="md-nav__link">
     <span class="md-ellipsis">
       Returns
     </span>
@@ -589,7 +580,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#returns_6" class="md-nav__link">
+  <a href="#returns_5" class="md-nav__link">
     <span class="md-ellipsis">
       Returns
     </span>
@@ -970,15 +961,6 @@
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#returns" class="md-nav__link">
-    <span class="md-ellipsis">
-      Returns
-    </span>
-  </a>
-  
-</li>
-        
       </ul>
     </nav>
   
@@ -1004,7 +986,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#returns_1" class="md-nav__link">
+  <a href="#returns" class="md-nav__link">
     <span class="md-ellipsis">
       Returns
     </span>
@@ -1037,7 +1019,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#returns_2" class="md-nav__link">
+  <a href="#returns_1" class="md-nav__link">
     <span class="md-ellipsis">
       Returns
     </span>
@@ -1070,7 +1052,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#returns_3" class="md-nav__link">
+  <a href="#returns_2" class="md-nav__link">
     <span class="md-ellipsis">
       Returns
     </span>
@@ -1103,7 +1085,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#returns_4" class="md-nav__link">
+  <a href="#returns_3" class="md-nav__link">
     <span class="md-ellipsis">
       Returns
     </span>
@@ -1136,7 +1118,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#returns_5" class="md-nav__link">
+  <a href="#returns_4" class="md-nav__link">
     <span class="md-ellipsis">
       Returns
     </span>
@@ -1169,7 +1151,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#returns_6" class="md-nav__link">
+  <a href="#returns_5" class="md-nav__link">
     <span class="md-ellipsis">
       Returns
     </span>
@@ -1217,25 +1199,10 @@ handle multiple input types and provide a consistent preview format.</p>
 <tbody>
 <tr>
 <td>required</td>
-<td>text</td>
-<td><code>&lt;ast.Name object at 0x7fc956dad7e0&gt;</code></td>
+<td>value</td>
+<td><code>&lt;ast.Name object at 0x7f1c090bd7b0&gt;</code></td>
 <td></td>
 <td></td>
-</tr>
-</tbody>
-</table>
-<h3 id="returns">Returns</h3>
-<table>
-<thead>
-<tr>
-<th>Name</th>
-<th>Type</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>string</td>
-<td><code>STRING</code></td>
 </tr>
 </tbody>
 </table>
@@ -1267,28 +1234,27 @@ handle multiple input types and provide a consistent preview format.</p>
 <a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>    <span class="k">def</span> <span class="nf">INPUT_TYPES</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>  <span class="c1"># type: ignore</span>
 <a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>        <span class="k">return</span> <span class="p">{</span>
 <a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>            <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="p">{</span>
-<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>                <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">any_type</span><span class="p">,),</span>
+<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>                <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">any_type</span><span class="p">,),</span>
 <a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>            <span class="p">},</span>
 <a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a>        <span class="p">}</span>
 <a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a>
 <a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a>    <span class="n">INPUT_IS_LIST</span> <span class="o">=</span> <span class="kc">True</span>
-<a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a>    <span class="n">RETURN_TYPES</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;STRING&quot;</span><span class="p">,)</span>
+<a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a>    <span class="n">RETURN_TYPES</span> <span class="o">=</span> <span class="p">()</span>
 <a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a>    <span class="n">FUNCTION</span> <span class="o">=</span> <span class="s2">&quot;execute&quot;</span>
 <a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a>    <span class="n">OUTPUT_NODE</span> <span class="o">=</span> <span class="kc">True</span>
-<a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a>    <span class="n">OUTPUT_IS_LIST</span> <span class="o">=</span> <span class="p">(</span><span class="kc">True</span><span class="p">,)</span>
-<a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a>
-<a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a>    <span class="n">CATEGORY</span> <span class="o">=</span> <span class="n">TEXT_CAT</span>
-<a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a>
-<a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a>    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a>        <span class="n">text</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;text&quot;</span><span class="p">,</span> <span class="p">[])</span>
-<a id="__codelineno-0-41" name="__codelineno-0-41" href="#__codelineno-0-41"></a>        <span class="n">text_string</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-<a id="__codelineno-0-42" name="__codelineno-0-42" href="#__codelineno-0-42"></a>        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">text</span><span class="p">:</span>
-<a id="__codelineno-0-43" name="__codelineno-0-43" href="#__codelineno-0-43"></a>            <span class="k">if</span> <span class="n">t</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-<a id="__codelineno-0-44" name="__codelineno-0-44" href="#__codelineno-0-44"></a>                <span class="k">continue</span>
-<a id="__codelineno-0-45" name="__codelineno-0-45" href="#__codelineno-0-45"></a>            <span class="k">if</span> <span class="n">text_string</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
-<a id="__codelineno-0-46" name="__codelineno-0-46" href="#__codelineno-0-46"></a>                <span class="n">text_string</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
-<a id="__codelineno-0-47" name="__codelineno-0-47" href="#__codelineno-0-47"></a>            <span class="n">text_string</span> <span class="o">+=</span> <span class="nb">str</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="k">else</span> <span class="nb">str</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
-<a id="__codelineno-0-48" name="__codelineno-0-48" href="#__codelineno-0-48"></a>        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;ui&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">text_string</span><span class="p">]},</span> <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">text_string</span><span class="p">,)}</span>
+<a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a>
+<a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a>    <span class="n">CATEGORY</span> <span class="o">=</span> <span class="n">TEXT_CAT</span>
+<a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a>
+<a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a>    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a>        <span class="n">text</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;value&quot;</span><span class="p">,</span> <span class="p">[])</span>
+<a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a>        <span class="n">text_string</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+<a id="__codelineno-0-41" name="__codelineno-0-41" href="#__codelineno-0-41"></a>        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">text</span><span class="p">:</span>
+<a id="__codelineno-0-42" name="__codelineno-0-42" href="#__codelineno-0-42"></a>            <span class="k">if</span> <span class="n">t</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-0-43" name="__codelineno-0-43" href="#__codelineno-0-43"></a>                <span class="k">continue</span>
+<a id="__codelineno-0-44" name="__codelineno-0-44" href="#__codelineno-0-44"></a>            <span class="k">if</span> <span class="n">text_string</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+<a id="__codelineno-0-45" name="__codelineno-0-45" href="#__codelineno-0-45"></a>                <span class="n">text_string</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+<a id="__codelineno-0-46" name="__codelineno-0-46" href="#__codelineno-0-46"></a>            <span class="n">text_string</span> <span class="o">+=</span> <span class="nb">str</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="k">else</span> <span class="nb">str</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+<a id="__codelineno-0-47" name="__codelineno-0-47" href="#__codelineno-0-47"></a>        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;ui&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">text_string</span><span class="p">]}}</span>
 </code></pre></div>
 </details>
 <h2 id="textcase">TextCase</h2>
@@ -1323,7 +1289,7 @@ including lowercase, uppercase, capitalization, and title case conversion.</p>
 </tr>
 </tbody>
 </table>
-<h3 id="returns_1">Returns</h3>
+<h3 id="returns">Returns</h3>
 <table>
 <thead>
 <tr>
@@ -1422,7 +1388,7 @@ whitespace from the beginning, end, or both sides of the text.</p>
 </tr>
 </tbody>
 </table>
-<h3 id="returns_2">Returns</h3>
+<h3 id="returns_1">Returns</h3>
 <table>
 <thead>
 <tr>
@@ -1517,7 +1483,7 @@ creating a list of substrings.</p>
 </tr>
 </tbody>
 </table>
-<h3 id="returns_3">Returns</h3>
+<h3 id="returns_2">Returns</h3>
 <table>
 <thead>
 <tr>
@@ -1612,7 +1578,7 @@ patterns, supporting complex pattern matching and replacement operations.</p>
 </tr>
 </tbody>
 </table>
-<h3 id="returns_4">Returns</h3>
+<h3 id="returns_3">Returns</h3>
 <table>
 <thead>
 <tr>
@@ -1709,7 +1675,7 @@ another substring, using exact matching.</p>
 </tr>
 </tbody>
 </table>
-<h3 id="returns_5">Returns</h3>
+<h3 id="returns_4">Returns</h3>
 <table>
 <thead>
 <tr>
@@ -1799,7 +1765,7 @@ without any separator between them.</p>
 </tr>
 </tbody>
 </table>
-<h3 id="returns_6">Returns</h3>
+<h3 id="returns_5">Returns</h3>
 <table>
 <thead>
 <tr>

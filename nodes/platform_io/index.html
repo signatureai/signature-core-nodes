@@ -1147,7 +1147,7 @@ mask generation.</p>
 <tr>
 <td>optional</td>
 <td>fallback</td>
-<td><code>&lt;ast.Name object at 0x7fc956daaf80&gt;</code></td>
+<td><code>&lt;ast.Name object at 0x7f1c090936d0&gt;</code></td>
 <td></td>
 <td></td>
 </tr>
@@ -1630,7 +1630,7 @@ including automatic type conversion based on the specified subtype.</p>
 <td>value</td>
 <td><code>FLOAT</code></td>
 <td>0</td>
-<td></td>
+<td>max=18446744073709551615</td>
 </tr>
 <tr>
 <td>required</td>
@@ -1674,7 +1674,7 @@ including automatic type conversion based on the specified subtype.</p>
 <a id="__codelineno-3-29" name="__codelineno-3-29" href="#__codelineno-3-29"></a>                <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;STRING&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="s2">&quot;Input Number&quot;</span><span class="p">}),</span>
 <a id="__codelineno-3-30" name="__codelineno-3-30" href="#__codelineno-3-30"></a>                <span class="s2">&quot;subtype&quot;</span><span class="p">:</span> <span class="p">([</span><span class="s2">&quot;float&quot;</span><span class="p">,</span> <span class="s2">&quot;int&quot;</span><span class="p">],),</span>
 <a id="__codelineno-3-31" name="__codelineno-3-31" href="#__codelineno-3-31"></a>                <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;BOOLEAN&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}),</span>
-<a id="__codelineno-3-32" name="__codelineno-3-32" href="#__codelineno-3-32"></a>                <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;FLOAT&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}),</span>
+<a id="__codelineno-3-32" name="__codelineno-3-32" href="#__codelineno-3-32"></a>                <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;FLOAT&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mi">18446744073709551615</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="mi">18446744073709551615</span><span class="p">}),</span>
 <a id="__codelineno-3-33" name="__codelineno-3-33" href="#__codelineno-3-33"></a>                <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;STRING&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;multiline&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}),</span>
 <a id="__codelineno-3-34" name="__codelineno-3-34" href="#__codelineno-3-34"></a>            <span class="p">},</span>
 <a id="__codelineno-3-35" name="__codelineno-3-35" href="#__codelineno-3-35"></a>        <span class="p">}</span>
@@ -1849,13 +1849,13 @@ numbers, and strings. Includes support for thumbnail generation and metadata man
 <td>required</td>
 <td>metadata</td>
 <td><code>STRING</code></td>
-<td></td>
+<td>{}</td>
 <td>multiline=True</td>
 </tr>
 <tr>
 <td>required</td>
 <td>value</td>
-<td><code>&lt;ast.Name object at 0x7fc956d84a00&gt;</code></td>
+<td><code>&lt;ast.Name object at 0x7f1c0908e590&gt;</code></td>
 <td></td>
 <td></td>
 </tr>
@@ -1903,7 +1903,7 @@ numbers, and strings. Includes support for thumbnail generation and metadata man
 <a id="__codelineno-5-31" name="__codelineno-5-31" href="#__codelineno-5-31"></a>            <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="p">{</span>
 <a id="__codelineno-5-32" name="__codelineno-5-32" href="#__codelineno-5-32"></a>                <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;STRING&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="s2">&quot;Output Image&quot;</span><span class="p">}),</span>
 <a id="__codelineno-5-33" name="__codelineno-5-33" href="#__codelineno-5-33"></a>                <span class="s2">&quot;subtype&quot;</span><span class="p">:</span> <span class="p">([</span><span class="s2">&quot;image&quot;</span><span class="p">,</span> <span class="s2">&quot;mask&quot;</span><span class="p">,</span> <span class="s2">&quot;int&quot;</span><span class="p">,</span> <span class="s2">&quot;float&quot;</span><span class="p">,</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;dict&quot;</span><span class="p">],),</span>
-<a id="__codelineno-5-34" name="__codelineno-5-34" href="#__codelineno-5-34"></a>                <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;STRING&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s2">&quot;multiline&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}),</span>
+<a id="__codelineno-5-34" name="__codelineno-5-34" href="#__codelineno-5-34"></a>                <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;STRING&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;multiline&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}),</span>
 <a id="__codelineno-5-35" name="__codelineno-5-35" href="#__codelineno-5-35"></a>                <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">any_type</span><span class="p">,),</span>
 <a id="__codelineno-5-36" name="__codelineno-5-36" href="#__codelineno-5-36"></a>            <span class="p">},</span>
 <a id="__codelineno-5-37" name="__codelineno-5-37" href="#__codelineno-5-37"></a>            <span class="s2">&quot;hidden&quot;</span><span class="p">:</span> <span class="p">{</span>

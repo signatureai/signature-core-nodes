@@ -1875,39 +1875,71 @@ into ComfyUI-compatible tensor format.</p>
 </details>
 <h2 id="rotate">Rotate</h2>
 <p>Rotates an image and mask by a specified angle.</p>
+<p>This node provides functionality to rotate images and masks while optionally adjusting
+the output size to fit the entire rotated content.</p>
 <details class="note">
 <summary>Source code in file.py</summary>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="k">class</span> <span class="nc">Rotate</span><span class="p">:</span>
 <a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Rotates an image and mask by a specified angle.</span>
 <a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>
-<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="sd">    Args:</span>
-<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="sd">        image (torch.Tensor, optional): Input image in BWHC format</span>
-<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="sd">        mask (torch.Tensor, optional): Input mask in BWHC format</span>
-<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="sd">        angle (float): Rotation angle in degrees (0-360)</span>
-<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="sd">        zoom_to_fit (bool): Whether to zoom to fit rotated content (default: False)</span>
-<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>
-<a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span class="sd">    Returns:</span>
-<a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="sd">        tuple[torch.Tensor, torch.Tensor]: Rotated image and mask</span>
-<a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="sd">    This node provides functionality to rotate images and masks while optionally adjusting the output</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="sd">    size to fit the entire rotated content.</span>
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="sd">    Args:</span>
+<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="sd">        image (torch.Tensor, optional): Input image in BWHC format</span>
+<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="sd">        mask (torch.Tensor, optional): Input mask in BWHC format</span>
+<a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span class="sd">        angle (float): Rotation angle in degrees (0-360)</span>
+<a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="sd">        zoom_to_fit (bool): Whether to zoom to fit rotated content (default: False)</span>
+<a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a>
+<a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a><span class="sd">    Returns:</span>
+<a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a><span class="sd">        tuple[torch.Tensor, torch.Tensor]: Tuple containing:</span>
+<a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a><span class="sd">            - Rotated image in BWHC format</span>
+<a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a><span class="sd">            - Rotated mask in BWHC format</span>
+<a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a>
+<a id="__codelineno-7-18" name="__codelineno-7-18" href="#__codelineno-7-18"></a><span class="sd">    Notes:</span>
+<a id="__codelineno-7-19" name="__codelineno-7-19" href="#__codelineno-7-19"></a><span class="sd">        - At least one of image or mask must be provided</span>
+<a id="__codelineno-7-20" name="__codelineno-7-20" href="#__codelineno-7-20"></a><span class="sd">        - Rotation is performed counterclockwise</span>
+<a id="__codelineno-7-21" name="__codelineno-7-21" href="#__codelineno-7-21"></a><span class="sd">        - When zoom_to_fit is False, corners may be clipped</span>
+<a id="__codelineno-7-22" name="__codelineno-7-22" href="#__codelineno-7-22"></a><span class="sd">        - When zoom_to_fit is True, output may be larger</span>
+<a id="__codelineno-7-23" name="__codelineno-7-23" href="#__codelineno-7-23"></a><span class="sd">        - Empty areas after rotation are filled with black</span>
+<a id="__codelineno-7-24" name="__codelineno-7-24" href="#__codelineno-7-24"></a><span class="sd">        - Maintains aspect ratio of input</span>
+<a id="__codelineno-7-25" name="__codelineno-7-25" href="#__codelineno-7-25"></a><span class="sd">    &quot;&quot;&quot;</span>
 </code></pre></div>
 </details>
 <h2 id="maskgaussianblur">MaskGaussianBlur</h2>
 <p>Applies Gaussian blur to a mask.</p>
+<p>This node performs Gaussian blur on mask inputs with configurable radius, sigma and
+iteration parameters. Useful for softening mask edges or creating smooth transitions.</p>
 <details class="note">
 <summary>Source code in file.py</summary>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="k">class</span> <span class="nc">MaskGaussianBlur</span><span class="p">:</span>
 <a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Applies Gaussian blur to a mask.</span>
 <a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
-<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="sd">    Args:</span>
-<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="sd">        image (torch.Tensor): Input mask in BWHC format</span>
-<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="sd">        radius (int): Blur radius (default: 13)</span>
-<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="sd">        sigma (float): Blur sigma/strength (default: 10.5)</span>
-<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="sd">        iterations (int): Number of blur passes (default: 1)</span>
-<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a><span class="sd">        only_outline (bool): Whether to blur only the outline (default: False)</span>
-<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>
-<a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a><span class="sd">    Returns:</span>
-<a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a><span class="sd">        tuple[torch.Tensor]: Single-element tuple containing the blurred mask</span>
-<a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="sd">    This node performs Gaussian blur on mask inputs with configurable radius, sigma and iteration</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="sd">    parameters. Useful for softening mask edges or creating smooth transitions.</span>
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="sd">    Args:</span>
+<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="sd">        image (torch.Tensor): Input mask in BWHC format</span>
+<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a><span class="sd">        radius (int): Blur radius in pixels. Default: 13</span>
+<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a><span class="sd">            Larger values create wider blur effects</span>
+<a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a><span class="sd">        sigma (float): Blur strength/standard deviation. Default: 10.5</span>
+<a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a><span class="sd">            Controls the falloff of the blur effect</span>
+<a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a><span class="sd">        iterations (int): Number of blur passes to apply. Default: 1</span>
+<a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a><span class="sd">            Multiple passes can create stronger blur effects</span>
+<a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a><span class="sd">        only_outline (bool): Whether to blur only the outline. Default: False</span>
+<a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a><span class="sd">            When True, preserves solid areas and only blurs edges</span>
+<a id="__codelineno-8-17" name="__codelineno-8-17" href="#__codelineno-8-17"></a>
+<a id="__codelineno-8-18" name="__codelineno-8-18" href="#__codelineno-8-18"></a><span class="sd">    Returns:</span>
+<a id="__codelineno-8-19" name="__codelineno-8-19" href="#__codelineno-8-19"></a><span class="sd">        tuple[torch.Tensor]: Single-element tuple containing:</span>
+<a id="__codelineno-8-20" name="__codelineno-8-20" href="#__codelineno-8-20"></a><span class="sd">            - Blurred mask in BWHC format</span>
+<a id="__codelineno-8-21" name="__codelineno-8-21" href="#__codelineno-8-21"></a>
+<a id="__codelineno-8-22" name="__codelineno-8-22" href="#__codelineno-8-22"></a><span class="sd">    Notes:</span>
+<a id="__codelineno-8-23" name="__codelineno-8-23" href="#__codelineno-8-23"></a><span class="sd">        - Input should be a single-channel mask</span>
+<a id="__codelineno-8-24" name="__codelineno-8-24" href="#__codelineno-8-24"></a><span class="sd">        - Output maintains the same dimensions as input</span>
+<a id="__codelineno-8-25" name="__codelineno-8-25" href="#__codelineno-8-25"></a><span class="sd">        - Multiple iterations can create smoother results</span>
+<a id="__codelineno-8-26" name="__codelineno-8-26" href="#__codelineno-8-26"></a><span class="sd">        - Larger radius and sigma values produce stronger blur</span>
+<a id="__codelineno-8-27" name="__codelineno-8-27" href="#__codelineno-8-27"></a><span class="sd">        - Edge-only mode is useful for creating soft borders</span>
+<a id="__codelineno-8-28" name="__codelineno-8-28" href="#__codelineno-8-28"></a><span class="sd">    &quot;&quot;&quot;</span>
 </code></pre></div>
 </details>
 
