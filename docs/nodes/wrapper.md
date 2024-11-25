@@ -126,7 +126,7 @@ jobs, and processing various types of data including images, masks, and primitiv
 
         RETURN_TYPES = (any_type,) * 20
         FUNCTION = "execute"
-        CATEGORY = UTILS_CAT
+        CATEGORY = LABS_CAT
 
         def execute(self, **kwargs):
 

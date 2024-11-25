@@ -19,7 +19,7 @@ mask generation.
 | required | multiple      | `BOOLEAN`                             | False       |                |
 | required | value         | `STRING`                              |             |                |
 | required | metadata      | `STRING`                              | {}          | multiline=True |
-| optional | fallback      | `<ast.Name object at 0x7fc956daaf80>` |             |                |
+| optional | fallback      | `<ast.Name object at 0x7f1c090936d0>` |             |                |
 
 ??? note "Source code in platform_io.py"
 
@@ -360,13 +360,13 @@ including automatic type conversion based on the specified subtype.
 
 ### Inputs
 
-| Group    | Name     | Type      | Default      | Extras         |
-| -------- | -------- | --------- | ------------ | -------------- |
-| required | title    | `STRING`  | Input Number |                |
-| required | subtype  | `LIST`    |              |                |
-| required | required | `BOOLEAN` | True         |                |
-| required | value    | `FLOAT`   | 0            |                |
-| required | metadata | `STRING`  | {}           | multiline=True |
+| Group    | Name     | Type      | Default      | Extras                   |
+| -------- | -------- | --------- | ------------ | ------------------------ |
+| required | title    | `STRING`  | Input Number |                          |
+| required | subtype  | `LIST`    |              |                          |
+| required | required | `BOOLEAN` | True         |                          |
+| required | value    | `FLOAT`   | 0            | max=18446744073709551615 |
+| required | metadata | `STRING`  | {}           | multiline=True           |
 
 ??? note "Source code in platform_io.py"
 
@@ -402,7 +402,7 @@ including automatic type conversion based on the specified subtype.
                     "title": ("STRING", {"default": "Input Number"}),
                     "subtype": (["float", "int"],),
                     "required": ("BOOLEAN", {"default": True}),
-                    "value": ("FLOAT", {"default": 0}),
+                    "value": ("FLOAT", {"default": 0, "min": -18446744073709551615, "max": 18446744073709551615}),
                     "metadata": ("STRING", {"default": "{}", "multiline": True}),
                 },
             }
@@ -516,8 +516,8 @@ numbers, and strings. Includes support for thumbnail generation and metadata man
 | -------- | ----------- | ------------------------------------- | ------------ | -------------- |
 | required | title       | `STRING`                              | Output Image |                |
 | required | subtype     | `LIST`                                |              |                |
-| required | metadata    | `STRING`                              |              | multiline=True |
-| required | value       | `<ast.Name object at 0x7fc956d84a00>` |              |                |
+| required | metadata    | `STRING`                              | {}           | multiline=True |
+| required | value       | `<ast.Name object at 0x7f1c0908e590>` |              |                |
 | hidden   | output_path | `STRING`                              | output       |                |
 
 ??? note "Source code in platform_io.py"
@@ -556,7 +556,7 @@ numbers, and strings. Includes support for thumbnail generation and metadata man
                 "required": {
                     "title": ("STRING", {"default": "Output Image"}),
                     "subtype": (["image", "mask", "int", "float", "string", "dict"],),
-                    "metadata": ("STRING", {"default": "", "multiline": True}),
+                    "metadata": ("STRING", {"default": "{}", "multiline": True}),
                     "value": (any_type,),
                 },
                 "hidden": {
@@ -679,5 +679,6 @@ numbers, and strings. Includes support for thumbnail generation and metadata man
                     )
             clean_memory()
             return {"ui": {"signature_output": results}}
+
 
     ```

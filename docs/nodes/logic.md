@@ -14,8 +14,8 @@ selection.
 | Group    | Name      | Type                                  | Default | Extras |
 | -------- | --------- | ------------------------------------- | ------- | ------ |
 | required | condition | `BOOLEAN`                             | True    |        |
-| required | true      | `<ast.Name object at 0x7fc956dfaa70>` |         |        |
-| required | false     | `<ast.Name object at 0x7fc956dfaa10>` |         |        |
+| required | on_true   | `<ast.Name object at 0x7f1c090836d0>` |         |        |
+| required | on_false  | `<ast.Name object at 0x7f1c09083d60>` |         |        |
 
 ??? note "Source code in logic.py"
 
@@ -30,8 +30,8 @@ selection.
         Args:
             condition (bool): The boolean condition that determines which value to return.
                 Defaults to False if not provided.
-            true (Any): The value to return when the condition is True. Can be of any type.
-            false (Any): The value to return when the condition is False. Can be of any type.
+            on_true (Any): The value to return when the condition is True. Can be of any type.
+            on_false (Any): The value to return when the condition is False. Can be of any type.
 
         Returns:
             tuple[Any]: A single-element tuple containing either the 'true' or 'false' value based on
@@ -39,7 +39,7 @@ selection.
 
         Notes:
             - The node accepts inputs of any type, making it versatile for different data types
-            - Both 'true' and 'false' values must be provided
+            - Both 'on_true' and 'on_false' values must be provided
             - The condition is automatically cast to boolean, with None being treated as False
         """
 
@@ -48,8 +48,8 @@ selection.
             return {
                 "required": {
                     "condition": ("BOOLEAN", {"default": True}),
-                    "true": (any_type,),
-                    "false": (any_type,),
+                    "on_true": (any_type,),
+                    "on_false": (any_type,),
                 }
             }
 
@@ -58,13 +58,82 @@ selection.
         FUNCTION = "execute"
         CATEGORY = LOGIC_CAT
 
-        def execute(self, **kwargs):
-            condition = kwargs.get("condition") or False
-            true_val = kwargs.get("true")
-            false_val = kwargs.get("false")
+        def check_lazy_status(self, condition, on_true=None, on_false=None):
 
-            output = true_val if condition else false_val
-            return (output,)
+            if condition and on_true is None:
+                on_true = ["on_true"]
+                if isinstance(on_true, ExecutionBlocker):
+                    on_true = on_true.message  # type: ignore
+                return on_true
+            if not condition and on_false is None:
+                on_false = ["on_false"]
+                if isinstance(on_false, ExecutionBlocker):
+                    on_false = on_false.message  # type: ignore
+                return on_false
+            return None
+
+        def execute(self, **kwargs):
+            return (kwargs["on_true"] if kwargs["condition"] else kwargs["on_false"],)
+
+
+    ```
+
+## Blocker
+
+Controls flow execution based on a boolean condition.
+
+A utility node that blocks or allows execution flow based on a boolean flag. When the
+continue flag is False, it blocks execution by returning an ExecutionBlocker. When True,
+it passes through the input value unchanged.
+
+### Inputs
+
+| Group    | Name     | Type                                  | Default | Extras |
+| -------- | -------- | ------------------------------------- | ------- | ------ |
+| required | continue | `BOOLEAN`                             | False   |        |
+| required | in       | `<ast.Name object at 0x7f1c090837c0>` | None    |        |
+
+??? note "Source code in logic.py"
+
+    ```python
+    class Blocker:
+        """Controls flow execution based on a boolean condition.
+
+        A utility node that blocks or allows execution flow based on a boolean flag. When the continue
+        flag is False, it blocks execution by returning an ExecutionBlocker. When True, it passes through
+        the input value unchanged.
+
+        Args:
+            continue (bool): Flag to control execution flow. When False, blocks execution.
+            in (Any): The input value to pass through when execution is allowed.
+
+        Returns:
+            tuple[Any]: A single-element tuple containing either:
+                - The input value if continue is True
+                - An ExecutionBlocker if continue is False
+
+        Notes:
+            - Useful for conditional workflow execution
+            - Can be used to create branches in execution flow
+            - The ExecutionBlocker prevents downstream nodes from executing
+        """
+
+        @classmethod
+        def INPUT_TYPES(cls):
+            return {
+                "required": {
+                    "continue": ("BOOLEAN", {"default": False}),
+                    "in": (any_type, {"default": None}),
+                },
+            }
+
+        RETURN_TYPES = (any_type,)
+        RETURN_NAMES = ("out",)
+        CATEGORY = LABS_CAT
+        FUNCTION = "execute"
+
+        def execute(self, **kwargs):
+            return (kwargs["in"] if kwargs["continue"] else ExecutionBlocker(None),)
 
 
     ```
@@ -82,9 +151,9 @@ the relationship between two values.
 
 | Group    | Name       | Type                                  | Default | Extras |
 | -------- | ---------- | ------------------------------------- | ------- | ------ |
-| required | a          | `<ast.Name object at 0x7fc956df9210>` |         |        |
-| required | b          | `<ast.Name object at 0x7fc956df91b0>` |         |        |
-| required | comparison | `<ast.Name object at 0x7fc956df9150>` | a == b  |        |
+| required | a          | `<ast.Name object at 0x7f1c09083160>` |         |        |
+| required | b          | `<ast.Name object at 0x7f1c09081ae0>` |         |        |
+| required | comparison | `<ast.Name object at 0x7f1c09082ad0>` | a == b  |        |
 
 ### Returns
 
@@ -217,7 +286,7 @@ performed multiple times.
         RETURN_NAMES = ByPassTypeTuple(tuple(["flow"] + [f"value_{i}" for i in range(MAX_FLOW_NUM)]))
         FUNCTION = "execute"
 
-        CATEGORY = LOGIC_CAT + "/Loops"
+        CATEGORY = LABS_CAT + "/Loops"
 
         def execute(self, **kwargs):
             values = []
@@ -286,7 +355,7 @@ retrieving results after looping.
         RETURN_NAMES = ByPassTypeTuple(tuple(f"value_{i}" for i in range(MAX_FLOW_NUM)))
         FUNCTION = "execute"
 
-        CATEGORY = LOGIC_CAT + "/Loops"
+        CATEGORY = LABS_CAT + "/Loops"
 
         def explore_dependencies(self, node_id, dynprompt, upstream):
             node_info = dynprompt.get_node(node_id)

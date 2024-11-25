@@ -511,11 +511,17 @@ Processes file input data into a consistent list format for further ComfyUI oper
 
 Rotates an image and mask by a specified angle.
 
+This node provides functionality to rotate images and masks while optionally adjusting
+the output size to fit the entire rotated content.
+
 ??? note "Source code in file.py"
 
     ```python
     class Rotate:
         """Rotates an image and mask by a specified angle.
+
+        This node provides functionality to rotate images and masks while optionally adjusting the output
+        size to fit the entire rotated content.
 
         Args:
             image (torch.Tensor, optional): Input image in BWHC format
@@ -524,7 +530,17 @@ Rotates an image and mask by a specified angle.
             zoom_to_fit (bool): Whether to zoom to fit rotated content (default: False)
 
         Returns:
-            tuple[torch.Tensor, torch.Tensor]: Rotated image and mask
+            tuple[torch.Tensor, torch.Tensor]: Tuple containing:
+                - Rotated image in BWHC format
+                - Rotated mask in BWHC format
+
+        Notes:
+            - At least one of image or mask must be provided
+            - Rotation is performed counterclockwise
+            - When zoom_to_fit is False, corners may be clipped
+            - When zoom_to_fit is True, output may be larger
+            - Empty areas after rotation are filled with black
+            - Maintains aspect ratio of input
         """
 
 
@@ -534,21 +550,39 @@ Rotates an image and mask by a specified angle.
 
 Applies Gaussian blur to a mask.
 
+This node performs Gaussian blur on mask inputs with configurable radius, sigma and
+iteration parameters. Useful for softening mask edges or creating smooth transitions.
+
 ??? note "Source code in file.py"
 
     ```python
     class MaskGaussianBlur:
         """Applies Gaussian blur to a mask.
 
+        This node performs Gaussian blur on mask inputs with configurable radius, sigma and iteration
+        parameters. Useful for softening mask edges or creating smooth transitions.
+
         Args:
             image (torch.Tensor): Input mask in BWHC format
-            radius (int): Blur radius (default: 13)
-            sigma (float): Blur sigma/strength (default: 10.5)
-            iterations (int): Number of blur passes (default: 1)
-            only_outline (bool): Whether to blur only the outline (default: False)
+            radius (int): Blur radius in pixels. Default: 13
+                Larger values create wider blur effects
+            sigma (float): Blur strength/standard deviation. Default: 10.5
+                Controls the falloff of the blur effect
+            iterations (int): Number of blur passes to apply. Default: 1
+                Multiple passes can create stronger blur effects
+            only_outline (bool): Whether to blur only the outline. Default: False
+                When True, preserves solid areas and only blurs edges
 
         Returns:
-            tuple[torch.Tensor]: Single-element tuple containing the blurred mask
+            tuple[torch.Tensor]: Single-element tuple containing:
+                - Blurred mask in BWHC format
+
+        Notes:
+            - Input should be a single-channel mask
+            - Output maintains the same dimensions as input
+            - Multiple iterations can create smoother results
+            - Larger radius and sigma values produce stronger blur
+            - Edge-only mode is useful for creating soft borders
         """
 
     ```

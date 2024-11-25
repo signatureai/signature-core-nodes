@@ -85,13 +85,14 @@ appropriate content.
                 raise ValueError("Preview must be 'on' or 'off'")
 
             filename_prefix = kwargs.get("filename_prefix", "Signature")
-            prompt = kwargs.get("prompt")
+            prompt = kwargs.get("prompt") or ""
             extra_pnginfo = kwargs.get("extra_pnginfo")
             model = Lama()
             input_image = TensorImage.from_BWHC(image)
             input_mask = TensorImage.from_BWHC(mask)
-            highres = TensorImage(model.forward(input_image, input_mask, "FIXED"))
-            output_images = highres.get_BWHC()
+            result = TensorImage(model.forward(input_image, input_mask), device=input_mask.device)
+
+            output_images = TensorImage(result * (input_mask) + input_image * (1 - input_mask)).get_BWHC()
             if preview == "off":
                 return (output_images,)
             result = self.save_images(output_images, filename_prefix, prompt, extra_pnginfo)

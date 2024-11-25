@@ -10,15 +10,9 @@ handle multiple input types and provide a consistent preview format.
 
 ### Inputs
 
-| Group    | Name | Type                                  | Default | Extras |
-| -------- | ---- | ------------------------------------- | ------- | ------ |
-| required | text | `<ast.Name object at 0x7fc956dad7e0>` |         |        |
-
-### Returns
-
-| Name   | Type     |
-| ------ | -------- |
-| string | `STRING` |
+| Group    | Name  | Type                                  | Default | Extras |
+| -------- | ----- | ------------------------------------- | ------- | ------ |
+| required | value | `<ast.Name object at 0x7f1c090bd7b0>` |         |        |
 
 ??? note "Source code in text.py"
 
@@ -49,20 +43,19 @@ handle multiple input types and provide a consistent preview format.
         def INPUT_TYPES(cls):  # type: ignore
             return {
                 "required": {
-                    "text": (any_type,),
+                    "value": (any_type,),
                 },
             }
 
         INPUT_IS_LIST = True
-        RETURN_TYPES = ("STRING",)
+        RETURN_TYPES = ()
         FUNCTION = "execute"
         OUTPUT_NODE = True
-        OUTPUT_IS_LIST = (True,)
 
         CATEGORY = TEXT_CAT
 
         def execute(self, **kwargs):
-            text = kwargs.get("text", [])
+            text = kwargs.get("value", [])
             text_string = ""
             for t in text:
                 if t is None:
@@ -70,7 +63,7 @@ handle multiple input types and provide a consistent preview format.
                 if text_string != "":
                     text_string += "\n"
                 text_string += str(t.shape) if isinstance(t, torch.Tensor) else str(t)
-            return {"ui": {"text": [text_string]}, "result": (text_string,)}
+            return {"ui": {"text": [text_string]}}
 
 
     ```

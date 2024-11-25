@@ -583,11 +583,11 @@ upscaling models and includes multiple resampling methods for final adjustments.
 | Group    | Name              | Type                                  | Default | Extras                         |
 | -------- | ----------------- | ------------------------------------- | ------- | ------------------------------ |
 | required | image             | `IMAGE`                               |         |                                |
-| required | upscale_model     | `<ast.Call object at 0x7fc956d86fb0>` |         |                                |
+| required | upscale_model     | `<ast.Call object at 0x7f1c09080f10>` |         |                                |
 | required | mode              | `LIST`                                |         |                                |
 | required | rescale_factor    | `FLOAT`                               | 2       | min=0.01, max=100.0, step=0.01 |
 | required | resize_size       | `INT`                                 | 1024    | min=1, max=48000, step=1       |
-| required | resampling_method | `<ast.Name object at 0x7fc956d878e0>` |         |                                |
+| required | resampling_method | `<ast.Name object at 0x7f1c09083a30>` |         |                                |
 | required | tiled_size        | `INT`                                 | 512     | min=128, max=2048, step=128    |
 
 ### Returns

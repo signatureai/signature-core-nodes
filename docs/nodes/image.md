@@ -64,6 +64,7 @@ in BWHC format (Batch, Width, Height, Channels) with the specified dimensions.
         RETURN_TYPES = ("IMAGE",)
         FUNCTION = "execute"
         CATEGORY = IMAGE_CAT
+        CLASS_ID = "image_base_color"
 
         def execute(self, **kwargs):
             hex_color = kwargs.get("hex_color")
