@@ -2,7 +2,7 @@ import torch
 from comfy_execution.graph import ExecutionBlocker  # type: ignore
 from comfy_execution.graph_utils import GraphBuilder, is_link  # type: ignore
 
-from .categories import LOGIC_CAT
+from .categories import LABS_CAT, LOGIC_CAT
 from .shared import ByPassTypeTuple, any_type
 
 MAX_FLOW_NUM = 10
@@ -97,7 +97,7 @@ class Blocker:
 
     RETURN_TYPES = (any_type,)
     RETURN_NAMES = ("out",)
-    CATEGORY = LOGIC_CAT
+    CATEGORY = LABS_CAT
     FUNCTION = "execute"
 
     def execute(self, **kwargs):
@@ -212,7 +212,7 @@ class LoopStart:
     RETURN_NAMES = ByPassTypeTuple(tuple(["flow"] + [f"value_{i}" for i in range(MAX_FLOW_NUM)]))
     FUNCTION = "execute"
 
-    CATEGORY = LOGIC_CAT + "/Loops"
+    CATEGORY = LABS_CAT + "/Loops"
 
     def execute(self, **kwargs):
         values = []
@@ -267,7 +267,7 @@ class LoopEnd:
     RETURN_NAMES = ByPassTypeTuple(tuple(f"value_{i}" for i in range(MAX_FLOW_NUM)))
     FUNCTION = "execute"
 
-    CATEGORY = LOGIC_CAT + "/Loops"
+    CATEGORY = LABS_CAT + "/Loops"
 
     def explore_dependencies(self, node_id, dynprompt, upstream):
         node_info = dynprompt.get_node(node_id)

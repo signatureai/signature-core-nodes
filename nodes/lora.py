@@ -8,7 +8,7 @@ from comfy import sd, utils  # type: ignore
 from signature_core.img.tensor_image import TensorImage
 from uuid_extensions import uuid7str
 
-from .categories import LORA_CAT
+from .categories import LABS_CAT, LORA_CAT
 from .shared import BASE_COMFY_DIR
 
 
@@ -147,7 +147,7 @@ class LoraStacker:
     RETURN_TYPES = ("LORA_STACK",)
     RETURN_NAMES = ("lora_stack",)
     FUNCTION = "execute"
-    CATEGORY = LORA_CAT
+    CATEGORY = LABS_CAT
     CLASS_ID = "lora_stacker"
 
     def execute(self, **kwargs):
