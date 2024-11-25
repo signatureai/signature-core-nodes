@@ -1,87 +1,86 @@
-import os
+import importlib
+import inspect
+import re
+from os import remove, walk
+from os.path import abspath, dirname, exists, join, realpath, sep
+from shutil import copyfile
+
 from dotenv import load_dotenv
 from signature_core.logger import console
 from signature_core.version import __version__
-import shutil
-
-signature_js = "signature.js"
-signature_js_path = "./nodes/web/"
-web_extensions = "../ComfyUI/web/extensions/"
-src = os.path.join(signature_js_path, signature_js)
-dst = os.path.join(web_extensions, signature_js)
-if os.path.exists(web_extensions):
-    if os.path.exists(dst):
-        os.remove(dst)
-    shutil.copyfile(src, dst)
-
-console.log(f"[green]:::> Signature Core version: {__version__}")
-
-
-from .nodes import (
-    dev_tools,
-    io,
-    lora,
-    numbers,
-    platform_io,
-    platform_wrapper,
-    primitives,
-    utils,
-)
-from .nodes.vision import (
-    augmentation,
-    color,
-    enhance,
-    filters,
-    misc,
-    models,
-    morphology,
-    transform,
-)
 
 load_dotenv()
 
+script_file = realpath(__file__)
+script_folder = dirname(script_file)
+if "custom_nodes" in script_folder:
+    base_comfy_dir = script_folder.split("custom_nodes")[0]
+    signature_js = "signature.js"
+    signature_js_path = join(script_folder, "nodes/web/")
+    web_extensions = join(base_comfy_dir, "web/extensions/")
+    src = join(signature_js_path, signature_js)
+    dst = join(web_extensions, signature_js)
+    if exists(web_extensions):
+        if exists(dst):
+            remove(dst)
+        copyfile(src, dst)
 
-NODE_CLASS_MAPPINGS = {
-    **models.NODE_CLASS_MAPPINGS,
-    **transform.NODE_CLASS_MAPPINGS,
-    **enhance.NODE_CLASS_MAPPINGS,
-    **filters.NODE_CLASS_MAPPINGS,
-    **morphology.NODE_CLASS_MAPPINGS,
-    **misc.NODE_CLASS_MAPPINGS,
-    **augmentation.NODE_CLASS_MAPPINGS,
-    **lora.NODE_CLASS_MAPPINGS,
-    **io.NODE_CLASS_MAPPINGS,
-    **platform_io.NODE_CLASS_MAPPINGS,
-    **utils.NODE_CLASS_MAPPINGS,
-    **color.NODE_CLASS_MAPPINGS,
-    **numbers.NODE_CLASS_MAPPINGS,
-    **primitives.NODE_CLASS_MAPPINGS,
-    **dev_tools.NODE_CLASS_MAPPINGS,
-    **platform_wrapper.NODE_CLASS_MAPPINGS,
-}
 
-NODE_DISPLAY_NAME_MAPPINGS = {
-    **models.NODE_DISPLAY_NAME_MAPPINGS,
-    **transform.NODE_DISPLAY_NAME_MAPPINGS,
-    **enhance.NODE_DISPLAY_NAME_MAPPINGS,
-    **filters.NODE_DISPLAY_NAME_MAPPINGS,
-    **morphology.NODE_DISPLAY_NAME_MAPPINGS,
-    **misc.NODE_DISPLAY_NAME_MAPPINGS,
-    **augmentation.NODE_DISPLAY_NAME_MAPPINGS,
-    **lora.NODE_DISPLAY_NAME_MAPPINGS,
-    **io.NODE_DISPLAY_NAME_MAPPINGS,
-    **platform_io.NODE_DISPLAY_NAME_MAPPINGS,
-    **utils.NODE_DISPLAY_NAME_MAPPINGS,
-    **color.NODE_DISPLAY_NAME_MAPPINGS,
-    **numbers.NODE_DISPLAY_NAME_MAPPINGS,
-    **primitives.NODE_DISPLAY_NAME_MAPPINGS,
-    **dev_tools.NODE_DISPLAY_NAME_MAPPINGS,
-    **platform_wrapper.NODE_DISPLAY_NAME_MAPPINGS,
-}
+def get_node_class_mappings(nodes_directory: str):
+    node_class_mappings = {}
+    node_display_name_mappings = {}
+
+    plugin_file_paths = []
+
+    for path, _, files in walk(nodes_directory):
+        for name in files:
+            if not name.endswith(".py"):
+                continue
+            plugin_file_paths.append(join(path, name))
+
+    for plugin_file_path in plugin_file_paths:
+        plugin_rel_path = plugin_file_path.replace(".py", "").replace(sep, ".")
+        plugin_rel_path = plugin_rel_path.split("signature-core-nodes.nodes.")[-1]
+
+        try:
+            module = importlib.import_module("signature-core-nodes.nodes." + plugin_rel_path)
+
+            for item in dir(module):
+                value = getattr(module, item)
+                if (
+                    not value
+                    or not inspect.isclass(value)
+                    or not value.__module__.startswith("signature-core-nodes.nodes.")
+                ):
+                    continue
+
+                if hasattr(value, "FUNCTION"):
+                    class_name = item.replace("2", "")
+                    snake_case = (
+                        str(value.CLASS_ID)
+                        if hasattr(value, "CLASS_ID")
+                        else (
+                            str(value.CLASS_NAME)
+                            if hasattr(value, "CLASS_NAME")
+                            else re.sub(r"(?<!^)(?=[A-Z])", "_", class_name).lower()
+                        )
+                    )
+                    key = f"signature_{snake_case}"
+                    node_class_mappings[key] = value
+                    item_name = re.sub(r"(?<=[a-z])(?=[A-Z])|(?<=[A-Z]{2})(?=[A-Z][a-z])", " ", item)
+                    node_display_name_mappings[key] = f"SIG {item_name}"
+        except ImportError as e:
+            console.log(f"[red]Error importing {plugin_rel_path}: {e}")
+
+    return node_class_mappings, node_display_name_mappings
+
+
+# Get the path to the nodes directory
+nodes_path = join(dirname(abspath(__file__)), "nodes")
+NODE_CLASS_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS = get_node_class_mappings(nodes_path)
 
 WEB_DIRECTORY = "./nodes/web"
-NAME = "🔸 Signature Nodes"
-
+NAME = "🔲 Signature Nodes"
 
 __all__ = ["NODE_CLASS_MAPPINGS", "NODE_DISPLAY_NAME_MAPPINGS", "MANIFEST"]
 
@@ -91,3 +90,24 @@ MANIFEST = {
     "author": "Marco, Frederico, Anderson",
     "description": "SIG Nodes",
 }
+
+
+# greet_logo = f"""
+#           ███████████            ██████████████          ███████████████
+#        ██████     ███████      ██████████████████       ██████████████████
+#       ████            ████    █████           █████    ████           █████
+#       ████                    █████                    ████
+#        █████████               ██████████████          ██████████████
+#          ████████████████        █████████████████       █████████████████
+#                      █████                  ███████                ████████
+#       ██               ███    ███              ████   ████             █████
+#       ████            ████    █████           █████   ██████           ████
+#        ██████████████████      ███████████████████      ██████████████████
+#             █████████             █████████████            █████████████
+
+
+#     Maintained by: Marco, Frederico, Anderson
+#     Version: {__version__}
+# """
+
+# console.log(greet_logo)

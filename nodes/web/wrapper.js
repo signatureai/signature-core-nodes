@@ -4,9 +4,9 @@ const origin = window.location.search;
 const urlParams = new URLSearchParams(origin);
 const env = urlParams.get("env");
 let token = urlParams.get("token");
-let main_url = "https://api.signature.ai/api/v1";
-if (env === "staging") {
-  main_url = "https://api-staging.signature.ai/api/v1";
+let main_url = "https://api-staging.signature.ai/api/v1";
+if (env === "prod") {
+  main_url = "https://api.signature.ai/api/v1";
 }
 
 if (token == undefined || token == "") {
@@ -42,8 +42,9 @@ async function getOrganisationsData() {
   return data;
 }
 
-async function getProjectsData(id) {
-  let url = main_url + "/projects?organisationId=" + id + "&skip=0&limit=1000";
+async function getProjectsData(organisationId) {
+  let url =
+    main_url + "/projects?organisationId=" + organisationId + "&skip=0&limit=1000";
   const response = await fetch(url, {
     method: "GET",
     headers: headers,
@@ -52,8 +53,22 @@ async function getProjectsData(id) {
   return data;
 }
 
-async function getWorkflowsData(id) {
-  let url = main_url + "/workflows?organisationId=" + id + "&skip=0&limit=1000";
+async function getProjectWorkflowsData(projectId) {
+  let url =
+    main_url +
+    "/workflows?project_id=" +
+    projectId +
+    "&skip=0&limit=1000&detailed=false";
+  const response = await fetch(url, {
+    method: "GET",
+    headers: headers,
+  });
+  let data = await response.json();
+  return data;
+}
+
+async function getWorkflowData(workflowId) {
+  let url = main_url + "/workflows/" + workflowId;
   const response = await fetch(url, {
     method: "GET",
     headers: headers,
@@ -69,6 +84,7 @@ async function displayOrganisations(node) {
   dataWidget.value = "";
 
   if (selectedWidget) {
+    node.title = "Loading...";
     let data = await getOrganisationsData();
     let selectedOrgs = [];
     if (data && data.length > 0) {
@@ -105,25 +121,22 @@ async function displayOrganisations(node) {
         };
       } else {
         selectedWidget.value = "No organisation found";
-        // console.log("No organisation found");
       }
     } else {
       selectedWidget.value = data.detail;
-      // console.log("No organisation found");
     }
-  } else {
-    // console.log("No organisation widget found");
   }
 }
 
-async function displayProjects(node, id) {
+async function displayProjects(node, organisationId) {
   let selectedWidget = findWidgetByName(node, "project");
   selectedWidget.callback = function () {};
   let dataWidget = findWidgetByName(node, "data");
   dataWidget.value = "";
 
   if (selectedWidget) {
-    let data = await getProjectsData(id);
+    node.title = "Loading...";
+    let data = await getProjectsData(organisationId);
     if (data && data.length > 0) {
       let selectedProjects = [];
       for (let i = 0; i < data.length; i++) {
@@ -136,12 +149,14 @@ async function displayProjects(node, id) {
           node.outputs = [];
           resetWidgets(node);
           selectedWidget.value = selectedProjects[0];
-          await displayWorkflows(node, id, data[0].name);
+          const projectId = data[0]._id;
+          await displayWorkflows(node, projectId, data[0].name);
         } else {
           for (let i = 0; i < data.length; i++) {
             const name = data[i].name;
             if (name === selectedWidget.value) {
-              await displayWorkflows(node, id, name);
+              const projectId = data[i]._id;
+              await displayWorkflows(node, projectId, name);
               break;
             }
           }
@@ -150,35 +165,32 @@ async function displayProjects(node, id) {
           for (let i = 0; i < data.length; i++) {
             const name = data[i].name;
             if (name === selectedWidget.value) {
-              await displayWorkflows(node, id, name);
+              const projectId = data[i]._id;
+              await displayWorkflows(node, projectId, name);
               break;
             }
           }
         };
       } else {
         selectedWidget.value = "No project found";
-        // console.log("No project found");
       }
     } else {
       selectedWidget.value = data.detail;
-      // console.log("No project found");
     }
-  } else {
-    // console.log("No project widget found");
   }
 }
 
-async function displayWorkflows(node, id, projectName) {
+async function displayWorkflows(node, projectId, projectName) {
   let selectedWidget = findWidgetByName(node, "workflow");
   selectedWidget.callback = function () {};
   let dataWidget = findWidgetByName(node, "data");
   dataWidget.value = "";
 
   if (selectedWidget) {
-    let data = await getWorkflowsData(id);
+    node.title = "Loading...";
 
+    let data = await getProjectWorkflowsData(projectId);
     if (data && data.length > 0) {
-      // console.log("workflow data", data);
       let selectedWorkflows = [];
       for (let i = 0; i < data.length; i++) {
         const projects = data[i].projects;
@@ -198,8 +210,7 @@ async function displayWorkflows(node, id, projectName) {
         }
         for (let i = 0; i < data.length; i++) {
           if (data[i].name === selectedWidget.value) {
-            updateInputsOutputs(node, data[i], true);
-            // updateInputsOutputs(node, data[i], cached === false);
+            await updateInputsOutputs(node, data[i], true);
             break;
           }
         }
@@ -207,7 +218,7 @@ async function displayWorkflows(node, id, projectName) {
         selectedWidget.callback = async function () {
           for (let i = 0; i < data.length; i++) {
             if (data[i].name === selectedWidget.value) {
-              updateInputsOutputs(node, data[i], true);
+              await updateInputsOutputs(node, data[i], true);
               break;
             }
           }
@@ -230,23 +241,29 @@ function resetWidgets(node) {
   node.widgets = widgets;
 }
 
-function updateInputsOutputs(node, workflowObject, update) {
+async function updateInputsOutputs(node, workflowObject, update) {
   if (update) {
-    node.inputs = [];
     node.outputs = [];
     resetWidgets(node);
   }
-  const workflowId = workflowObject._id;
-  const parsedWorkflow = JSON.parse(workflowObject.workflow_api);
+  let workflowId = workflowObject.id;
+  if (workflowId === undefined) {
+    workflowId = workflowObject._id;
+  }
+  node.title = "Loading...";
+  const detailedWorkflow = await getWorkflowData(workflowId);
+  const parsedWorkflow = JSON.parse(detailedWorkflow.workflow_api);
+  node.title = detailedWorkflow.name;
 
   let data = {
     origin: main_url,
     token: token,
-    workflow_id: workflowId,
+    workflow_api: parsedWorkflow,
     widget_inputs: [],
   };
 
   const nodes = Object.keys(parsedWorkflow).map((key) => [key, parsedWorkflow[key]]);
+  let newInputs = [];
   for (let i = 0; i < nodes.length; i++) {
     const wfNode = nodes[i][1];
     const nodeType = wfNode.class_type;
@@ -327,17 +344,17 @@ function updateInputsOutputs(node, workflowObject, update) {
               }
               updateData(node, updatedData);
             });
-          } else {
-            // console.log("input type not supported: ", inputType);
           }
         } else {
-          node.addInput(inputName, inputType);
+          if (!node.inputs.find((input) => input.name === inputName)) {
+            node.addInput(inputName, inputType);
+          }
+          newInputs.push(inputName);
         }
       }
     }
 
     if (nodeType === "signature_output") {
-      // console.log("output nodes: ", nodes[i]);
       let nodeOutputs = wfNode.inputs;
       const name = nodeOutputs.title;
       const type = nodeOutputs.subtype.toUpperCase();
@@ -345,6 +362,11 @@ function updateInputsOutputs(node, workflowObject, update) {
         node.addOutput(name, type);
       }
     }
+  }
+
+  const inputsToRemove = node.inputs.filter((input) => !newInputs.includes(input.name));
+  for (const input of inputsToRemove) {
+    node.removeInput(input.name);
   }
   updateData(node, data);
 }
@@ -367,8 +389,7 @@ function updateData(node, data) {
 }
 
 const ext = {
-  // Unique name for the extension
-  name: "Signature.Wrapper",
+  name: "signature.wrapper",
   async nodeCreated(node) {
     const class_name = node.comfyClass;
     if (class_name === "signature_wrapper") {
@@ -380,7 +401,6 @@ const ext = {
         }
       }
 
-      // console.log(widgets);
       if (widgets.length === 1) {
         widgets.unshift({
           type: "combo",
@@ -400,9 +420,7 @@ const ext = {
           value: "loading...",
           options: { values: [] },
         });
-
-        // node.inputs = [];
-        // node.outputs = [];
+        node.outputs = [];
         resetWidgets(node);
       }
       await displayOrganisations(node);
