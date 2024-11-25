@@ -1,7 +1,29 @@
-from .categories import PRIMITIVES
+from .categories import PRIMITIVES_CAT
 
 
 class Float:
+    """A node that handles floating-point number inputs with configurable parameters.
+
+    This node provides functionality for processing floating-point numbers within a specified range
+    and step size. It can be used as a basic input node in computational graphs where decimal
+    number precision is required.
+
+    Args:
+        value (float): The input floating-point number to process.
+                      Default: 0
+                      Min: -18446744073709551615
+                      Max: 18446744073709551615
+                      Step: 0.01
+
+    Returns:
+        tuple[float]: A single-element tuple containing the processed float value.
+
+    Notes:
+        - The node maintains the exact input value without any transformation
+        - The step value of 0.01 provides two decimal places of precision by default
+        - The min/max values correspond to the 64-bit integer limits
+    """
+
     @classmethod
     def INPUT_TYPES(cls):  # type: ignore
         return {
@@ -15,14 +37,36 @@ class Float:
 
     RETURN_TYPES = ("FLOAT",)
     RETURN_NAMES = ("float",)
-    FUNCTION = "process"
-    CATEGORY = PRIMITIVES
+    FUNCTION = "execute"
+    CATEGORY = PRIMITIVES_CAT
 
-    def process(self, value):
+    def execute(self, value):
         return (value,)
 
 
 class Int:
+    """A node that handles integer number inputs with configurable parameters.
+
+    This node provides functionality for processing integer numbers within a specified range
+    and step size. It can be used as a basic input node in computational graphs where whole
+    number values are required.
+
+    Args:
+        value (int): The input integer number to process.
+                    Default: 0
+                    Min: -18446744073709551615
+                    Max: 18446744073709551615
+                    Step: 1
+
+    Returns:
+        tuple[int]: A single-element tuple containing the processed integer value.
+
+    Notes:
+        - The node maintains the exact input value without any transformation
+        - The step value of 1 ensures whole number increments
+        - The min/max values correspond to the 64-bit integer limits
+    """
+
     @classmethod
     def INPUT_TYPES(cls):  # type: ignore
         return {
@@ -36,14 +80,32 @@ class Int:
 
     RETURN_TYPES = ("INT",)
     RETURN_NAMES = ("int",)
-    FUNCTION = "process"
-    CATEGORY = PRIMITIVES
+    FUNCTION = "execute"
+    CATEGORY = PRIMITIVES_CAT
 
-    def process(self, value):
+    def execute(self, value):
         return (value,)
 
 
 class String:
+    """A node that handles single-line string inputs.
+
+    This node provides functionality for processing single-line text input. It can be used as a
+    basic input node in computational graphs where text processing is required.
+
+    Args:
+        value (str): The input string to process.
+                    Default: "" (empty string)
+
+    Returns:
+        tuple[str]: A single-element tuple containing the processed string value.
+
+    Notes:
+        - The node maintains the exact input value without any transformation
+        - Newline characters are not preserved in the input field
+        - Suitable for short text inputs or commands
+    """
+
     @classmethod
     def INPUT_TYPES(cls):  # type: ignore
         return {
@@ -54,14 +116,33 @@ class String:
 
     RETURN_TYPES = ("STRING",)
     RETURN_NAMES = ("string",)
-    FUNCTION = "process"
-    CATEGORY = PRIMITIVES
+    FUNCTION = "execute"
+    CATEGORY = PRIMITIVES_CAT
 
-    def process(self, value):
+    def execute(self, value):
         return (value,)
 
 
 class StringMultiline:
+    """A node that handles multi-line string inputs.
+
+    This node provides functionality for processing multi-line text input. It can be used as a
+    basic input node in computational graphs where larger text blocks or formatted text
+    processing is required.
+
+    Args:
+        value (str): The input multi-line string to process.
+                    Default: "" (empty string)
+
+    Returns:
+        tuple[str]: A single-element tuple containing the processed multi-line string value.
+
+    Notes:
+        - The node maintains the exact input value without any transformation
+        - Newline characters are preserved in the input
+        - Suitable for longer text inputs, code blocks, or formatted text
+    """
+
     @classmethod
     def INPUT_TYPES(cls):  # type: ignore
         return {
@@ -72,14 +153,32 @@ class StringMultiline:
 
     RETURN_TYPES = ("STRING",)
     RETURN_NAMES = ("string",)
-    FUNCTION = "process"
-    CATEGORY = PRIMITIVES
+    FUNCTION = "execute"
+    CATEGORY = PRIMITIVES_CAT
 
-    def process(self, value):
+    def execute(self, value):
         return (value,)
 
 
 class Boolean:
+    """A node that handles boolean inputs.
+
+    This node provides functionality for processing boolean (True/False) values. It can be used
+    as a basic input node in computational graphs where conditional logic is required.
+
+    Args:
+        value (bool): The input boolean value to process.
+                     Default: False
+
+    Returns:
+        tuple[bool]: A single-element tuple containing the processed boolean value.
+
+    Notes:
+        - The node maintains the exact input value without any transformation
+        - Typically displayed as a checkbox in user interfaces
+        - Useful for conditional branching in node graphs
+    """
+
     @classmethod
     def INPUT_TYPES(cls):  # type: ignore
         return {
@@ -90,25 +189,8 @@ class Boolean:
 
     RETURN_TYPES = ("BOOLEAN",)
     RETURN_NAMES = ("boolean",)
-    FUNCTION = "process"
-    CATEGORY = PRIMITIVES
+    FUNCTION = "execute"
+    CATEGORY = PRIMITIVES_CAT
 
-    def process(self, value):
+    def execute(self, value):
         return (value,)
-
-
-NODE_CLASS_MAPPINGS = {
-    "signature_float": Float,
-    "signature_int": Int,
-    "signature_string": String,
-    "signature_string_multiline": StringMultiline,
-    "signature_boolean": Boolean,
-}
-
-NODE_DISPLAY_NAME_MAPPINGS = {
-    "signature_float": "SIG Float",
-    "signature_int": "SIG Int",
-    "signature_string": "SIG String",
-    "signature_string_multiline": "SIG String Multiline",
-    "signature_boolean": "SIG Boolean",
-}
