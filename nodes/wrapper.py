@@ -12,7 +12,7 @@ from comfy.utils import ProgressBar  # type: ignore
 from signature_core.img.tensor_image import TensorImage
 from signature_core.logger import console
 
-from .categories import UTILS_CAT
+from .categories import LABS_CAT
 from .shared import BASE_COMFY_DIR, any_type
 
 sys.path.append(BASE_COMFY_DIR)
@@ -227,7 +227,7 @@ class Wrapper:
 
     RETURN_TYPES = (any_type,) * 20
     FUNCTION = "execute"
-    CATEGORY = UTILS_CAT
+    CATEGORY = LABS_CAT
 
     def execute(self, **kwargs):
 
