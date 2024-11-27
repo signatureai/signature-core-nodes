@@ -3,10 +3,10 @@
 
 [JIRA Issue](put-jira-url-here)
 
-When opening a PR, be sure to add labels if necessary:
-- `patch`: patch version update (1.0.0 -> 1.0.1)
-- `minor`: Minor version update (1.0.0 -> 1.1.0)
-- `major`: Major version update, breaking changes (1.0.0 -> 2.0.0)
+Start your commit messages with one of the following keywords to trigger version updates:
+- `patch: `: patch version update (1.0.0 -> 1.0.1)
+- `minor: `: Minor version update (1.0.0 -> 1.1.0)
+- `major: `: Major version update, breaking changes (1.0.0 -> 2.0.0)
 
 ## Description
 Please include a summary of the change and which issue is fixed. Please also include relevant motivation and context.
