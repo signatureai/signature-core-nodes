@@ -102,6 +102,7 @@ The project uses pre-commit hooks for:
 python scripts/generate_docs.py
 ```
 
+
 ## 📚 Documentation
 
 Documentation is built using MkDocs with the Material theme. To view the documentation
