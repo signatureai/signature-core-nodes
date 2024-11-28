@@ -2,8 +2,8 @@ import { app } from "../../../scripts/app.js";
 import { api } from "../../../scripts/api.js";
 
 const NODES = {
-  signature_load_file: "file",
-  signature_load_folder: "folder",
+  signature_file_loader: "file",
+  signature_folder_loader: "folder",
 };
 
 async function uploadFile(file) {
