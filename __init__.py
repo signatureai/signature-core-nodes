@@ -6,8 +6,8 @@ from os.path import abspath, dirname, exists, join, realpath, sep
 from shutil import copyfile
 
 from dotenv import load_dotenv
+from signature_core import __version__
 from signature_core.logger import console
-from signature_core.version import __version__
 
 load_dotenv()
 
@@ -90,24 +90,3 @@ MANIFEST = {
     "author": "Marco, Frederico, Anderson",
     "description": "SIG Nodes",
 }
-
-
-# greet_logo = f"""
-#           ███████████            ██████████████          ███████████████
-#        ██████     ███████      ██████████████████       ██████████████████
-#       ████            ████    █████           █████    ████           █████
-#       ████                    █████                    ████
-#        █████████               ██████████████          ██████████████
-#          ████████████████        █████████████████       █████████████████
-#                      █████                  ███████                ████████
-#       ██               ███    ███              ████   ████             █████
-#       ████            ████    █████           █████   ██████           ████
-#        ██████████████████      ███████████████████      ██████████████████
-#             █████████             █████████████            █████████████
-
-
-#     Maintained by: Marco, Frederico, Anderson
-#     Version: {__version__}
-# """
-
-# console.log(greet_logo)
