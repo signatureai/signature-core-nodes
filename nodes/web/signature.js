@@ -6,7 +6,7 @@ const workflow_id = urlParams.get("workflow_id");
 const token = urlParams.get("token");
 
 // Exit early if required parameters are missing
-if (false) {
+if (!env || !workflow_id || !token) {
   console.log(
     "Signature Bridge: Missing required URL parameters (env, workflow_id, token). Extension not loaded.",
   );
