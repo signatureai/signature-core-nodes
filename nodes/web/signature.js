@@ -6,7 +6,7 @@ const workflow_id = urlParams.get("workflow_id");
 const token = urlParams.get("token");
 
 // Exit early if required parameters are missing
-if (!env || !workflow_id || !token) {
+if (false) {
   console.log(
     "Signature Bridge: Missing required URL parameters (env, workflow_id, token). Extension not loaded.",
   );
@@ -54,8 +54,6 @@ if (!env || !workflow_id || !token) {
       // Parse the workflow
       const get_workflow = await response.json();
       const get_workflow_data = JSON.parse(get_workflow["workflow"]);
-      console.log(get_workflow);
-      console.log(get_workflow_data);
       if (
         get_workflow_data &&
         get_workflow_data.version &&
@@ -72,34 +70,106 @@ if (!env || !workflow_id || !token) {
     }
   }
 
+  async function getManifest(workflow) {
+    try {
+      const url = window.location.href + "flow/create_manifest";
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          workflow: workflow,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Error getting manifest:", errorText);
+        throw new Error(
+          `Failed to get manifest: ${response.status} ${response.statusText}`,
+        );
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error("Error in getManifest:", error);
+      throw error;
+    }
+  }
+
+  async function getIO(workflow) {
+    try {
+      const url = window.location.href + "flow/workflow_data";
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          workflow: workflow,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Error getting IO:", errorText);
+        throw new Error(`Failed to get IO: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      // Parse the JSON strings back into objects
+      return data;
+    } catch (error) {
+      console.error("Error in getIO:", error);
+      throw error;
+    }
+  }
+
   async function saveWorkflow(app) {
     try {
       // Save the workflow
       const workflow = app.graph.serialize();
-      const workflow_api = await app.graphToPrompt();
+      console.log("Serialized workflow:", workflow);
 
-      const data = {
-        workflow: JSON.stringify(workflow),
-        workflow_api: JSON.stringify(workflow_api["output"]),
-      };
+      // Show message before generating manifest
+      showMessage("Deploying workflow...", "#ffffffcc");
 
-      const response = await fetch(url, {
-        method: "PUT",
-        headers: headers,
-        body: JSON.stringify(data),
-      });
+      // Get the IO
+      const io = await getIO(workflow);
+      console.log("Generated IO:", io);
 
-      if (response.ok) {
-        showMessage("Workflow deployed to Signature", "#00ff00ff");
-      } else {
-        showMessage(
-          "An Error occurerd while deploying the workflow to Signature",
-          "#ff0000ff",
-        );
-      }
+      // Get the manifest
+      const manifest = await getManifest(workflow);
+      console.log("Generated manifest:", manifest);
+
+      showMessage("Workflow deployed successfully!", "#00ff00ff");
+
+      // const data = {
+      //   workflow: JSON.stringify(workflow),
+      //   workflow_api: JSON.stringify(workflow_api["output"]),
+      //   manifest: manifest
+      // };
+
+      // const response = await fetch(url, {
+      //   method: "PUT",
+      //   headers: headers,
+      //   body: JSON.stringify(data),
+      // });
+
+      // if (response.ok) {
+      //   showMessage("Workflow deployed to Signature", "#00ff00ff");
+      // } else {
+      //   showMessage(
+      //     "An Error occurred while deploying the workflow to Signature",
+      //     "#ff0000ff",
+      //   );
+      // }
     } catch (error) {
+      console.error("Error in saveWorkflow:", error);
       showMessage(
-        "An Error occurerd while deploying the workflow to Signature",
+        "An Error occurred while deploying the workflow to Signature",
         "#ff0000ff",
       );
     }
@@ -245,7 +315,6 @@ if (!env || !workflow_id || !token) {
               .children;
           for (let i = 0; i < menuItems.length; i++) {
             const element = menuItems[i];
-            console.log(element.ariaLabel);
             if (
               element.ariaLabel === "Save As" ||
               element.innerText === "Browse Templates"
@@ -272,7 +341,6 @@ if (!env || !workflow_id || !token) {
           const menuItems = app.bodyLeft.children[0].children;
           for (let i = 0; i < menuItems.length; i++) {
             const element = menuItems[i];
-            console.log(element.ariaLabel);
             if (element.ariaLabel === "Workflows") {
               element.parentNode.removeChild(element);
               break;
